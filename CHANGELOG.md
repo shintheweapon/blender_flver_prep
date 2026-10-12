@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.0 (unreleased)
+
+### Added
+- **Prepare and Export...** and **Export Copy...** buttons in the FS FBX tab: write the `<armature>_fs` collection to
+  an FBX file as it is (same vertex positions, normals and corner order; identity object transforms), using Blender's
+  FBX exporter with Forward Y, Up Z, no Apply Transform and FBX Units Scale. Names keep the `_fs` suffix.
+- The report after an export names the Mirror Z setting to use in FbxImporter; Prepare Copy now records its options
+  on the collection for this.
+- The extension declares the `files` permission.
+
 ## 0.1.0
 
 ### Added

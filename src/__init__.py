@@ -7,6 +7,8 @@ from . import i18n_zh_hans, operator, panel, prefs
 classes = (
     prefs.FS_FBX_TOOLS_preferences,
     operator.FS_FBX_TOOLS_OT_prepare_copy,
+    operator.FS_FBX_TOOLS_OT_prepare_export,
+    operator.FS_FBX_TOOLS_OT_export_copy,
     panel.FS_FBX_TOOLS_PT_main,
 )
 

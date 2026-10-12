@@ -33,6 +33,8 @@ class FS_FBX_TOOLS_PT_main(bpy.types.Panel):
             col.prop(options, "mirror_z")
             col.prop(options, "flip_faces")
 
-        row = layout.row()
-        row.scale_y = 1.5
-        row.operator("fs_fbx_tools.prepare_copy", icon='DUPLICATE')
+        col = layout.column(align=True)
+        col.scale_y = 1.5
+        col.operator("fs_fbx_tools.prepare_copy", icon='DUPLICATE')
+        col.operator("fs_fbx_tools.prepare_export", text="Prepare and Export...", icon='EXPORT')
+        col.operator("fs_fbx_tools.export_copy", text="Export Copy...", icon='EXPORT')

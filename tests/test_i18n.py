@@ -9,6 +9,9 @@ import helpers
 from src import i18n_zh_hans, messages, operator, prefs
 from test_operator import enable
 
+COMMANDS = (operator.FS_FBX_TOOLS_OT_prepare_copy, operator.FS_FBX_TOOLS_OT_prepare_export,
+            operator.FS_FBX_TOOLS_OT_export_copy)
+
 
 def fields(text):
     """The named fields of a format string, sorted."""
@@ -21,9 +24,10 @@ class TableTests(unittest.TestCase):
         self.table = i18n_zh_hans.table()
 
     def test_every_interface_text_has_an_entry(self):
-        command = operator.FS_FBX_TOOLS_OT_prepare_copy
         options = prefs.FS_FBX_TOOLS_preferences.__annotations__
-        texts = [command.bl_label, command.__doc__]
+        texts = ["Prepare and Export...", "Export Copy..."]
+        for command in COMMANDS:
+            texts += [command.bl_label, command.__doc__]
         for name in ('mirror_z', 'flip_faces'):
             keywords = options[name].keywords
             texts += [keywords['name'], keywords['description']]
@@ -31,8 +35,10 @@ class TableTests(unittest.TestCase):
         missing = [t for t in texts if (i18n_zh_hans.DEFAULT, t) not in self.table]
         self.assertEqual(missing, [])
 
-    def test_label_in_the_operator_context_too(self):
-        self.assertEqual(self.table[(i18n_zh_hans.OPERATOR, "Prepare Copy")], "准备副本")
+    def test_labels_in_the_operator_context_too(self):
+        for command in COMMANDS:
+            self.assertEqual(self.table[(i18n_zh_hans.OPERATOR, command.bl_label)],
+                             self.table[(i18n_zh_hans.DEFAULT, command.bl_label)])
 
     def test_translations_keep_the_same_fields(self):
         for (_, english), chinese in self.table.items():
@@ -72,6 +78,12 @@ class ChineseInterfaceTests(unittest.TestCase):
         self.assertEqual(tr.pgettext_rpt(messages.PREPARED_PLAIN).format(count=2, collection="A_fs"),
                          "已在集合 A_fs 中准备 2 个网格。请在 FbxImporter 中勾选 Mirror Z")
         self.assertEqual(tr.pgettext_rpt(messages.NO_MESHES).format(name="A"), "A 没有网格")
+        self.assertEqual(tr.pgettext_iface("Export Copy", "Operator"), "导出副本")
+        self.assertEqual(tr.pgettext_iface("Prepare and Export..."), "准备并导出...")
+        self.assertEqual(tr.pgettext_rpt(messages.EXPORTED_MIRRORED).format(
+            count=2, collection="A_fs", path="p.fbx"),
+            "已将集合 A_fs 中的 2 个网格导出到 p.fbx。已应用镜像 Z：在 FbxImporter 中不要勾选 Mirror Z")
+        self.assertEqual(tr.pgettext_rpt(messages.RUN_PREPARE_FIRST), "请先运行“准备副本”")
 
 
 if __name__ == '__main__':
