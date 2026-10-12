@@ -12,6 +12,9 @@ from mathutils import Matrix
 SUFFIX = "_fs"
 # Custom property on the collection naming the armature it was made from
 SOURCE_KEY = "fs_fbx_source"
+# Custom properties on the collection recording the options it was made with
+MIRROR_Z_KEY = "fs_fbx_mirror_z"
+FLIP_FACES_KEY = "fs_fbx_flip_faces"
 
 
 @dataclass
@@ -201,6 +204,8 @@ def prepare_copy(context: bpy.types.Context, armature_obj: bpy.types.Object,
         context.view_layer.update()
         depsgraph = context.evaluated_depsgraph_get()
         collection = _new_collection(context.scene, armature_obj)
+        collection[MIRROR_Z_KEY] = mirror_z
+        collection[FLIP_FACES_KEY] = flip_faces
         armature_copy = _copy_armature(armature_obj, matrix, collection)
         result = PreparedCopy(collection, armature_copy)
         for obj in meshes:
