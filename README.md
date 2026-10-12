@@ -34,6 +34,9 @@ It makes the collection `<armature>_fs` holding:
 - a copy of each of its meshes, `<mesh>_fs`: the armature's children and the meshes whose Armature modifier targets
   it.
 
+The armature copy is shown In Front (Object Properties > Viewport Display > In Front), so its bones are drawn over
+the meshes.
+
 Each mesh copy holds the original:
 - in the armature's rest pose, even when the armature is posed;
 - with its other modifiers (for example Subdivision) applied;

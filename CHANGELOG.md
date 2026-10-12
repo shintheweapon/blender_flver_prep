@@ -8,6 +8,7 @@
   FBX exporter with Forward Y, Up Z, no Apply Transform and FBX Units Scale. Names keep the `_fs` suffix.
 - The report after an export names the Mirror Z setting to use in FbxImporter; Prepare Copy now records its options
   on the collection for this.
+- Prepare Copy shows the armature copy In Front, so its bones are drawn over the meshes.
 - The extension declares the `files` permission.
 
 ## 0.1.0

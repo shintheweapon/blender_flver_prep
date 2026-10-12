@@ -131,6 +131,8 @@ def _copy_armature(armature_obj: bpy.types.Object, matrix: Matrix,
     data.pose_position = 'POSE'
     data.transform(matrix @ armature_obj.matrix_world)
     copy = bpy.data.objects.new(armature_obj.name + SUFFIX, data)
+    # Draw the bones over the meshes
+    copy.show_in_front = True
     collection.objects.link(copy)
     return copy
 
@@ -175,9 +177,9 @@ def prepare_copy(context: bpy.types.Context, armature_obj: bpy.types.Object,
     with its other modifiers applied, multiplied by the conversion matrix and
     the original's world matrix; normals follow the same matrix, so Mirror Z
     negates their Z and keeps each face's corner order. Copies have identity
-    transforms and share the originals' materials. A previous copy of the same
-    armature is replaced. The originals, the selection and the active object
-    are not changed.
+    transforms and share the originals' materials. The armature copy is shown
+    In Front. A previous copy of the same armature is replaced. The originals,
+    the selection and the active object are not changed.
 
     Parameters
     ----------
