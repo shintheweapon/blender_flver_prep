@@ -11,6 +11,9 @@ from test_operator import enable
 
 COMMANDS = (operator.FS_FBX_TOOLS_OT_prepare_copy, operator.FS_FBX_TOOLS_OT_prepare_export,
             operator.FS_FBX_TOOLS_OT_export_copy)
+# Panel buttons with their own text: (command, English, Chinese)
+BUTTONS = ((operator.FS_FBX_TOOLS_OT_prepare_export, "Prepare and Export...", "准备并导出..."),
+           (operator.FS_FBX_TOOLS_OT_export_copy, "Export Copy...", "导出副本..."))
 
 
 def fields(text):
@@ -25,7 +28,7 @@ class TableTests(unittest.TestCase):
 
     def test_every_interface_text_has_an_entry(self):
         options = prefs.FS_FBX_TOOLS_preferences.__annotations__
-        texts = ["Prepare and Export...", "Export Copy..."]
+        texts = [english for _, english, _ in BUTTONS]
         for command in COMMANDS:
             texts += [command.bl_label, command.__doc__]
         for name in ('mirror_z', 'flip_faces'):
@@ -39,6 +42,9 @@ class TableTests(unittest.TestCase):
         for command in COMMANDS:
             self.assertEqual(self.table[(i18n_zh_hans.OPERATOR, command.bl_label)],
                              self.table[(i18n_zh_hans.DEFAULT, command.bl_label)])
+        # The panel's own button texts are looked up there as well
+        for _, english, chinese in BUTTONS:
+            self.assertEqual(self.table[(i18n_zh_hans.OPERATOR, english)], chinese)
 
     def test_translations_keep_the_same_fields(self):
         for (_, english), chinese in self.table.items():
@@ -79,7 +85,9 @@ class ChineseInterfaceTests(unittest.TestCase):
                          "已在集合 A_fs 中准备 2 个网格。请在 FbxImporter 中勾选 Mirror Z")
         self.assertEqual(tr.pgettext_rpt(messages.NO_MESHES).format(name="A"), "A 没有网格")
         self.assertEqual(tr.pgettext_iface("Export Copy", "Operator"), "导出副本")
-        self.assertEqual(tr.pgettext_iface("Prepare and Export..."), "准备并导出...")
+        # A text= on layout.operator is translated in the command's context
+        for command, english, chinese in BUTTONS:
+            self.assertEqual(tr.pgettext_iface(english, command.bl_rna.translation_context), chinese)
         self.assertEqual(tr.pgettext_rpt(messages.EXPORTED_MIRRORED).format(
             count=2, collection="A_fs", path="p.fbx"),
             "已将集合 A_fs 中的 2 个网格导出到 p.fbx。已应用镜像 Z：在 FbxImporter 中不要勾选 Mirror Z")

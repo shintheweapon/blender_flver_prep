@@ -10,21 +10,23 @@ from typing import Dict, Tuple
 from . import messages
 
 # Contexts used by Blender: '*' for most texts, 'Operator' for operator labels
+# and button texts
 DEFAULT = '*'
 OPERATOR = 'Operator'
 
-# Command labels: also needed under the operator context, for buttons and F3
+# Command labels and the panel's button texts: Blender looks these up in the
+# operator context (buttons, F3 search)
 LABELS = {
     "Prepare Copy": "准备副本",
     "Prepare and Export": "准备并导出",
     "Export Copy": "导出副本",
+    # Panel button texts (the dots mean a file dialog follows)
+    "Prepare and Export...": "准备并导出...",
+    "Export Copy...": "导出副本...",
 }
 
 _TEXTS = {
     **LABELS,
-    # Panel button texts (the dots mean a file dialog follows)
-    "Prepare and Export...": "准备并导出...",
-    "Export Copy...": "导出副本...",
     "Prepare a copy, then export it as FBX for FbxImporter":
         "准备副本，然后导出为供 FbxImporter 使用的 FBX",
     "Export the prepared copy as FBX for FbxImporter":
@@ -63,8 +65,9 @@ def table() -> Dict[Tuple[str, str], str]:
     -------
     dict
         ``{(context, English): Chinese}``. Every text is under the default
-        context; the command labels are also under the operator context, where
-        Blender looks them up for buttons and F3 search.
+        context; the command labels and the panel's button texts are also
+        under the operator context, where Blender looks them up for buttons
+        and F3 search.
     """
     entries = {(DEFAULT, english): chinese for english, chinese in _TEXTS.items()}
     entries.update({(OPERATOR, english): chinese for english, chinese in LABELS.items()})
