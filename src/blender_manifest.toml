@@ -1,0 +1,17 @@
+# Blender Extension Manifest (Blender 4.2+ extensions platform)
+
+schema_version = "1.0.0"
+
+id = "fs_fbx_tools"
+version = "0.1.0"
+name = "FS FBX Tools"
+tagline = "Prepare Blender models for The12thAvenger's FbxImporter"
+maintainer = "shintheweapon"
+type = "add-on"
+
+# Developed and tested with Blender 4.5
+blender_version_min = "4.5.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+
+tags = ["Import-Export"]
