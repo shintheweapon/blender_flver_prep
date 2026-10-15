@@ -20,6 +20,7 @@ LABELS = {
     "Prepare Copy": "准备副本",
     "Prepare and Export": "准备并导出",
     "Export Copy": "导出副本",
+    "Y-Up View": "Y 向上视图",
     # Panel button texts (the dots mean a file dialog follows)
     "Prepare and Export...": "准备并导出...",
     "Export Copy...": "导出副本...",
@@ -27,6 +28,14 @@ LABELS = {
 
 _TEXTS = {
     **LABELS,
+    "Turn the 3D Viewport to a fixed orthographic view of the Y-up copies":
+        "把 3D 视图转到 Y 向上副本的固定正交视图",
+    "Look from the -Z side towards +Z, with +Y up":
+        "从 -Z 一侧看向 +Z，+Y 向上",
+    "Look from the -X side towards +X, with +Y up":
+        "从 -X 一侧看向 +X，+Y 向上",
+    "Look from the +Y side down towards -Y, with +Z up the screen":
+        "从 +Y 一侧向下看向 -Y，屏幕上方为 +Z",
     "Prepare a copy, then export it as FBX for FbxImporter":
         "准备副本，然后导出为供 FbxImporter 使用的 FBX",
     "Export the prepared copy as FBX for FbxImporter":

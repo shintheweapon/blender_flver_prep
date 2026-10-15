@@ -1,13 +1,13 @@
-# The Prepare Copy, Prepare and Export, and Export Copy commands; the work is
-# in prepare.py and export.py
+# The Prepare Copy, Prepare and Export, Export Copy and Y-Up View commands;
+# the work is in prepare.py, export.py and view.py
 
 from typing import Optional
 
 import bpy
-from bpy.props import StringProperty
+from bpy.props import EnumProperty, StringProperty
 from bpy_extras.io_utils import ExportHelper
 
-from . import export, messages, prefs, prepare
+from . import export, messages, prefs, prepare, view
 
 
 def _text(template: str, **fields) -> str:
@@ -175,3 +175,33 @@ class FS_FBX_TOOLS_OT_export_copy(bpy.types.Operator, ExportHelper):
             self.report({'ERROR'}, _text(messages.RUN_PREPARE_FIRST))
             return {'CANCELLED'}
         return _export(self, context, collection, self.filepath)
+
+
+class FS_FBX_TOOLS_OT_y_up_view(bpy.types.Operator):
+    """Turn the 3D Viewport to a fixed orthographic view of the Y-up copies"""
+    bl_idname = "fs_fbx_tools.y_up_view"
+    bl_label = "Y-Up View"
+    # A view change, not undoable, like Blender's own view commands
+    bl_options = {'REGISTER'}
+
+    side: EnumProperty(
+        name="Side",
+        items=(
+            ('FRONT', "Front", "Look from the -Z side towards +Z, with +Y up"),
+            ('SIDE', "Side", "Look from the -X side towards +X, with +Y up"),
+            ('TOP', "Top", "Look from the +Y side down towards -Y, with +Z up the screen"),
+        ),
+        default='FRONT',
+    )
+
+    @classmethod
+    def poll(cls, context):
+        space = context.space_data
+        return space is not None and space.type == 'VIEW_3D'
+
+    def execute(self, context):
+        region_3d = context.space_data.region_3d
+        region_3d.view_rotation = view.view_rotation(self.side)
+        region_3d.view_perspective = 'ORTHO'
+        return {'FINISHED'}
+
