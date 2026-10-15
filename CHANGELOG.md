@@ -10,6 +10,8 @@
   on the collection for this.
 - Prepare Copy shows the armature copy In Front, so its bones are drawn over the meshes.
 - The extension declares the `files` permission.
+- **Front (-Z, Y-Up)**, **Side (-X, Y-Up)** and **Top (+Y, Y-Up)** buttons in the FS FBX tab: turn the 3D Viewport
+  to a fixed orthographic view that shows the Y-up copies upright (Front looks from -Z towards +Z with +Y up).
 
 ## 0.1.0
 

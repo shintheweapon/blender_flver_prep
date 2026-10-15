@@ -13,7 +13,10 @@ COMMANDS = (operator.FS_FBX_TOOLS_OT_prepare_copy, operator.FS_FBX_TOOLS_OT_prep
             operator.FS_FBX_TOOLS_OT_export_copy, operator.FS_FBX_TOOLS_OT_y_up_view)
 # Panel buttons with their own text: (command, English, Chinese)
 BUTTONS = ((operator.FS_FBX_TOOLS_OT_prepare_export, "Prepare and Export...", "准备并导出..."),
-           (operator.FS_FBX_TOOLS_OT_export_copy, "Export Copy...", "导出副本..."))
+           (operator.FS_FBX_TOOLS_OT_export_copy, "Export Copy...", "导出副本..."),
+           (operator.FS_FBX_TOOLS_OT_y_up_view, "Front (-Z, Y-Up)", "前视图 (-Z, Y 向上)"),
+           (operator.FS_FBX_TOOLS_OT_y_up_view, "Side (-X, Y-Up)", "侧视图 (-X, Y 向上)"),
+           (operator.FS_FBX_TOOLS_OT_y_up_view, "Top (+Y, Y-Up)", "顶视图 (+Y, Y 向上)"))
 
 
 def fields(text):

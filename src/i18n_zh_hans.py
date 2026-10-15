@@ -24,6 +24,10 @@ LABELS = {
     # Panel button texts (the dots mean a file dialog follows)
     "Prepare and Export...": "准备并导出...",
     "Export Copy...": "导出副本...",
+    # Y-Up View buttons: Blender's view names (前视图, 侧, 顶视图) and "Y 向上"
+    "Front (-Z, Y-Up)": "前视图 (-Z, Y 向上)",
+    "Side (-X, Y-Up)": "侧视图 (-X, Y 向上)",
+    "Top (+Y, Y-Up)": "顶视图 (+Y, Y 向上)",
 }
 
 _TEXTS = {

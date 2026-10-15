@@ -82,6 +82,20 @@ normals and corner order, with identity object transforms. Blender's FBX exporte
 The report names the Mirror Z setting to use in FbxImporter, from the options the collection was made with. The
 selection and active object are restored after the export.
 
+## Y-Up View
+
+The copies lie on their back in Blender's usual views. Three buttons in the **FS FBX** tab turn the 3D Viewport to an
+orthographic view that shows them upright. The axis in each name is the side the viewer is on:
+
+| Button | Looks | Screen up | Screen right |
+|---|---|---|---|
+| Front (-Z, Y-Up) | from -Z towards +Z | +Y | -X |
+| Side (-X, Y-Up) | from -X towards +X | +Y | +Z |
+| Top (+Y, Y-Up) | from +Y down towards -Y | +Z | -X |
+
+Front is the same as Ctrl+Numpad 7 (Bottom) followed by a 180° roll. The views are fixed: on a copy made with Mirror Z
+off, the character faces +Z, so Front shows its back; with Mirror Z on, it shows its face.
+
 ## Limits
 
 - The scene's unit scale is taken to be 1.0 (one Blender unit = one metre).
@@ -93,7 +107,8 @@ selection and active object are restored after the export.
 The add-on's files are in `src/`:
 - `prepare.py`: the conversion (no user interface);
 - `export.py`: writes a prepared collection to FBX (no user interface);
-- `operator.py`: the Prepare Copy, Prepare and Export, and Export Copy commands;
+- `view.py`: the rotations of the Y-up views (no user interface);
+- `operator.py`: the Prepare Copy, Prepare and Export, Export Copy and Y-Up View commands;
 - `panel.py`: the sidebar panel;
 - `prefs.py`: the two options;
 - `messages.py`, `i18n_zh_hans.py`: texts and their Simplified Chinese translation;
