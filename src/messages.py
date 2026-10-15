@@ -14,6 +14,14 @@ PREPARED_MIRRORED = ("Prepared {count} meshes in collection {collection}. "
 PREPARED_PLAIN = ("Prepared {count} meshes in collection {collection}. "
                   "Tick Mirror Z in FbxImporter")
 
+# Reports of Prepare and Export, and Export Copy
+RUN_PREPARE_FIRST = "Run Prepare Copy first"
+EXPORT_FAILED = "Export failed: {error}"
+EXPORTED_MIRRORED = ("Exported {count} meshes from {collection} to {path}. "
+                     "Mirror Z already applied: leave it off in FbxImporter")
+EXPORTED_PLAIN = ("Exported {count} meshes from {collection} to {path}. "
+                  "Tick Mirror Z in FbxImporter")
+
 
 def templates() -> dict:
     """

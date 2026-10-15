@@ -12,6 +12,9 @@ from mathutils import Matrix
 SUFFIX = "_fs"
 # Custom property on the collection naming the armature it was made from
 SOURCE_KEY = "fs_fbx_source"
+# Custom properties on the collection recording the options it was made with
+MIRROR_Z_KEY = "fs_fbx_mirror_z"
+FLIP_FACES_KEY = "fs_fbx_flip_faces"
 
 
 @dataclass
@@ -128,6 +131,8 @@ def _copy_armature(armature_obj: bpy.types.Object, matrix: Matrix,
     data.pose_position = 'POSE'
     data.transform(matrix @ armature_obj.matrix_world)
     copy = bpy.data.objects.new(armature_obj.name + SUFFIX, data)
+    # Draw the bones over the meshes
+    copy.show_in_front = True
     collection.objects.link(copy)
     return copy
 
@@ -172,9 +177,9 @@ def prepare_copy(context: bpy.types.Context, armature_obj: bpy.types.Object,
     with its other modifiers applied, multiplied by the conversion matrix and
     the original's world matrix; normals follow the same matrix, so Mirror Z
     negates their Z and keeps each face's corner order. Copies have identity
-    transforms and share the originals' materials. A previous copy of the same
-    armature is replaced. The originals, the selection and the active object
-    are not changed.
+    transforms and share the originals' materials. The armature copy is shown
+    In Front. A previous copy of the same armature is replaced. The originals,
+    the selection and the active object are not changed.
 
     Parameters
     ----------
@@ -201,6 +206,8 @@ def prepare_copy(context: bpy.types.Context, armature_obj: bpy.types.Object,
         context.view_layer.update()
         depsgraph = context.evaluated_depsgraph_get()
         collection = _new_collection(context.scene, armature_obj)
+        collection[MIRROR_Z_KEY] = mirror_z
+        collection[FLIP_FACES_KEY] = flip_faces
         armature_copy = _copy_armature(armature_obj, matrix, collection)
         result = PreparedCopy(collection, armature_copy)
         for obj in meshes:
