@@ -1,5 +1,5 @@
-# The Prepare Copy, Prepare and Export, Export Copy and Y-Up View commands;
-# the work is in prepare.py, export.py and view.py
+# The Prepare Copy, Prepare and Export, Export Copy, Y-Up View and Remove Vertex
+# Colors commands; the work is in prepare.py, export.py, view.py and colors.py
 
 from typing import Optional
 
@@ -7,7 +7,7 @@ import bpy
 from bpy.props import EnumProperty, StringProperty
 from bpy_extras.io_utils import ExportHelper
 
-from . import export, messages, prefs, prepare, view
+from . import colors, export, messages, prefs, prepare, view
 
 
 def _text(template: str, **fields) -> str:
@@ -205,3 +205,59 @@ class FS_FBX_TOOLS_OT_y_up_view(bpy.types.Operator):
         region_3d.view_perspective = 'ORTHO'
         return {'FINISHED'}
 
+
+def target_meshes(context: bpy.types.Context, scope: str) -> list:
+    """
+    List the meshes Remove Vertex Colors works on.
+
+    Parameters
+    ----------
+    context : bpy.types.Context
+        Current Blender context.
+    scope : str
+        ``'SELECTED'`` for every selected mesh, ``'ACTIVE'`` for the active
+        object when it is a mesh.
+
+    Returns
+    -------
+    list of bpy.types.Object
+        The mesh objects, each once.
+    """
+    if scope == 'ACTIVE':
+        obj = context.active_object
+        return [obj] if obj is not None and obj.type == 'MESH' else []
+    return [obj for obj in context.selected_objects if obj.type == 'MESH']
+
+
+class FS_FBX_TOOLS_OT_remove_vertex_colors(bpy.types.Operator):
+    """Remove every Color Attribute (vertex color) from the meshes, in Object Mode"""
+    bl_idname = "fs_fbx_tools.remove_vertex_colors"
+    bl_label = "Remove Vertex Colors"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        options = prefs.get(context)
+        scope = options.color_meshes if options is not None else 'SELECTED'
+        return context.mode == 'OBJECT' and bool(target_meshes(context, scope))
+
+    def execute(self, context):
+        options = prefs.get(context)
+        scope = options.color_meshes if options is not None else 'SELECTED'
+        keep_render = options.keep_render_color if options is not None else False
+        meshes = {obj.data for obj in target_meshes(context, scope)}
+        removed = kept = changed = 0
+        for mesh in meshes:
+            names, keep = colors.remove_color_attributes(mesh, keep_render)
+            removed += len(names)
+            kept += len(keep)
+            changed += bool(names)
+        if not removed:
+            self.report({'WARNING'}, _text(messages.NO_COLORS))
+            return {'CANCELLED'}
+        if kept:
+            self.report({'INFO'}, _text(messages.REMOVED_COLORS_KEPT, count=removed,
+                                        meshes=changed, kept=kept))
+        else:
+            self.report({'INFO'}, _text(messages.REMOVED_COLORS, count=removed, meshes=changed))
+        return {'FINISHED'}

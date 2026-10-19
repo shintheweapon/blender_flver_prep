@@ -96,6 +96,17 @@ orthographic view that shows them upright. The axis in each name is the side the
 Front is the same as Ctrl+Numpad 7 (Bottom) followed by a 180° roll. The views are fixed: on a copy made with Mirror Z
 off, the character faces +Z, so Front shows its back; with Mirror Z on, it shows its face.
 
+## Remove Vertex Colors
+
+**Remove Vertex Colors**, at the bottom of the **FS FBX** tab, removes every Color Attribute (vertex color) from the
+meshes in one click, whatever its domain (point or face corner) and type (byte or float). It works in Object mode,
+and Ctrl+Z brings the colors back. Two options, remembered between sessions like Mirror Z and Flip Faces:
+
+| Option | Meaning | Default |
+|---|---|---|
+| Meshes | Selected Meshes (every selected mesh) or Active Mesh (only the active one) | Selected Meshes |
+| Keep Render Color | Keep the render color: the one marked with the camera icon in Properties > Data > Color Attributes | off |
+
 ## Limits
 
 - The scene's unit scale is taken to be 1.0 (one Blender unit = one metre).
@@ -108,9 +119,10 @@ The add-on's files are in `src/`:
 - `prepare.py`: the conversion (no user interface);
 - `export.py`: writes a prepared collection to FBX (no user interface);
 - `view.py`: the rotations of the Y-up views (no user interface);
-- `operator.py`: the Prepare Copy, Prepare and Export, Export Copy and Y-Up View commands;
+- `colors.py`: removes a mesh's color attributes (no user interface);
+- `operator.py`: the Prepare Copy, Prepare and Export, Export Copy, Y-Up View and Remove Vertex Colors commands;
 - `panel.py`: the sidebar panel;
-- `prefs.py`: the two options;
+- `prefs.py`: the options;
 - `messages.py`, `i18n_zh_hans.py`: texts and their Simplified Chinese translation;
 - `__init__.py`: registration.
 
