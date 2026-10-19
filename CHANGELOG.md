@@ -10,8 +10,11 @@
   on the collection for this.
 - Prepare Copy shows the armature copy In Front, so its bones are drawn over the meshes.
 - The extension declares the `files` permission.
-- **Front (-Z, Y-Up)**, **Side (-X, Y-Up)** and **Top (+Y, Y-Up)** buttons in the FS FBX tab: turn the 3D Viewport
-  to a fixed orthographic view that shows the Y-up copies upright (Front looks from -Z towards +Z with +Y up).
+- **Y-Up Views** in the FS FBX tab: six buttons turn the 3D Viewport to a fixed orthographic view that shows the
+  Y-up copies upright, from -Z, +Z, -X, +X, +Y and -Y. The Z views are named **Face** and **Back** after the side of the
+  character they show, from the Mirror Z the active object's `_fs` collection was made with.
+- **Side Up** (Y-Up or Z-Down) for the Left and Right views, remembered as an add-on preference.
+- **Roll Left** and **Roll Right**: turn the current view 90°, as Blender's Shift+Numpad 4 and 6 do.
 
 ## 0.1.0
 

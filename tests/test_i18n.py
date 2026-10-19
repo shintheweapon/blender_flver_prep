@@ -10,13 +10,21 @@ from src import i18n_zh_hans, messages, operator, prefs
 from test_operator import enable
 
 COMMANDS = (operator.FS_FBX_TOOLS_OT_prepare_copy, operator.FS_FBX_TOOLS_OT_prepare_export,
-            operator.FS_FBX_TOOLS_OT_export_copy, operator.FS_FBX_TOOLS_OT_y_up_view)
+            operator.FS_FBX_TOOLS_OT_export_copy, operator.FS_FBX_TOOLS_OT_y_up_view,
+            operator.FS_FBX_TOOLS_OT_roll_view)
 # Panel buttons with their own text: (command, English, Chinese)
 BUTTONS = ((operator.FS_FBX_TOOLS_OT_prepare_export, "Prepare and Export...", "准备并导出..."),
            (operator.FS_FBX_TOOLS_OT_export_copy, "Export Copy...", "导出副本..."),
-           (operator.FS_FBX_TOOLS_OT_y_up_view, "Front (-Z, Y-Up)", "前视图 (-Z, Y 向上)"),
-           (operator.FS_FBX_TOOLS_OT_y_up_view, "Side (-X, Y-Up)", "侧视图 (-X, Y 向上)"),
-           (operator.FS_FBX_TOOLS_OT_y_up_view, "Top (+Y, Y-Up)", "顶视图 (+Y, Y 向上)"))
+           (operator.FS_FBX_TOOLS_OT_y_up_view, "Face (-Z)", "正面 (-Z)"),
+           (operator.FS_FBX_TOOLS_OT_y_up_view, "Face (+Z)", "正面 (+Z)"),
+           (operator.FS_FBX_TOOLS_OT_y_up_view, "Back (-Z)", "背面 (-Z)"),
+           (operator.FS_FBX_TOOLS_OT_y_up_view, "Back (+Z)", "背面 (+Z)"),
+           (operator.FS_FBX_TOOLS_OT_y_up_view, "Left (-X)", "左视图 (-X)"),
+           (operator.FS_FBX_TOOLS_OT_y_up_view, "Right (+X)", "右视图 (+X)"),
+           (operator.FS_FBX_TOOLS_OT_y_up_view, "Top (+Y)", "顶视图 (+Y)"),
+           (operator.FS_FBX_TOOLS_OT_y_up_view, "Bottom (-Y)", "底视图 (-Y)"),
+           (operator.FS_FBX_TOOLS_OT_roll_view, "Roll Left", "左倾"),
+           (operator.FS_FBX_TOOLS_OT_roll_view, "Roll Right", "右倾"))
 
 
 def fields(text):
@@ -34,12 +42,18 @@ class TableTests(unittest.TestCase):
         texts = [english for _, english, _ in BUTTONS]
         for command in COMMANDS:
             texts += [command.bl_label, command.__doc__]
-        for name in ('mirror_z', 'flip_faces'):
+        for name in ('mirror_z', 'flip_faces', 'side_up'):
             keywords = options[name].keywords
             texts += [keywords['name'], keywords['description']]
-        # Tooltips of the Y-Up View sides
+        # Choices of Side Up, with their tooltips
+        for _, item_name, description in options['side_up'].keywords['items']:
+            texts += [item_name, description]
+        # Tooltips of the Y-Up View sides and the Roll View directions
         sides = operator.FS_FBX_TOOLS_OT_y_up_view.__annotations__['side'].keywords['items']
         texts += [description for _, _, description in sides]
+        directions = operator.FS_FBX_TOOLS_OT_roll_view.__annotations__['direction'].keywords['items']
+        texts += [description for _, _, description in directions]
+        texts.append("Y-Up Views")
         texts += list(messages.templates().values())
         missing = [t for t in texts if (i18n_zh_hans.DEFAULT, t) not in self.table]
         self.assertEqual(missing, [])
