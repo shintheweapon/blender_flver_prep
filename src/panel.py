@@ -1,4 +1,5 @@
-# Sidebar panel: the selected armature, the two options and the button
+# Sidebar panel: the selected armature, the two options, the commands and the
+# Y-up view buttons
 
 import bpy
 
@@ -38,3 +39,10 @@ class FS_FBX_TOOLS_PT_main(bpy.types.Panel):
         col.operator("fs_fbx_tools.prepare_copy", icon='DUPLICATE')
         col.operator("fs_fbx_tools.prepare_export", text="Prepare and Export...", icon='EXPORT')
         col.operator("fs_fbx_tools.export_copy", text="Export Copy...", icon='EXPORT')
+
+        # Fixed views of the Y-up copies; the axis is the side the viewer is on
+        col = layout.column(align=True)
+        col.scale_y = 1.5
+        col.operator("fs_fbx_tools.y_up_view", text="Front (-Z, Y-Up)", icon='VIEW_ORTHO').side = 'FRONT'
+        col.operator("fs_fbx_tools.y_up_view", text="Side (-X, Y-Up)", icon='VIEW_ORTHO').side = 'SIDE'
+        col.operator("fs_fbx_tools.y_up_view", text="Top (+Y, Y-Up)", icon='VIEW_ORTHO').side = 'TOP'

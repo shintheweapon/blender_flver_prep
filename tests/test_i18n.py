@@ -10,10 +10,13 @@ from src import i18n_zh_hans, messages, operator, prefs
 from test_operator import enable
 
 COMMANDS = (operator.FS_FBX_TOOLS_OT_prepare_copy, operator.FS_FBX_TOOLS_OT_prepare_export,
-            operator.FS_FBX_TOOLS_OT_export_copy)
+            operator.FS_FBX_TOOLS_OT_export_copy, operator.FS_FBX_TOOLS_OT_y_up_view)
 # Panel buttons with their own text: (command, English, Chinese)
 BUTTONS = ((operator.FS_FBX_TOOLS_OT_prepare_export, "Prepare and Export...", "准备并导出..."),
-           (operator.FS_FBX_TOOLS_OT_export_copy, "Export Copy...", "导出副本..."))
+           (operator.FS_FBX_TOOLS_OT_export_copy, "Export Copy...", "导出副本..."),
+           (operator.FS_FBX_TOOLS_OT_y_up_view, "Front (-Z, Y-Up)", "前视图 (-Z, Y 向上)"),
+           (operator.FS_FBX_TOOLS_OT_y_up_view, "Side (-X, Y-Up)", "侧视图 (-X, Y 向上)"),
+           (operator.FS_FBX_TOOLS_OT_y_up_view, "Top (+Y, Y-Up)", "顶视图 (+Y, Y 向上)"))
 
 
 def fields(text):
@@ -34,6 +37,9 @@ class TableTests(unittest.TestCase):
         for name in ('mirror_z', 'flip_faces'):
             keywords = options[name].keywords
             texts += [keywords['name'], keywords['description']]
+        # Tooltips of the Y-Up View sides
+        sides = operator.FS_FBX_TOOLS_OT_y_up_view.__annotations__['side'].keywords['items']
+        texts += [description for _, _, description in sides]
         texts += list(messages.templates().values())
         missing = [t for t in texts if (i18n_zh_hans.DEFAULT, t) not in self.table]
         self.assertEqual(missing, [])
