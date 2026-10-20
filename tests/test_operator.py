@@ -1,12 +1,15 @@
-# End-to-end tests: register the add-on and run Prepare Copy
+# End-to-end tests: register the add-on and run its commands
 
+import os
+import tempfile
 import unittest
 
 import bpy
 
 import helpers
 import src
-from src import prefs
+from read_fbx import read_meshes
+from src import prefs, prepare
 from test_prepare import Scene
 
 PACKAGE = src.__name__
@@ -87,6 +90,51 @@ class PrepareCopyOperatorTests(unittest.TestCase):
             self.assertFalse(hasattr(bpy.types, 'FS_FBX_TOOLS_PT_main'))
         finally:
             src.register()
+
+
+class ExportOperatorTests(unittest.TestCase):
+
+    def setUp(self):
+        self.scene = Scene()
+        enable(self)
+        bpy.context.view_layer.objects.active = self.scene.armature
+        folder = tempfile.TemporaryDirectory()
+        self.addCleanup(folder.cleanup)
+        self.path = os.path.join(folder.name, 'out.fbx')
+
+    def test_export_copy_refuses_before_prepare_copy(self):
+        with self.assertRaisesRegex(RuntimeError, 'Run Prepare Copy first'):
+            bpy.ops.fs_fbx_tools.export_copy(filepath=self.path)
+        self.assertFalse(os.path.exists(self.path))
+
+    def test_export_copy_writes_the_prepared_collection(self):
+        bpy.ops.fs_fbx_tools.prepare_copy()
+        self.assertEqual(bpy.ops.fs_fbx_tools.export_copy(filepath=self.path), {'FINISHED'})
+        self.assertEqual(sorted(read_meshes(self.path)), ['Body_fs', 'Hair_fs'])
+
+    def test_export_copy_from_the_copied_armature(self):
+        bpy.ops.fs_fbx_tools.prepare_copy()
+        bpy.context.view_layer.objects.active = bpy.data.objects['Armature_fs']
+        self.assertEqual(bpy.ops.fs_fbx_tools.export_copy(filepath=self.path), {'FINISHED'})
+
+    def test_prepare_and_export_uses_the_options(self):
+        prefs.get(bpy.context).mirror_z = True
+        self.assertEqual(bpy.ops.fs_fbx_tools.prepare_export(filepath=self.path), {'FINISHED'})
+        body = bpy.data.objects['Body_fs']
+        written = read_meshes(self.path)['Body_fs'].vertices
+        for a, b in zip(written, body.data.vertices):
+            self.assertAlmostEqual(a[2], b.co.z, places=5)
+        self.assertTrue(bpy.data.collections['Armature_fs'][prepare.MIRROR_Z_KEY])
+
+    def test_prepare_and_export_refuses_without_an_armature(self):
+        bpy.context.view_layer.objects.active = self.scene.body
+        with self.assertRaisesRegex(RuntimeError, 'Select an armature first'):
+            bpy.ops.fs_fbx_tools.prepare_export(filepath=self.path)
+
+    def test_export_failure_is_reported(self):
+        bpy.ops.fs_fbx_tools.prepare_copy()
+        with self.assertRaisesRegex(RuntimeError, 'Export failed'):
+            bpy.ops.fs_fbx_tools.export_copy(filepath=os.path.join(self.path, 'no', 'x.fbx'))
 
 
 if __name__ == '__main__':

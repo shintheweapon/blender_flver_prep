@@ -20,7 +20,7 @@ does not meet these rules as it is. **Prepare Copy** makes a copy that does.
 
 ## Install
 
-1. Build `dist\fs_fbx_tools-0.1.0.zip` (see [Build](#build)).
+1. Build `dist\fs_fbx_tools-1.0.0.zip` (see [Build](#build)).
 2. In Blender: **Edit > Preferences > Get Extensions**, open the menu at the top right, choose **Install from Disk**
    and pick the zip.
 
@@ -33,6 +33,9 @@ It makes the collection `<armature>_fs` holding:
 - a copy of the armature, `<armature>_fs`, with the same bone names;
 - a copy of each of its meshes, `<mesh>_fs`: the armature's children and the meshes whose Armature modifier targets
   it.
+
+The armature copy is shown In Front (Object Properties > Viewport Display > In Front), so its bones are drawn over
+the meshes.
 
 Each mesh copy holds the original:
 - in the armature's rest pose, even when the armature is posed;
@@ -58,10 +61,84 @@ Prepare Copy says which Mirror Z setting to use in FbxImporter.
 
 ### Names
 
-Blender gives every object a unique name, so the copies end in `_fs`. FbxImporter names each mesh after its object
-name, so remove `_fs` from the names before the FBX reaches FbxImporter.
+Blender gives every object a unique name, so the copies end in `_fs`, and the exported file keeps those names.
+FbxImporter names each mesh and its material after the object name, and looks for a node of that name: a mesh
+`Body_fs` gets a new node `Body_fs` instead of reusing a node `Body`. Bone names have no suffix, so weights still find
+their bones. Rename the meshes afterwards (for example in FLVER_Editor) when you need the original names.
 
-### Limits
+## Export
+
+Two more buttons in the **FS FBX** tab write the `_fs` collection to an FBX file; both open a file dialog:
+- **Prepare and Export...** runs Prepare Copy with the current options, then exports the new collection;
+- **Export Copy...** exports the `_fs` collection that already exists for the selected armature (the original or
+  its `_fs` copy). Without one it stops with "Run Prepare Copy first".
+
+The file holds the collection's armature and meshes exactly as they are in Blender: the same vertex positions,
+normals and corner order, with identity object transforms. Blender's FBX exporter is used with:
+- Forward Y, Up Z (no axis conversion);
+- Apply Transform off and Apply Scalings "FBX Units Scale" (no scaling of the vertices);
+- armatures and meshes only, no leaf bones.
+
+The report names the Mirror Z setting to use in FbxImporter, from the options the collection was made with. The
+selection and active object are restored after the export.
+
+## Y-Up View
+
+The copies lie on their back in Blender's usual views. Under **Y-Up Views** in the **FS FBX** tab, six buttons turn
+the 3D Viewport to an orthographic view that shows them upright. The axis in each name is the side the viewer is on:
+
+| Button | Looks | Screen up | Screen right |
+|---|---|---|---|
+| Face or Back (-Z) | from -Z towards +Z | +Y | -X |
+| Face or Back (+Z) | from +Z towards -Z | +Y | +X |
+| Left (-X) | from -X towards +X | +Y | +Z |
+| Right (+X) | from +X towards -X | +Y | -Z |
+| Top (+Y) | from +Y down towards -Y | +Z | -X |
+| Bottom (-Y) | from -Y up towards +Y | -Z | -X |
+
+Each opposite view is its partner turned half a turn, as in Blender's own views: (+Z) is (-Z) turned about the screen's
+up, Right is Left turned about the screen's up, and Bottom is Top turned about the screen's right. The (-Z) view is the
+same as Ctrl+Numpad 7 (Bottom) followed by a 180° roll.
+
+### Face and Back
+
+The first row names the two Z views by the side of the character they show: **Face** on the left, **Back** on the
+right. A character whose original faces -Y in Blender faces:
+- +Z in a copy made with Mirror Z off;
+- -Z in a copy made with Mirror Z on.
+
+The Mirror Z setting comes from the `_fs` collection of the active object (the original armature or its copy). When
+the active object has no `_fs` collection, the Mirror Z option in the tab is used. An original that faces +Y gets Face
+and Back swapped.
+
+### Side Up
+
+**Side Up** sets which way Left and Right are turned, and is remembered between sessions like Mirror Z:
+
+| Side Up | Left (-X): up, right | Right (+X): up, right |
+|---|---|---|
+| Y-Up | +Y, +Z | +Y, -Z |
+| Z-Down | -Z, +Y | -Z, -Y |
+
+Left with Z-Down is Left with Y-Up rolled 90° clockwise.
+
+### Roll
+
+**Anti-clockwise** and **Clockwise** turn the picture of the current view 90°, about the viewing direction. They work on
+any view and keep its perspective setting, and turn the same way as Blender's Shift+Numpad 4 and Shift+Numpad 6.
+
+## Remove Vertex Colors
+
+**Remove Vertex Colors**, at the bottom of the **FS FBX** tab, removes every Color Attribute (vertex color) from the
+meshes in one click, whatever its domain (point or face corner) and type (byte or float). It works in Object mode,
+and Ctrl+Z brings the colors back. Two options, remembered between sessions like Mirror Z and Flip Faces:
+
+| Option | Meaning | Default |
+|---|---|---|
+| Meshes | Selected Meshes (every selected mesh) or Active Mesh (only the active one) | Selected Meshes |
+| Keep Render Color | Keep the render color: the one marked with the camera icon in Properties > Data > Color Attributes | off |
+
+## Limits
 
 - The scene's unit scale is taken to be 1.0 (one Blender unit = one metre).
 - With Mirror Z, bone heads and tails are mirrored exactly; bone roll is whatever Blender keeps. FbxImporter does not
@@ -71,9 +148,12 @@ name, so remove `_fs` from the names before the FBX reaches FbxImporter.
 
 The add-on's files are in `src/`:
 - `prepare.py`: the conversion (no user interface);
-- `operator.py`: the Prepare Copy command;
+- `export.py`: writes a prepared collection to FBX (no user interface);
+- `view.py`: the rotations of the Y-up views and the roll (no user interface);
+- `colors.py`: removes a mesh's color attributes (no user interface);
+- `operator.py`: the Prepare Copy, Prepare and Export, Export Copy, Y-Up View, Roll View and Remove Vertex Colors commands;
 - `panel.py`: the sidebar panel;
-- `prefs.py`: the two options;
+- `prefs.py`: the options;
 - `messages.py`, `i18n_zh_hans.py`: texts and their Simplified Chinese translation;
 - `__init__.py`: registration.
 

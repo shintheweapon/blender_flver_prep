@@ -172,6 +172,12 @@ class PrepareCopyTests(unittest.TestCase):
         self.assertEqual(result.meshes[0].parent, result.armature)
         self.assertEqual(result.meshes[0].modifiers[0].object, result.armature)
 
+    def test_armature_copy_shown_in_front(self):
+        self.assertFalse(self.scene.armature.show_in_front)
+        result = self.scene.run()
+        self.assertTrue(result.armature.show_in_front)
+        self.assertFalse(self.scene.armature.show_in_front)
+
     def test_collection_holds_only_the_copies(self):
         result = self.scene.run()
         self.assertEqual(result.collection.name, 'Armature_fs')

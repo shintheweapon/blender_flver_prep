@@ -14,6 +14,20 @@ PREPARED_MIRRORED = ("Prepared {count} meshes in collection {collection}. "
 PREPARED_PLAIN = ("Prepared {count} meshes in collection {collection}. "
                   "Tick Mirror Z in FbxImporter")
 
+# Reports of Prepare and Export, and Export Copy
+RUN_PREPARE_FIRST = "Run Prepare Copy first"
+EXPORT_FAILED = "Export failed: {error}"
+EXPORTED_MIRRORED = ("Exported {count} meshes from {collection} to {path}. "
+                     "Mirror Z already applied: leave it off in FbxImporter")
+EXPORTED_PLAIN = ("Exported {count} meshes from {collection} to {path}. "
+                  "Tick Mirror Z in FbxImporter")
+
+# Reports of Remove Vertex Colors
+REMOVED_COLORS = "Removed {count} color attributes from {meshes} meshes"
+REMOVED_COLORS_KEPT = ("Removed {count} color attributes from {meshes} meshes. "
+                       "Kept the render color on {kept} meshes")
+NO_COLORS = "No color attributes to remove"
+
 
 def templates() -> dict:
     """
