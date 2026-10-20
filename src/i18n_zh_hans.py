@@ -28,6 +28,7 @@ LABELS = {
     "Front (-Z, Y-Up)": "前视图 (-Z, Y 向上)",
     "Side (-X, Y-Up)": "侧视图 (-X, Y 向上)",
     "Top (+Y, Y-Up)": "顶视图 (+Y, Y 向上)",
+    "Remove Vertex Colors": "移除顶点色",
 }
 
 _TEXTS = {
@@ -65,6 +66,21 @@ _TEXTS = {
     messages.EXPORT_FAILED: "导出失败：{error}",
     messages.EXPORTED_MIRRORED:
         "已将集合 {collection} 中的 {count} 个网格导出到 {path}。已应用镜像 Z：在 FbxImporter 中不要勾选 Mirror Z",
+    "Remove every Color Attribute (vertex color) from the meshes, in Object Mode":
+        "在物体模式下移除网格的所有颜色属性（顶点色）",
+    "Meshes": "网格",
+    "Which meshes Remove Vertex Colors works on": "“移除顶点色”作用于哪些网格",
+    "Selected Meshes": "所选网格",
+    "Every selected mesh": "所有选中的网格",
+    "Active Mesh": "活动网格",
+    "Only the active mesh": "仅活动网格",
+    "Keep Render Color": "保留渲染颜色",
+    "Remove Vertex Colors keeps the render color, the one marked with the camera icon in the "
+    "Color Attributes list":
+        "“移除顶点色”保留渲染颜色，即颜色属性列表中带相机图标的那一项",
+    messages.REMOVED_COLORS: "已从 {meshes} 个网格移除 {count} 个颜色属性",
+    messages.REMOVED_COLORS_KEPT: "已从 {meshes} 个网格移除 {count} 个颜色属性。已在 {kept} 个网格上保留渲染颜色",
+    messages.NO_COLORS: "没有可移除的颜色属性",
     messages.EXPORTED_PLAIN:
         "已将集合 {collection} 中的 {count} 个网格导出到 {path}。请在 FbxImporter 中勾选 Mirror Z",
 }

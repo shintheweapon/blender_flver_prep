@@ -1,5 +1,5 @@
-# Sidebar panel: the selected armature, the two options, the commands and the
-# Y-up view buttons
+# Sidebar panel: the selected armature, the two options, the commands, the
+# Y-up view buttons and Remove Vertex Colors
 
 import bpy
 
@@ -46,3 +46,10 @@ class FS_FBX_TOOLS_PT_main(bpy.types.Panel):
         col.operator("fs_fbx_tools.y_up_view", text="Front (-Z, Y-Up)", icon='VIEW_ORTHO').side = 'FRONT'
         col.operator("fs_fbx_tools.y_up_view", text="Side (-X, Y-Up)", icon='VIEW_ORTHO').side = 'SIDE'
         col.operator("fs_fbx_tools.y_up_view", text="Top (+Y, Y-Up)", icon='VIEW_ORTHO').side = 'TOP'
+
+        # Remove Vertex Colors and its two options
+        col = layout.column(align=True)
+        if options is not None:
+            col.row(align=True).prop(options, "color_meshes", expand=True)
+            col.prop(options, "keep_render_color")
+        col.operator("fs_fbx_tools.remove_vertex_colors", icon='GROUP_VCOL')

@@ -12,6 +12,8 @@
 - The extension declares the `files` permission.
 - **Front (-Z, Y-Up)**, **Side (-X, Y-Up)** and **Top (+Y, Y-Up)** buttons in the FS FBX tab: turn the 3D Viewport
   to a fixed orthographic view that shows the Y-up copies upright (Front looks from -Z towards +Z with +Y up).
+- **Remove Vertex Colors** button in the FS FBX tab: removes every Color Attribute from the selected meshes or the
+  active mesh, optionally keeping the render color. Both options are add-on preferences.
 
 ## 0.1.0
 

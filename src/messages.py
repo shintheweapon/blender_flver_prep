@@ -22,6 +22,12 @@ EXPORTED_MIRRORED = ("Exported {count} meshes from {collection} to {path}. "
 EXPORTED_PLAIN = ("Exported {count} meshes from {collection} to {path}. "
                   "Tick Mirror Z in FbxImporter")
 
+# Reports of Remove Vertex Colors
+REMOVED_COLORS = "Removed {count} color attributes from {meshes} meshes"
+REMOVED_COLORS_KEPT = ("Removed {count} color attributes from {meshes} meshes. "
+                       "Kept the render color on {kept} meshes")
+NO_COLORS = "No color attributes to remove"
+
 
 def templates() -> dict:
     """

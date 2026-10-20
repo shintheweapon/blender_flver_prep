@@ -10,7 +10,8 @@ from src import i18n_zh_hans, messages, operator, prefs
 from test_operator import enable
 
 COMMANDS = (operator.FS_FBX_TOOLS_OT_prepare_copy, operator.FS_FBX_TOOLS_OT_prepare_export,
-            operator.FS_FBX_TOOLS_OT_export_copy, operator.FS_FBX_TOOLS_OT_y_up_view)
+            operator.FS_FBX_TOOLS_OT_export_copy, operator.FS_FBX_TOOLS_OT_y_up_view,
+            operator.FS_FBX_TOOLS_OT_remove_vertex_colors)
 # Panel buttons with their own text: (command, English, Chinese)
 BUTTONS = ((operator.FS_FBX_TOOLS_OT_prepare_export, "Prepare and Export...", "准备并导出..."),
            (operator.FS_FBX_TOOLS_OT_export_copy, "Export Copy...", "导出副本..."),
@@ -34,9 +35,12 @@ class TableTests(unittest.TestCase):
         texts = [english for _, english, _ in BUTTONS]
         for command in COMMANDS:
             texts += [command.bl_label, command.__doc__]
-        for name in ('mirror_z', 'flip_faces'):
+        for name in ('mirror_z', 'flip_faces', 'color_meshes', 'keep_render_color'):
             keywords = options[name].keywords
             texts += [keywords['name'], keywords['description']]
+        # Choices of Meshes, with their tooltips
+        for _, item_name, description in options['color_meshes'].keywords['items']:
+            texts += [item_name, description]
         # Tooltips of the Y-Up View sides
         sides = operator.FS_FBX_TOOLS_OT_y_up_view.__annotations__['side'].keywords['items']
         texts += [description for _, _, description in sides]
@@ -98,6 +102,10 @@ class ChineseInterfaceTests(unittest.TestCase):
             count=2, collection="A_fs", path="p.fbx"),
             "已将集合 A_fs 中的 2 个网格导出到 p.fbx。已应用镜像 Z：在 FbxImporter 中不要勾选 Mirror Z")
         self.assertEqual(tr.pgettext_rpt(messages.RUN_PREPARE_FIRST), "请先运行“准备副本”")
+        self.assertEqual(tr.pgettext_iface("Remove Vertex Colors", "Operator"), "移除顶点色")
+        self.assertEqual(tr.pgettext_iface("Keep Render Color"), "保留渲染颜色")
+        self.assertEqual(tr.pgettext_rpt(messages.REMOVED_COLORS).format(count=3, meshes=2),
+                         "已从 2 个网格移除 3 个颜色属性")
 
 
 if __name__ == '__main__':
