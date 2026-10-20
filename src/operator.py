@@ -224,8 +224,8 @@ class FS_FBX_TOOLS_OT_roll_view(bpy.types.Operator):
     direction: EnumProperty(
         name="Direction",
         items=(
-            ('LEFT', "Roll Left", "Turn the picture 90 degrees anticlockwise"),
-            ('RIGHT', "Roll Right", "Turn the picture 90 degrees clockwise"),
+            ('LEFT', "Anti-clockwise", "Turn the picture 90 degrees anti-clockwise"),
+            ('RIGHT', "Clockwise", "Turn the picture 90 degrees clockwise"),
         ),
         default='RIGHT',
     )

@@ -27,8 +27,8 @@ LABELS = {
     "Remove Vertex Colors": "移除顶点色",
     "Roll View": "滚动视图",
     # Y-Up View buttons: Blender's view names (后, 左, 右, 顶, 底 with 视图),
-    # 正面 and 背面 for the character's face and back, and Blender's 左倾 and
-    # 右倾 for the rolls
+    # 正面 and 背面 for the character's face and back, and Blender's 逆时针
+    # and 顺时针 for the rolls
     "Face (-Z)": "正面 (-Z)",
     "Face (+Z)": "正面 (+Z)",
     "Back (-Z)": "背面 (-Z)",
@@ -37,8 +37,8 @@ LABELS = {
     "Right (+X)": "右视图 (+X)",
     "Top (+Y)": "顶视图 (+Y)",
     "Bottom (-Y)": "底视图 (-Y)",
-    "Roll Left": "左倾",
-    "Roll Right": "右倾",
+    "Anti-clockwise": "逆时针",
+    "Clockwise": "顺时针",
 }
 
 _TEXTS = {
@@ -59,7 +59,7 @@ _TEXTS = {
         "从 -Y 一侧向上看向 +Y，屏幕上方为 -Z",
     "Y-Up Views": "Y 向上视图",
     "Turn the 3D Viewport's picture 90 degrees": "把 3D 视图的画面旋转 90 度",
-    "Turn the picture 90 degrees anticlockwise": "把画面逆时针旋转 90 度",
+    "Turn the picture 90 degrees anti-clockwise": "把画面逆时针旋转 90 度",
     "Turn the picture 90 degrees clockwise": "把画面顺时针旋转 90 度",
     "Side Up": "侧视图朝上",
     "Which axis the Left and Right views put up the screen": "左视图和右视图中朝向屏幕上方的轴",

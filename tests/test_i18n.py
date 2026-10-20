@@ -23,8 +23,8 @@ BUTTONS = ((operator.FS_FBX_TOOLS_OT_prepare_export, "Prepare and Export...", "�
            (operator.FS_FBX_TOOLS_OT_y_up_view, "Right (+X)", "右视图 (+X)"),
            (operator.FS_FBX_TOOLS_OT_y_up_view, "Top (+Y)", "顶视图 (+Y)"),
            (operator.FS_FBX_TOOLS_OT_y_up_view, "Bottom (-Y)", "底视图 (-Y)"),
-           (operator.FS_FBX_TOOLS_OT_roll_view, "Roll Left", "左倾"),
-           (operator.FS_FBX_TOOLS_OT_roll_view, "Roll Right", "右倾"))
+           (operator.FS_FBX_TOOLS_OT_roll_view, "Anti-clockwise", "逆时针"),
+           (operator.FS_FBX_TOOLS_OT_roll_view, "Clockwise", "顺时针"))
 
 
 def fields(text):

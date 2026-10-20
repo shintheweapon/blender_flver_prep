@@ -14,7 +14,7 @@
   Y-up copies upright, from -Z, +Z, -X, +X, +Y and -Y. The Z views are named **Face** and **Back** after the side of the
   character they show, from the Mirror Z the active object's `_fs` collection was made with.
 - **Side Up** (Y-Up or Z-Down) for the Left and Right views, remembered as an add-on preference.
-- **Roll Left** and **Roll Right**: turn the current view 90°, as Blender's Shift+Numpad 4 and 6 do.
+- **Anti-clockwise** and **Clockwise** buttons: turn the current view 90°, as Blender's Shift+Numpad 4 and 6 do.
 - **Remove Vertex Colors** button in the FS FBX tab: removes every Color Attribute from the selected meshes or the
   active mesh, optionally keeping the render color. Both options are add-on preferences.
 
