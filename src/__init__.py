@@ -10,13 +10,14 @@ classes = (
     operator.FS_FBX_TOOLS_OT_prepare_export,
     operator.FS_FBX_TOOLS_OT_export_copy,
     operator.FS_FBX_TOOLS_OT_y_up_view,
+    operator.FS_FBX_TOOLS_OT_roll_view,
     operator.FS_FBX_TOOLS_OT_remove_vertex_colors,
     panel.FS_FBX_TOOLS_PT_main,
 )
 
 
 def register():
-    """Register the translations, preferences, command and sidebar panel."""
+    """Register the translations, preferences, commands and sidebar panel."""
     bpy.app.translations.register(__name__, {'zh_HANS': i18n_zh_hans.table()})
     for cls in classes:
         bpy.utils.register_class(cls)

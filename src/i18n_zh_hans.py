@@ -24,11 +24,21 @@ LABELS = {
     # Panel button texts (the dots mean a file dialog follows)
     "Prepare and Export...": "准备并导出...",
     "Export Copy...": "导出副本...",
-    # Y-Up View buttons: Blender's view names (前视图, 侧, 顶视图) and "Y 向上"
-    "Front (-Z, Y-Up)": "前视图 (-Z, Y 向上)",
-    "Side (-X, Y-Up)": "侧视图 (-X, Y 向上)",
-    "Top (+Y, Y-Up)": "顶视图 (+Y, Y 向上)",
     "Remove Vertex Colors": "移除顶点色",
+    "Roll View": "滚动视图",
+    # Y-Up View buttons: Blender's view names (后, 左, 右, 顶, 底 with 视图),
+    # 正面 and 背面 for the character's face and back, and Blender's 左倾 and
+    # 右倾 for the rolls
+    "Face (-Z)": "正面 (-Z)",
+    "Face (+Z)": "正面 (+Z)",
+    "Back (-Z)": "背面 (-Z)",
+    "Back (+Z)": "背面 (+Z)",
+    "Left (-X)": "左视图 (-X)",
+    "Right (+X)": "右视图 (+X)",
+    "Top (+Y)": "顶视图 (+Y)",
+    "Bottom (-Y)": "底视图 (-Y)",
+    "Roll Left": "左倾",
+    "Roll Right": "右倾",
 }
 
 _TEXTS = {
@@ -37,10 +47,27 @@ _TEXTS = {
         "把 3D 视图转到 Y 向上副本的固定正交视图",
     "Look from the -Z side towards +Z, with +Y up":
         "从 -Z 一侧看向 +Z，+Y 向上",
-    "Look from the -X side towards +X, with +Y up":
-        "从 -X 一侧看向 +X，+Y 向上",
+    "Look from the +Z side towards -Z, with +Y up":
+        "从 +Z 一侧看向 -Z，+Y 向上",
+    "Look from the -X side towards +X, with +Y up (Side Up: Y-Up) or -Z up (Side Up: Z-Down)":
+        "从 -X 一侧看向 +X，+Y 向上（侧视图朝上：Y 向上）或 -Z 向上（侧视图朝上：Z 向下）",
+    "Look from the +X side towards -X, with +Y up (Side Up: Y-Up) or -Z up (Side Up: Z-Down)":
+        "从 +X 一侧看向 -X，+Y 向上（侧视图朝上：Y 向上）或 -Z 向上（侧视图朝上：Z 向下）",
     "Look from the +Y side down towards -Y, with +Z up the screen":
         "从 +Y 一侧向下看向 -Y，屏幕上方为 +Z",
+    "Look from the -Y side up towards +Y, with -Z up the screen":
+        "从 -Y 一侧向上看向 +Y，屏幕上方为 -Z",
+    "Y-Up Views": "Y 向上视图",
+    "Turn the 3D Viewport's picture 90 degrees": "把 3D 视图的画面旋转 90 度",
+    "Turn the picture 90 degrees anticlockwise": "把画面逆时针旋转 90 度",
+    "Turn the picture 90 degrees clockwise": "把画面顺时针旋转 90 度",
+    "Side Up": "侧视图朝上",
+    "Which axis the Left and Right views put up the screen": "左视图和右视图中朝向屏幕上方的轴",
+    "Y-Up": "Y 向上",
+    "Z-Down": "Z 向下",
+    "Left and Right show +Y up the screen": "左视图和右视图中 +Y 朝向屏幕上方",
+    "Left and Right show -Z up the screen, so +Z points down":
+        "左视图和右视图中 -Z 朝向屏幕上方，+Z 朝下",
     "Prepare a copy, then export it as FBX for FbxImporter":
         "准备副本，然后导出为供 FbxImporter 使用的 FBX",
     "Export the prepared copy as FBX for FbxImporter":

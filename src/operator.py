@@ -1,5 +1,6 @@
-# The Prepare Copy, Prepare and Export, Export Copy, Y-Up View and Remove Vertex
-# Colors commands; the work is in prepare.py, export.py, view.py and colors.py
+# The Prepare Copy, Prepare and Export, Export Copy, Y-Up View, Roll View and
+# Remove Vertex Colors commands; the work is in prepare.py, export.py, view.py
+# and colors.py
 
 from typing import Optional
 
@@ -187,11 +188,46 @@ class FS_FBX_TOOLS_OT_y_up_view(bpy.types.Operator):
     side: EnumProperty(
         name="Side",
         items=(
-            ('FRONT', "Front", "Look from the -Z side towards +Z, with +Y up"),
-            ('SIDE', "Side", "Look from the -X side towards +X, with +Y up"),
-            ('TOP', "Top", "Look from the +Y side down towards -Y, with +Z up the screen"),
+            ('NEG_Z', "-Z", "Look from the -Z side towards +Z, with +Y up"),
+            ('POS_Z', "+Z", "Look from the +Z side towards -Z, with +Y up"),
+            ('NEG_X', "Left (-X)",
+             "Look from the -X side towards +X, with +Y up (Side Up: Y-Up) or -Z up (Side Up: Z-Down)"),
+            ('POS_X', "Right (+X)",
+             "Look from the +X side towards -X, with +Y up (Side Up: Y-Up) or -Z up (Side Up: Z-Down)"),
+            ('POS_Y', "Top (+Y)", "Look from the +Y side down towards -Y, with +Z up the screen"),
+            ('NEG_Y', "Bottom (-Y)", "Look from the -Y side up towards +Y, with -Z up the screen"),
         ),
-        default='FRONT',
+        default='NEG_Z',
+    )
+
+    @classmethod
+    def poll(cls, context):
+        space = context.space_data
+        return space is not None and space.type == 'VIEW_3D'
+
+    def execute(self, context):
+        options = prefs.get(context)
+        side_up = options.side_up if options is not None else 'Y_UP'
+        region_3d = context.space_data.region_3d
+        region_3d.view_rotation = view.view_rotation(self.side, side_up)
+        region_3d.view_perspective = 'ORTHO'
+        return {'FINISHED'}
+
+
+class FS_FBX_TOOLS_OT_roll_view(bpy.types.Operator):
+    """Turn the 3D Viewport's picture 90 degrees"""
+    bl_idname = "fs_fbx_tools.roll_view"
+    bl_label = "Roll View"
+    # A view change, not undoable, like Blender's own view commands
+    bl_options = {'REGISTER'}
+
+    direction: EnumProperty(
+        name="Direction",
+        items=(
+            ('LEFT', "Roll Left", "Turn the picture 90 degrees anticlockwise"),
+            ('RIGHT', "Roll Right", "Turn the picture 90 degrees clockwise"),
+        ),
+        default='RIGHT',
     )
 
     @classmethod
@@ -201,9 +237,31 @@ class FS_FBX_TOOLS_OT_y_up_view(bpy.types.Operator):
 
     def execute(self, context):
         region_3d = context.space_data.region_3d
-        region_3d.view_rotation = view.view_rotation(self.side)
-        region_3d.view_perspective = 'ORTHO'
+        region_3d.view_rotation = view.rolled(region_3d.view_rotation, self.direction)
         return {'FINISHED'}
+
+
+def mirrored_for(context: bpy.types.Context) -> bool:
+    """
+    Whether the copy of the active armature was made with Mirror Z.
+
+    Parameters
+    ----------
+    context : bpy.types.Context
+        Current Blender context.
+
+    Returns
+    -------
+    bool
+        The Mirror Z recorded on the ``_fs`` collection of the active object
+        (the original armature or its copy); without one, the Mirror Z option.
+    """
+    obj = context.active_object
+    collection = export.prepared_collection(obj) if obj is not None else None
+    if collection is not None:
+        return bool(collection.get(prepare.MIRROR_Z_KEY, False))
+    options = prefs.get(context)
+    return bool(options and options.mirror_z)
 
 
 def target_meshes(context: bpy.types.Context, scope: str) -> list:

@@ -84,17 +84,49 @@ selection and active object are restored after the export.
 
 ## Y-Up View
 
-The copies lie on their back in Blender's usual views. Three buttons in the **FS FBX** tab turn the 3D Viewport to an
-orthographic view that shows them upright. The axis in each name is the side the viewer is on:
+The copies lie on their back in Blender's usual views. Under **Y-Up Views** in the **FS FBX** tab, six buttons turn
+the 3D Viewport to an orthographic view that shows them upright. The axis in each name is the side the viewer is on:
 
 | Button | Looks | Screen up | Screen right |
 |---|---|---|---|
-| Front (-Z, Y-Up) | from -Z towards +Z | +Y | -X |
-| Side (-X, Y-Up) | from -X towards +X | +Y | +Z |
-| Top (+Y, Y-Up) | from +Y down towards -Y | +Z | -X |
+| Face or Back (-Z) | from -Z towards +Z | +Y | -X |
+| Face or Back (+Z) | from +Z towards -Z | +Y | +X |
+| Left (-X) | from -X towards +X | +Y | +Z |
+| Right (+X) | from +X towards -X | +Y | -Z |
+| Top (+Y) | from +Y down towards -Y | +Z | -X |
+| Bottom (-Y) | from -Y up towards +Y | -Z | -X |
 
-Front is the same as Ctrl+Numpad 7 (Bottom) followed by a 180° roll. The views are fixed: on a copy made with Mirror Z
-off, the character faces +Z, so Front shows its back; with Mirror Z on, it shows its face.
+Each opposite view is its partner turned half a turn, as in Blender's own views: (+Z) is (-Z) turned about the screen's
+up, Right is Left turned about the screen's up, and Bottom is Top turned about the screen's right. The (-Z) view is the
+same as Ctrl+Numpad 7 (Bottom) followed by a 180° roll.
+
+### Face and Back
+
+The first row names the two Z views by the side of the character they show: **Face** on the left, **Back** on the
+right. A character whose original faces -Y in Blender faces:
+- +Z in a copy made with Mirror Z off;
+- -Z in a copy made with Mirror Z on.
+
+The Mirror Z setting comes from the `_fs` collection of the active object (the original armature or its copy). When
+the active object has no `_fs` collection, the Mirror Z option in the tab is used. An original that faces +Y gets Face
+and Back swapped.
+
+### Side Up
+
+**Side Up** sets which way Left and Right are turned, and is remembered between sessions like Mirror Z:
+
+| Side Up | Left (-X): up, right | Right (+X): up, right |
+|---|---|---|
+| Y-Up | +Y, +Z | +Y, -Z |
+| Z-Down | -Z, +Y | -Z, -Y |
+
+Left with Z-Down is Left with Y-Up rolled 90° clockwise.
+
+### Roll
+
+**Roll Left** and **Roll Right** turn the picture of the current view 90° anticlockwise or clockwise, about the viewing
+direction. They work on any view and keep its perspective setting, and turn the same way as Blender's Shift+Numpad 4 and
+Shift+Numpad 6.
 
 ## Remove Vertex Colors
 
@@ -118,9 +150,9 @@ and Ctrl+Z brings the colors back. Two options, remembered between sessions like
 The add-on's files are in `src/`:
 - `prepare.py`: the conversion (no user interface);
 - `export.py`: writes a prepared collection to FBX (no user interface);
-- `view.py`: the rotations of the Y-up views (no user interface);
+- `view.py`: the rotations of the Y-up views and the roll (no user interface);
 - `colors.py`: removes a mesh's color attributes (no user interface);
-- `operator.py`: the Prepare Copy, Prepare and Export, Export Copy, Y-Up View and Remove Vertex Colors commands;
+- `operator.py`: the Prepare Copy, Prepare and Export, Export Copy, Y-Up View, Roll View and Remove Vertex Colors commands;
 - `panel.py`: the sidebar panel;
 - `prefs.py`: the options;
 - `messages.py`, `i18n_zh_hans.py`: texts and their Simplified Chinese translation;
