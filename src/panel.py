@@ -64,8 +64,8 @@ class FS_FBX_TOOLS_PT_main(bpy.types.Panel):
             row.operator("fs_fbx_tools.y_up_view", text=left_text, icon='VIEW_ORTHO').side = left_side
             row.operator("fs_fbx_tools.y_up_view", text=right_text, icon='VIEW_ORTHO').side = right_side
         row = col.row(align=True)
-        row.operator("fs_fbx_tools.roll_view", text="Roll Left", icon='LOOP_BACK').direction = 'LEFT'
-        row.operator("fs_fbx_tools.roll_view", text="Roll Right", icon='LOOP_FORWARDS').direction = 'RIGHT'
+        row.operator("fs_fbx_tools.roll_view", text="Anti-clockwise", icon='LOOP_BACK').direction = 'LEFT'
+        row.operator("fs_fbx_tools.roll_view", text="Clockwise", icon='LOOP_FORWARDS').direction = 'RIGHT'
 
         # Remove Vertex Colors and its two options
         col = layout.column(align=True)

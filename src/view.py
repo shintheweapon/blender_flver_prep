@@ -76,7 +76,7 @@ def rolled(rotation: Quaternion, direction: str) -> Quaternion:
     rotation : mathutils.Quaternion
         The view's rotation (``RegionView3D.view_rotation``).
     direction : str
-        'RIGHT' turns the picture clockwise on screen, 'LEFT' anticlockwise.
+        'RIGHT' turns the picture clockwise on screen, 'LEFT' anti-clockwise.
 
     Returns
     -------

@@ -124,9 +124,8 @@ Left with Z-Down is Left with Y-Up rolled 90° clockwise.
 
 ### Roll
 
-**Roll Left** and **Roll Right** turn the picture of the current view 90° anticlockwise or clockwise, about the viewing
-direction. They work on any view and keep its perspective setting, and turn the same way as Blender's Shift+Numpad 4 and
-Shift+Numpad 6.
+**Anti-clockwise** and **Clockwise** turn the picture of the current view 90°, about the viewing direction. They work on
+any view and keep its perspective setting, and turn the same way as Blender's Shift+Numpad 4 and Shift+Numpad 6.
 
 ## Remove Vertex Colors
 
