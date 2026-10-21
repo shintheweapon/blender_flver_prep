@@ -22,6 +22,9 @@
 - Named **FS Export Prep** (was FS FBX Tools); extension id `fs_export_prep`, sidebar tab **FS Prep**. Install it in
   place of FS FBX Tools, whose add-on preferences do not carry over.
 
+### Fixed
+- Command tooltips show in Chinese (Blender looks them up in the operator context).
+
 ## 0.1.0
 
 ### Added
