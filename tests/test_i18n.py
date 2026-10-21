@@ -95,6 +95,18 @@ class ChineseInterfaceTests(unittest.TestCase):
         (view.language, view.use_translate_interface,
          view.use_translate_tooltips, view.use_translate_reports) = self.saved
 
+    def test_command_tooltips_in_their_own_context(self):
+        # Blender looks a command's tooltip up in the command's translation
+        # context ("Operator"), not the default one
+        tr = bpy.app.translations
+        for command in COMMANDS:
+            # The registered command's RNA holds the tooltip as Blender shows it
+            rna = getattr(bpy.ops.fs_export_prep, command.bl_idname.split('.')[1]).get_rna_type()
+            self.assertTrue(rna.description)
+            with self.subTest(command=command.bl_idname):
+                self.assertNotEqual(
+                    tr.pgettext_tip(rna.description, rna.translation_context), rna.description)
+
     def test_label_tooltip_options_and_reports_in_chinese(self):
         tr = bpy.app.translations
         self.assertEqual(tr.pgettext_iface("Prepare Copy", "Operator"), "准备副本")
