@@ -1,18 +1,18 @@
-# FS FBX Tools: prepares Blender models for The12thAvenger's FbxImporter
+# FS Export Prep: prepares Blender models for The12thAvenger's FbxImporter
 
 import bpy
 
 from . import i18n_zh_hans, operator, panel, prefs
 
 classes = (
-    prefs.FS_FBX_TOOLS_preferences,
-    operator.FS_FBX_TOOLS_OT_prepare_copy,
-    operator.FS_FBX_TOOLS_OT_prepare_export,
-    operator.FS_FBX_TOOLS_OT_export_copy,
-    operator.FS_FBX_TOOLS_OT_y_up_view,
-    operator.FS_FBX_TOOLS_OT_roll_view,
-    operator.FS_FBX_TOOLS_OT_remove_vertex_colors,
-    panel.FS_FBX_TOOLS_PT_main,
+    prefs.FS_EXPORT_PREP_preferences,
+    operator.FS_EXPORT_PREP_OT_prepare_copy,
+    operator.FS_EXPORT_PREP_OT_prepare_export,
+    operator.FS_EXPORT_PREP_OT_export_copy,
+    operator.FS_EXPORT_PREP_OT_y_up_view,
+    operator.FS_EXPORT_PREP_OT_roll_view,
+    operator.FS_EXPORT_PREP_OT_remove_vertex_colors,
+    panel.FS_EXPORT_PREP_PT_main,
 )
 
 

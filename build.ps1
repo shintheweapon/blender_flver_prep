@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-    Builds the installable zip of the FS FBX Tools extension.
+    Builds the installable zip of the FS Export Prep extension.
 
 .DESCRIPTION
     Runs Blender's own extension build on the src folder, writes the zip to the

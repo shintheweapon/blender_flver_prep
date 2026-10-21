@@ -119,9 +119,9 @@ def _export(operator: bpy.types.Operator, context: bpy.types.Context,
     return {'FINISHED'}
 
 
-class FS_FBX_TOOLS_OT_prepare_copy(bpy.types.Operator):
+class FS_EXPORT_PREP_OT_prepare_copy(bpy.types.Operator):
     """Copy the active armature and its meshes into a new collection, in the axes FbxImporter reads"""
-    bl_idname = "fs_fbx_tools.prepare_copy"
+    bl_idname = "fs_export_prep.prepare_copy"
     bl_label = "Prepare Copy"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -139,9 +139,9 @@ class FS_FBX_TOOLS_OT_prepare_copy(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class FS_FBX_TOOLS_OT_prepare_export(bpy.types.Operator, ExportHelper):
+class FS_EXPORT_PREP_OT_prepare_export(bpy.types.Operator, ExportHelper):
     """Prepare a copy, then export it as FBX for FbxImporter"""
-    bl_idname = "fs_fbx_tools.prepare_export"
+    bl_idname = "fs_export_prep.prepare_export"
     bl_label = "Prepare and Export"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -158,9 +158,9 @@ class FS_FBX_TOOLS_OT_prepare_export(bpy.types.Operator, ExportHelper):
         return _export(self, context, result.collection, self.filepath)
 
 
-class FS_FBX_TOOLS_OT_export_copy(bpy.types.Operator, ExportHelper):
+class FS_EXPORT_PREP_OT_export_copy(bpy.types.Operator, ExportHelper):
     """Export the prepared copy as FBX for FbxImporter"""
-    bl_idname = "fs_fbx_tools.export_copy"
+    bl_idname = "fs_export_prep.export_copy"
     bl_label = "Export Copy"
     bl_options = {'REGISTER'}
 
@@ -178,9 +178,9 @@ class FS_FBX_TOOLS_OT_export_copy(bpy.types.Operator, ExportHelper):
         return _export(self, context, collection, self.filepath)
 
 
-class FS_FBX_TOOLS_OT_y_up_view(bpy.types.Operator):
+class FS_EXPORT_PREP_OT_y_up_view(bpy.types.Operator):
     """Turn the 3D Viewport to a fixed orthographic view of the Y-up copies"""
-    bl_idname = "fs_fbx_tools.y_up_view"
+    bl_idname = "fs_export_prep.y_up_view"
     bl_label = "Y-Up View"
     # A view change, not undoable, like Blender's own view commands
     bl_options = {'REGISTER'}
@@ -214,9 +214,9 @@ class FS_FBX_TOOLS_OT_y_up_view(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class FS_FBX_TOOLS_OT_roll_view(bpy.types.Operator):
+class FS_EXPORT_PREP_OT_roll_view(bpy.types.Operator):
     """Turn the 3D Viewport's picture 90 degrees"""
-    bl_idname = "fs_fbx_tools.roll_view"
+    bl_idname = "fs_export_prep.roll_view"
     bl_label = "Roll View"
     # A view change, not undoable, like Blender's own view commands
     bl_options = {'REGISTER'}
@@ -287,9 +287,9 @@ def target_meshes(context: bpy.types.Context, scope: str) -> list:
     return [obj for obj in context.selected_objects if obj.type == 'MESH']
 
 
-class FS_FBX_TOOLS_OT_remove_vertex_colors(bpy.types.Operator):
+class FS_EXPORT_PREP_OT_remove_vertex_colors(bpy.types.Operator):
     """Remove every Color Attribute (vertex color) from the meshes, in Object Mode"""
-    bl_idname = "fs_fbx_tools.remove_vertex_colors"
+    bl_idname = "fs_export_prep.remove_vertex_colors"
     bl_label = "Remove Vertex Colors"
     bl_options = {'REGISTER', 'UNDO'}
 
