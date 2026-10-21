@@ -77,36 +77,36 @@ class RemoveVertexColorsCommandTest(unittest.TestCase):
 
     def test_selected_meshes_are_cleaned_and_others_untouched(self):
         self.options.color_meshes = 'SELECTED'
-        self.assertEqual(bpy.ops.fs_fbx_tools.remove_vertex_colors(), {'FINISHED'})
+        self.assertEqual(bpy.ops.fs_export_prep.remove_vertex_colors(), {'FINISHED'})
         self.assertEqual(color_names(self.first), [])
         self.assertEqual(color_names(self.second), [])
         self.assertEqual(len(color_names(self.other)), 4)
 
     def test_active_mesh_only(self):
         self.options.color_meshes = 'ACTIVE'
-        bpy.ops.fs_fbx_tools.remove_vertex_colors()
+        bpy.ops.fs_export_prep.remove_vertex_colors()
         self.assertEqual(color_names(self.first), [])
         self.assertEqual(len(color_names(self.second)), 4)
 
     def test_keep_render_color_on_each_mesh(self):
         self.options.keep_render_color = True
-        bpy.ops.fs_fbx_tools.remove_vertex_colors()
+        bpy.ops.fs_export_prep.remove_vertex_colors()
         self.assertEqual(color_names(self.first), ["Corner Float"])
         self.assertEqual(color_names(self.second), ["Point Byte"])
 
     def test_nothing_to_remove_cancels(self):
-        bpy.ops.fs_fbx_tools.remove_vertex_colors()
-        self.assertEqual(bpy.ops.fs_fbx_tools.remove_vertex_colors(), {'CANCELLED'})
+        bpy.ops.fs_export_prep.remove_vertex_colors()
+        self.assertEqual(bpy.ops.fs_export_prep.remove_vertex_colors(), {'CANCELLED'})
 
     def test_unavailable_without_a_mesh_in_scope(self):
         for obj in (self.first, self.second):
             obj.select_set(False)
-        self.assertFalse(bpy.ops.fs_fbx_tools.remove_vertex_colors.poll())
+        self.assertFalse(bpy.ops.fs_export_prep.remove_vertex_colors.poll())
 
     def test_unavailable_in_edit_mode(self):
         bpy.ops.object.mode_set(mode='EDIT')
         try:
-            self.assertFalse(bpy.ops.fs_fbx_tools.remove_vertex_colors.poll())
+            self.assertFalse(bpy.ops.fs_export_prep.remove_vertex_colors.poll())
         finally:
             bpy.ops.object.mode_set(mode='OBJECT')
 
