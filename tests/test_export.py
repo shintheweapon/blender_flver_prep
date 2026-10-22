@@ -9,7 +9,7 @@ from mathutils import Vector
 
 from read_fbx import read_meshes
 from src import export, prepare
-from test_prepare import Scene, close, close_normal
+from test_prepare import NestedScene, Scene, close, close_normal
 
 
 class ExportTests(unittest.TestCase):
@@ -78,6 +78,18 @@ class ExportTests(unittest.TestCase):
         self.assertIs(export.prepared_collection(result.armature), result.collection)
         other = bpy.data.objects.new('Other', bpy.data.armatures.new('Other'))
         self.assertIsNone(export.prepared_collection(other))
+
+    def test_meshes_in_recreated_collections_are_exported(self):
+        result = NestedScene().run()
+        count = export.export_collection(bpy.context, result.collection, self.path)
+        self.assertEqual(count, 2)
+        self.assertEqual(sorted(read_meshes(self.path)), ['Body_fs', 'Shirt_fs'])
+
+    def test_prepared_collection_found_from_an_armature_in_a_sub_collection(self):
+        scene = NestedScene(armature_collection='Rig')
+        result = scene.run()
+        self.assertIs(export.prepared_collection(scene.armature), result.collection)
+        self.assertIs(export.prepared_collection(result.armature), result.collection)
 
     def test_option_tags_written(self):
         result = self.scene.run(mirror_z=True, flip_faces=False)

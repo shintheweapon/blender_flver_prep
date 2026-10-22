@@ -51,6 +51,138 @@ class Scene:
         return prepare.prepare_copy(bpy.context, self.armature, mirror_z, flip_faces)
 
 
+def move_to(obj, collection):
+    """Unlink an object from its collections and link it into ``collection``."""
+    for old in list(obj.users_collection):
+        old.objects.unlink(obj)
+    collection.objects.link(obj)
+
+
+class NestedScene:
+    """
+    Character > {Armature, Body > [Body], Clothes > [Shirt, also in Body]},
+    with colour tags on Body and Clothes.
+    """
+
+    def __init__(self, armature_collection='Character'):
+        helpers.new_scene()
+        scene = bpy.context.scene
+        self.character = bpy.data.collections.new('Character')
+        scene.collection.children.link(self.character)
+        self.body_collection = bpy.data.collections.new('Body')
+        self.body_collection.color_tag = 'COLOR_04'
+        self.clothes = bpy.data.collections.new('Clothes')
+        self.clothes.color_tag = 'COLOR_02'
+        self.character.children.link(self.body_collection)
+        self.character.children.link(self.clothes)
+        self.armature = helpers.make_armature(BONES)
+        if armature_collection == 'Character':
+            move_to(self.armature, self.character)
+        elif armature_collection == 'Rig':
+            self.rig_collection = bpy.data.collections.new('Rig')
+            self.character.children.link(self.rig_collection)
+            move_to(self.armature, self.rig_collection)
+        self.body = helpers.make_skinned_mesh('Body', self.armature, 'Root')
+        move_to(self.body, self.body_collection)
+        self.shirt = helpers.make_skinned_mesh('Shirt', self.armature, 'Child')
+        move_to(self.shirt, self.clothes)
+        self.body_collection.objects.link(self.shirt)
+        bpy.context.view_layer.objects.active = self.armature
+
+    def run(self):
+        return prepare.prepare_copy(bpy.context, self.armature, True, False)
+
+
+def tree(collection):
+    """A collection's children by name, nested: {name: (object names, children)}."""
+    return {child.name: (sorted(o.name for o in child.objects), tree(child))
+            for child in collection.children}
+
+
+class CollectionTests(unittest.TestCase):
+    """Prepare Copy recreates the originals' collections inside the copy."""
+
+    def test_tree_below_the_shared_top(self):
+        result = NestedScene().run()
+        self.assertEqual(sorted(o.name for o in result.collection.objects), ['Armature_fs'])
+        self.assertEqual(tree(result.collection), {
+            'Body_fs': (['Body_fs', 'Shirt_fs'], {}),
+            'Clothes_fs': (['Shirt_fs'], {}),
+        })
+
+    def test_order_follows_the_originals(self):
+        # Made last, but its mesh's name sorts first
+        scene = NestedScene()
+        accessories = bpy.data.collections.new('Accessories')
+        scene.character.children.link(accessories)
+        cape = helpers.make_skinned_mesh('Cape', scene.armature, 'Root')
+        move_to(cape, accessories)
+        result = scene.run()
+        self.assertEqual([c.name for c in result.collection.children],
+                         ['Body_fs', 'Clothes_fs', 'Accessories_fs'])
+
+    def test_colour_tags_and_tags_copied(self):
+        result = NestedScene().run()
+        body, clothes = (bpy.data.collections[n] for n in ('Body_fs', 'Clothes_fs'))
+        self.assertEqual((body.color_tag, clothes.color_tag), ('COLOR_04', 'COLOR_02'))
+        self.assertEqual(body[prepare.PART_OF_KEY], 'Armature')
+        self.assertIn(body, list(result.collection.children))
+
+    def test_armature_in_its_own_collection(self):
+        result = NestedScene(armature_collection='Rig').run()
+        self.assertEqual(tree(result.collection)['Rig_fs'], (['Armature_fs'], {}))
+        self.assertEqual(list(result.collection.objects), [])
+
+    def test_no_shared_top_keeps_the_full_path(self):
+        result = NestedScene(armature_collection='Scene').run()
+        self.assertEqual(sorted(o.name for o in result.collection.objects), ['Armature_fs'])
+        self.assertEqual(tree(result.collection), {'Character_fs': ([], {
+            'Body_fs': (['Body_fs', 'Shirt_fs'], {}),
+            'Clothes_fs': (['Shirt_fs'], {}),
+        })})
+
+    def test_hidden_and_excluded_originals_give_visible_copies(self):
+        scene = NestedScene()
+        scene.clothes.hide_viewport = True
+        layer = bpy.context.view_layer.layer_collection.children['Character'].children
+        layer['Body'].exclude = True
+        result = scene.run()
+        for name in ('Body_fs', 'Clothes_fs'):
+            self.assertFalse(bpy.data.collections[name].hide_viewport)
+        copies = bpy.context.view_layer.layer_collection.children[result.collection.name].children
+        self.assertFalse(copies['Body_fs'].exclude)
+        self.assertEqual(sorted(o.name for o in result.collection.all_objects),
+                         ['Armature_fs', 'Body_fs', 'Shirt_fs'])
+
+    def test_rerun_replaces_the_recreated_collections(self):
+        scene = NestedScene()
+        scene.run()
+        counts = (len(bpy.data.objects), len(bpy.data.meshes), len(bpy.data.collections))
+        result = scene.run()
+        self.assertEqual((len(bpy.data.objects), len(bpy.data.meshes),
+                          len(bpy.data.collections)), counts)
+        self.assertEqual(sorted(tree(result.collection)), ['Body_fs', 'Clothes_fs'])
+        self.assertFalse(any('.0' in c.name for c in bpy.data.collections))
+
+    def test_rerun_keeps_a_collection_put_inside_the_copy(self):
+        scene = NestedScene()
+        first = scene.run()
+        mine = bpy.data.collections.new('Mine')
+        first.collection.children.link(mine)
+        keep = bpy.data.objects.new('Keep', None)
+        mine.objects.link(keep)
+        scene.run()
+        self.assertIn(mine, list(bpy.context.scene.collection.children))
+        self.assertIn(keep, list(mine.objects))
+
+    def test_originals_unchanged(self):
+        scene = NestedScene()
+        before = tree(bpy.context.scene.collection)
+        scene.run()
+        after = tree(bpy.context.scene.collection)
+        self.assertEqual({k: v for k, v in after.items() if not k.endswith('_fs')}, before)
+
+
 class ConversionMatrixTests(unittest.TestCase):
 
     def test_axis_conversion(self):

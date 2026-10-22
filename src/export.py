@@ -40,7 +40,7 @@ def prepared_collection(armature_obj: bpy.types.Object) -> Optional[bpy.types.Co
         source = collection.get(prepare.SOURCE_KEY)
         if source is None:
             continue
-        if source == armature_obj.name or armature_obj.name in collection.objects:
+        if source == armature_obj.name or armature_obj.name in collection.all_objects:
             return collection
     return None
 
@@ -78,13 +78,13 @@ def export_collection(context: bpy.types.Context, collection: bpy.types.Collecti
     try:
         for obj in selected:
             obj.select_set(False)
-        for obj in collection.objects:
+        for obj in collection.all_objects:
             obj.select_set(True)
         bpy.ops.export_scene.fbx(filepath=filepath, **EXPORT_SETTINGS)
     finally:
-        for obj in collection.objects:
+        for obj in collection.all_objects:
             obj.select_set(False)
         for obj in selected:
             obj.select_set(True)
         view_layer.objects.active = active
-    return sum(1 for obj in collection.objects if obj.type == 'MESH')
+    return sum(1 for obj in collection.all_objects if obj.type == 'MESH')
