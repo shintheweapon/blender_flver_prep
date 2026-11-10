@@ -1,5 +1,6 @@
-# Build output
+# Build output, and this machine's Blender path for build.ps1
 dist/
+build.local.txt
 
 # Python
 __pycache__/

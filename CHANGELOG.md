@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.0 (unreleased)
+## 1.0.0
 
 ### Added
 - **Prepare and Export...** and **Export Copy...** buttons in the FS Prep tab: write the `<armature>_fs` collection to
