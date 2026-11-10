@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-    Builds the installable zip of the FS Export Prep extension.
+    Builds the installable zip of the FLVER Prep extension.
 
 .DESCRIPTION
     Runs Blender's own extension build on the src folder, writes the zip to the

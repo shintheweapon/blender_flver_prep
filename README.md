@@ -1,4 +1,4 @@
-# FS Export Prep
+# FLVER Prep
 
 A Blender add-on that prepares models for [The12thAvenger's FbxImporter](https://github.com/The12thAvenger/FbxImporter),
 which imports FBX meshes into FromSoftware FLVER files.
@@ -20,14 +20,14 @@ does not meet these rules as it is. **Prepare Copy** makes a copy that does.
 
 ## Install
 
-1. Download `fs_export_prep-1.0.0.zip` from this repository's Releases page, or build it (see [Build](#build)).
-   If FS FBX Tools, the earlier name of this add-on, is installed, uninstall it first.
+1. Download `flver_prep-1.0.0.zip` from this repository's Releases page, or build it (see [Build](#build)).
+   If FS FBX Tools or FS Export Prep, earlier names of this add-on, is installed, uninstall it first.
 2. In Blender: **Edit > Preferences > Get Extensions**, open the menu at the top right, choose **Install from Disk**
    and pick the zip.
 
 ## Prepare Copy
 
-In the 3D Viewport, open the sidebar (N) and the **FS Prep** tab. Select an armature in Object mode, set the options,
+In the 3D Viewport, open the sidebar (N) and the **FLVER Prep** tab. Select an armature in Object mode, set the options,
 then press **Prepare Copy**.
 
 It makes the collection `<armature>_fs` holding:
@@ -76,7 +76,7 @@ their bones. Rename the meshes afterwards (for example in FLVER_Editor) when you
 
 ## Export
 
-Two more buttons in the **FS Prep** tab write the `_fs` collection to an FBX file; both open a file dialog:
+Two more buttons in the **FLVER Prep** tab write the `_fs` collection to an FBX file; both open a file dialog:
 - **Prepare and Export...** runs Prepare Copy with the current options, then exports the new collection;
 - **Export Copy...** exports the `_fs` collection that already exists for the selected armature (the original or
   its `_fs` copy). Without one it stops with "Run Prepare Copy first".
@@ -92,7 +92,7 @@ selection and active object are restored after the export.
 
 ## Y-Up View
 
-The copies lie on their back in Blender's usual views. Under **Y-Up Views** in the **FS Prep** tab, six buttons turn
+The copies lie on their back in Blender's usual views. Under **Y-Up Views** in the **FLVER Prep** tab, six buttons turn
 the 3D Viewport to an orthographic view that shows them upright. The axis in each name is the side the viewer is on:
 
 | Button | Looks | Screen up | Screen right |
@@ -137,7 +137,7 @@ any view and keep its perspective setting, and turn the same way as Blender's Sh
 
 ## Remove Vertex Colors
 
-**Remove Vertex Colors**, at the bottom of the **FS Prep** tab, removes every Color Attribute (vertex color) from the
+**Remove Vertex Colors**, at the bottom of the **FLVER Prep** tab, removes every Color Attribute (vertex color) from the
 meshes in one click, whatever its domain (point or face corner) and type (byte or float). It works in Object mode,
 and Ctrl+Z brings the colors back. Two options, remembered between sessions like Mirror Z and Flip Faces:
 
@@ -179,7 +179,7 @@ The runner sets the interface language to English for the run, because the tests
 .\build.ps1
 ```
 
-It runs Blender's extension build on `src` and writes `dist\fs_export_prep-<version>.zip`, then checks the zip's
+It runs Blender's extension build on `src` and writes `dist\flver_prep-<version>.zip`, then checks the zip's
 layout. It needs the path to your blender.exe: pass it with `.\build.ps1 -Blender "<path to blender.exe>"`, or put it
 on the first line of `build.local.txt` next to `build.ps1` (git-ignored, so the path stays on your machine).
 
