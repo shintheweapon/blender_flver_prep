@@ -20,7 +20,8 @@ does not meet these rules as it is. **Prepare Copy** makes a copy that does.
 
 ## Install
 
-1. Build `dist\fs_export_prep-1.0.0.zip` (see [Build](#build)).
+1. Download `fs_export_prep-1.0.0.zip` from this repository's Releases page, or build it (see [Build](#build)).
+   If FS FBX Tools, the earlier name of this add-on, is installed, uninstall it first.
 2. In Blender: **Edit > Preferences > Get Extensions**, open the menu at the top right, choose **Install from Disk**
    and pick the zip.
 
@@ -179,7 +180,8 @@ The runner sets the interface language to English for the run, because the tests
 ```
 
 It runs Blender's extension build on `src` and writes `dist\fs_export_prep-<version>.zip`, then checks the zip's
-layout. Pass `-Blender "<path to blender.exe>"` when Blender is elsewhere.
+layout. It needs the path to your blender.exe: pass it with `.\build.ps1 -Blender "<path to blender.exe>"`, or put it
+on the first line of `build.local.txt` next to `build.ps1` (git-ignored, so the path stays on your machine).
 
 ## License
 
