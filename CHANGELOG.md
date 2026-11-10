@@ -19,6 +19,8 @@
   active mesh, optionally keeping the render color. Both options are add-on preferences.
 
 ### Changed
+- The reports and README name FbxImporter 1.11's **Transform** setting (None or Mirror Z) in place of its
+  old Mirror check box.
 - Named **FLVER Prep** (was FS FBX Tools); extension id `flver_prep`, sidebar tab **FLVER Prep**. Install it in
   place of FS FBX Tools, whose add-on preferences do not carry over.
 

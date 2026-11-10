@@ -12,8 +12,8 @@ its unit scale, or any object, parent or bone transform; it matches bones by nam
 already be:
 - Y up, with 1 unit = 1 metre;
 - in the armature's rest (bind) pose, at its final place;
-- in Blender's FBX axis conversion (Forward -Z, Up Y), where FbxImporter's **Mirror Z** then gives FLVER
-  coordinates.
+- in Blender's FBX axis conversion (Forward -Z, Up Y), where FbxImporter's **Transform: Mirror Z** then gives
+  FLVER coordinates.
 
 Blender keeps mesh data Z up and stores each object's position, rotation and scale separately, so a Blender model
 does not meet these rules as it is. **Prepare Copy** makes a copy that does.
@@ -56,16 +56,20 @@ their back: that is the orientation FbxImporter needs. Running Prepare Copy agai
 
 ### Options
 
-Both options match FbxImporter's options of the same names. Use each in one place only.
+Both options match FbxImporter's options of the same names: Mirror Z is one of its **Transform** settings, Flip Faces
+a check box. Use each in one place only.
 
 | Option | What it does | Then in FbxImporter |
 |---|---|---|
-| **Mirror Z** | Negates Z of positions and normals and keeps each face's corner order. The copy is then in FLVER coordinates. | Leave Mirror Z off |
-| (Mirror Z off) | | Tick Mirror Z |
+| **Mirror Z** | Negates Z of positions and normals and keeps each face's corner order. The copy is then in FLVER coordinates. | Set Transform to None |
+| (Mirror Z off) | | Set Transform to Mirror Z |
 | **Flip Faces** | Reverses each face's corner order; normals stay as they were. | Leave Flip Faces off |
 
 The options are off by default. Blender remembers them between sessions with its preferences. The report after
-Prepare Copy says which Mirror Z setting to use in FbxImporter.
+Prepare Copy says which Transform setting to use in FbxImporter.
+
+FbxImporter 1.10 and earlier have a Mirror check box instead: leave it off for None, tick it for Mirror Z.
+The **Blender/3ds Max** Transform setting is not for FLVER Prep's output, which is already Y up.
 
 ### Names
 
@@ -87,7 +91,7 @@ normals and corner order, with identity object transforms. Blender's FBX exporte
 - Apply Transform off and Apply Scalings "FBX Units Scale" (no scaling of the vertices);
 - armatures and meshes only, no leaf bones.
 
-The report names the Mirror Z setting to use in FbxImporter, from the options the collection was made with. The
+The report names the Transform setting to use in FbxImporter, from the options the collection was made with. The
 selection and active object are restored after the export.
 
 ## Y-Up View

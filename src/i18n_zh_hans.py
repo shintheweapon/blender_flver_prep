@@ -93,13 +93,13 @@ _TEXTS = {
     messages.NO_MESHES: "{name} 没有网格",
     messages.OBJECT_MODE: "请先切换到物体模式",
     messages.PREPARED_MIRRORED:
-        "已在集合 {collection} 中准备 {count} 个网格。已应用镜像 Z：在 FbxImporter 中不要勾选 Mirror Z",
+        "已在集合 {collection} 中准备 {count} 个网格。已应用镜像 Z：在 FbxImporter 中将 Transform 设为 None",
     messages.PREPARED_PLAIN:
-        "已在集合 {collection} 中准备 {count} 个网格。请在 FbxImporter 中勾选 Mirror Z",
+        "已在集合 {collection} 中准备 {count} 个网格。请在 FbxImporter 中将 Transform 设为 Mirror Z",
     messages.RUN_PREPARE_FIRST: "请先运行“准备副本”",
     messages.EXPORT_FAILED: "导出失败：{error}",
     messages.EXPORTED_MIRRORED:
-        "已将集合 {collection} 中的 {count} 个网格导出到 {path}。已应用镜像 Z：在 FbxImporter 中不要勾选 Mirror Z",
+        "已将集合 {collection} 中的 {count} 个网格导出到 {path}。已应用镜像 Z：在 FbxImporter 中将 Transform 设为 None",
     "Meshes": "网格",
     "Which meshes Remove Vertex Colors works on": "“移除顶点色”作用于哪些网格",
     "Selected Meshes": "所选网格",
@@ -114,7 +114,7 @@ _TEXTS = {
     messages.REMOVED_COLORS_KEPT: "已从 {meshes} 个网格移除 {count} 个颜色属性。已在 {kept} 个网格上保留渲染颜色",
     messages.NO_COLORS: "没有可移除的颜色属性",
     messages.EXPORTED_PLAIN:
-        "已将集合 {collection} 中的 {count} 个网格导出到 {path}。请在 FbxImporter 中勾选 Mirror Z",
+        "已将集合 {collection} 中的 {count} 个网格导出到 {path}。请在 FbxImporter 中将 Transform 设为 Mirror Z",
 }
 
 
