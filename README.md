@@ -37,6 +37,13 @@ It makes the collection `<armature>_fs` holding:
 The armature copy is shown In Front (Object Properties > Viewport Display > In Front), so its bones are drawn over
 the meshes.
 
+The copies keep the originals' collections. Inside `<armature>_fs`, each collection that holds the armature or one of
+its meshes is recreated as `<collection>_fs`, with the same Outliner colour tag, and each copy is linked where its
+original is. The collections that the armature and all its meshes share at the top are left out. For example,
+Character > {armature, Body > [Body], Clothes > [Shirt]} gives `<armature>_fs` > {armature copy, `Body_fs` >
+[`Body_fs`], `Clothes_fs` > [`Shirt_fs`]}. The recreated collections are always visible, even when an original is
+hidden or excluded, so that Export can include every copy.
+
 Each mesh copy holds the original:
 - in the armature's rest pose, even when the armature is posed;
 - with its other modifiers (for example Subdivision) applied;

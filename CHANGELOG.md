@@ -24,6 +24,9 @@
 
 ### Fixed
 - Command tooltips show in Chinese (Blender looks them up in the operator context).
+- Prepare Copy keeps the originals' collections: each is recreated inside the `_fs` collection as `<collection>_fs`,
+  below the collections the armature and all its meshes share. Before, every copy went straight into the `_fs`
+  collection. Export includes the copies in the recreated collections, and running Prepare Copy again removes them.
 
 ## 0.1.0
 
