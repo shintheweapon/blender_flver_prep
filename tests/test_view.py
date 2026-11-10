@@ -154,8 +154,8 @@ class ViewCommandTests(unittest.TestCase):
     def test_need_a_3d_viewport(self):
         # Background Blender has no 3D Viewport in its context
         self.assertIsNone(bpy.context.space_data)
-        self.assertFalse(bpy.ops.fs_export_prep.y_up_view.poll())
-        self.assertFalse(bpy.ops.fs_export_prep.roll_view.poll())
+        self.assertFalse(bpy.ops.flver_prep.y_up_view.poll())
+        self.assertFalse(bpy.ops.flver_prep.roll_view.poll())
 
 
 if __name__ == '__main__':

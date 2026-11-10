@@ -2,9 +2,9 @@
 
 schema_version = "1.0.0"
 
-id = "fs_export_prep"
+id = "flver_prep"
 version = "1.0.0"
-name = "FS Export Prep"
+name = "FLVER Prep"
 tagline = "Prepare Blender models for The12thAvenger's FbxImporter"
 maintainer = "shintheweapon"
 type = "add-on"

@@ -11,13 +11,13 @@ FACE_LABELS = {'NEG_Z': "Face (-Z)", 'POS_Z': "Face (+Z)"}
 BACK_LABELS = {'NEG_Z': "Back (-Z)", 'POS_Z': "Back (+Z)"}
 
 
-class FS_EXPORT_PREP_PT_main(bpy.types.Panel):
+class FLVER_PREP_PT_main(bpy.types.Panel):
     """Prepare Copy options and button in the 3D Viewport sidebar"""
-    bl_label = "FS Export Prep"
-    bl_idname = "FS_EXPORT_PREP_PT_main"
+    bl_label = "FLVER Prep"
+    bl_idname = "FLVER_PREP_PT_main"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = "FS Prep"
+    bl_category = "FLVER Prep"
 
     def draw(self, context):
         layout = self.layout
@@ -41,9 +41,9 @@ class FS_EXPORT_PREP_PT_main(bpy.types.Panel):
 
         col = layout.column(align=True)
         col.scale_y = 1.5
-        col.operator("fs_export_prep.prepare_copy", icon='DUPLICATE')
-        col.operator("fs_export_prep.prepare_export", text="Prepare and Export...", icon='EXPORT')
-        col.operator("fs_export_prep.export_copy", text="Export Copy...", icon='EXPORT')
+        col.operator("flver_prep.prepare_copy", icon='DUPLICATE')
+        col.operator("flver_prep.prepare_export", text="Prepare and Export...", icon='EXPORT')
+        col.operator("flver_prep.export_copy", text="Export Copy...", icon='EXPORT')
 
         # Fixed views of the Y-up copies; the axis is the side the viewer is on
         col = layout.column(align=True)
@@ -61,15 +61,15 @@ class FS_EXPORT_PREP_PT_main(bpy.types.Panel):
         col.scale_y = 1.5
         for left_side, left_text, right_side, right_text in rows:
             row = col.row(align=True)
-            row.operator("fs_export_prep.y_up_view", text=left_text, icon='VIEW_ORTHO').side = left_side
-            row.operator("fs_export_prep.y_up_view", text=right_text, icon='VIEW_ORTHO').side = right_side
+            row.operator("flver_prep.y_up_view", text=left_text, icon='VIEW_ORTHO').side = left_side
+            row.operator("flver_prep.y_up_view", text=right_text, icon='VIEW_ORTHO').side = right_side
         row = col.row(align=True)
-        row.operator("fs_export_prep.roll_view", text="Anti-clockwise", icon='LOOP_BACK').direction = 'LEFT'
-        row.operator("fs_export_prep.roll_view", text="Clockwise", icon='LOOP_FORWARDS').direction = 'RIGHT'
+        row.operator("flver_prep.roll_view", text="Anti-clockwise", icon='LOOP_BACK').direction = 'LEFT'
+        row.operator("flver_prep.roll_view", text="Clockwise", icon='LOOP_FORWARDS').direction = 'RIGHT'
 
         # Remove Vertex Colors and its two options
         col = layout.column(align=True)
         if options is not None:
             col.row(align=True).prop(options, "color_meshes", expand=True)
             col.prop(options, "keep_render_color")
-        col.operator("fs_export_prep.remove_vertex_colors", icon='GROUP_VCOL')
+        col.operator("flver_prep.remove_vertex_colors", icon='GROUP_VCOL')
