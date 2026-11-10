@@ -10,17 +10,17 @@ SELECT_ARMATURE = "Select an armature first"
 NO_MESHES = "{name} has no meshes"
 OBJECT_MODE = "Switch to Object Mode first"
 PREPARED_MIRRORED = ("Prepared {count} meshes in collection {collection}. "
-                     "Mirror Z already applied: leave it off in FbxImporter")
+                     "Mirror Z already applied: set Transform to None in FbxImporter")
 PREPARED_PLAIN = ("Prepared {count} meshes in collection {collection}. "
-                  "Tick Mirror Z in FbxImporter")
+                  "Set Transform to Mirror Z in FbxImporter")
 
 # Reports of Prepare and Export, and Export Copy
 RUN_PREPARE_FIRST = "Run Prepare Copy first"
 EXPORT_FAILED = "Export failed: {error}"
 EXPORTED_MIRRORED = ("Exported {count} meshes from {collection} to {path}. "
-                     "Mirror Z already applied: leave it off in FbxImporter")
+                     "Mirror Z already applied: set Transform to None in FbxImporter")
 EXPORTED_PLAIN = ("Exported {count} meshes from {collection} to {path}. "
-                  "Tick Mirror Z in FbxImporter")
+                  "Set Transform to Mirror Z in FbxImporter")
 
 # Reports of Remove Vertex Colors
 REMOVED_COLORS = "Removed {count} color attributes from {meshes} meshes"
