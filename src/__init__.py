@@ -1,18 +1,18 @@
-# FS Export Prep: prepares Blender models for The12thAvenger's FbxImporter
+# FLVER Prep: prepares Blender models for The12thAvenger's FbxImporter
 
 import bpy
 
 from . import i18n_zh_hans, operator, panel, prefs
 
 classes = (
-    prefs.FS_EXPORT_PREP_preferences,
-    operator.FS_EXPORT_PREP_OT_prepare_copy,
-    operator.FS_EXPORT_PREP_OT_prepare_export,
-    operator.FS_EXPORT_PREP_OT_export_copy,
-    operator.FS_EXPORT_PREP_OT_y_up_view,
-    operator.FS_EXPORT_PREP_OT_roll_view,
-    operator.FS_EXPORT_PREP_OT_remove_vertex_colors,
-    panel.FS_EXPORT_PREP_PT_main,
+    prefs.FLVER_PREP_preferences,
+    operator.FLVER_PREP_OT_prepare_copy,
+    operator.FLVER_PREP_OT_prepare_export,
+    operator.FLVER_PREP_OT_export_copy,
+    operator.FLVER_PREP_OT_y_up_view,
+    operator.FLVER_PREP_OT_roll_view,
+    operator.FLVER_PREP_OT_remove_vertex_colors,
+    panel.FLVER_PREP_PT_main,
 )
 
 
