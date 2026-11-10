@@ -115,7 +115,7 @@ class ChineseInterfaceTests(unittest.TestCase):
         self.assertEqual(tr.pgettext_iface("Mirror Z"), "镜像 Z")
         self.assertEqual(tr.pgettext_iface("Flip Faces"), "翻转面")
         self.assertEqual(tr.pgettext_rpt(messages.PREPARED_PLAIN).format(count=2, collection="A_fs"),
-                         "已在集合 A_fs 中准备 2 个网格。请在 FbxImporter 中勾选 Mirror Z")
+                         "已在集合 A_fs 中准备 2 个网格。请在 FbxImporter 中将 Transform 设为 Mirror Z")
         self.assertEqual(tr.pgettext_rpt(messages.NO_MESHES).format(name="A"), "A 没有网格")
         self.assertEqual(tr.pgettext_iface("Export Copy", "Operator"), "导出副本")
         # A text= on layout.operator is translated in the command's context
@@ -123,7 +123,7 @@ class ChineseInterfaceTests(unittest.TestCase):
             self.assertEqual(tr.pgettext_iface(english, command.bl_rna.translation_context), chinese)
         self.assertEqual(tr.pgettext_rpt(messages.EXPORTED_MIRRORED).format(
             count=2, collection="A_fs", path="p.fbx"),
-            "已将集合 A_fs 中的 2 个网格导出到 p.fbx。已应用镜像 Z：在 FbxImporter 中不要勾选 Mirror Z")
+            "已将集合 A_fs 中的 2 个网格导出到 p.fbx。已应用镜像 Z：在 FbxImporter 中将 Transform 设为 None")
         self.assertEqual(tr.pgettext_rpt(messages.RUN_PREPARE_FIRST), "请先运行“准备副本”")
         self.assertEqual(tr.pgettext_iface("Remove Vertex Colors", "Operator"), "移除顶点色")
         self.assertEqual(tr.pgettext_iface("Keep Render Color"), "保留渲染颜色")
