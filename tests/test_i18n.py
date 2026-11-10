@@ -9,22 +9,22 @@ import helpers
 from src import i18n_zh_hans, messages, operator, prefs
 from test_operator import enable
 
-COMMANDS = (operator.FS_FBX_TOOLS_OT_prepare_copy, operator.FS_FBX_TOOLS_OT_prepare_export,
-            operator.FS_FBX_TOOLS_OT_export_copy, operator.FS_FBX_TOOLS_OT_y_up_view,
-            operator.FS_FBX_TOOLS_OT_roll_view, operator.FS_FBX_TOOLS_OT_remove_vertex_colors)
+COMMANDS = (operator.FS_EXPORT_PREP_OT_prepare_copy, operator.FS_EXPORT_PREP_OT_prepare_export,
+            operator.FS_EXPORT_PREP_OT_export_copy, operator.FS_EXPORT_PREP_OT_y_up_view,
+            operator.FS_EXPORT_PREP_OT_roll_view, operator.FS_EXPORT_PREP_OT_remove_vertex_colors)
 # Panel buttons with their own text: (command, English, Chinese)
-BUTTONS = ((operator.FS_FBX_TOOLS_OT_prepare_export, "Prepare and Export...", "准备并导出..."),
-           (operator.FS_FBX_TOOLS_OT_export_copy, "Export Copy...", "导出副本..."),
-           (operator.FS_FBX_TOOLS_OT_y_up_view, "Face (-Z)", "正面 (-Z)"),
-           (operator.FS_FBX_TOOLS_OT_y_up_view, "Face (+Z)", "正面 (+Z)"),
-           (operator.FS_FBX_TOOLS_OT_y_up_view, "Back (-Z)", "背面 (-Z)"),
-           (operator.FS_FBX_TOOLS_OT_y_up_view, "Back (+Z)", "背面 (+Z)"),
-           (operator.FS_FBX_TOOLS_OT_y_up_view, "Left (-X)", "左视图 (-X)"),
-           (operator.FS_FBX_TOOLS_OT_y_up_view, "Right (+X)", "右视图 (+X)"),
-           (operator.FS_FBX_TOOLS_OT_y_up_view, "Top (+Y)", "顶视图 (+Y)"),
-           (operator.FS_FBX_TOOLS_OT_y_up_view, "Bottom (-Y)", "底视图 (-Y)"),
-           (operator.FS_FBX_TOOLS_OT_roll_view, "Anti-clockwise", "逆时针"),
-           (operator.FS_FBX_TOOLS_OT_roll_view, "Clockwise", "顺时针"))
+BUTTONS = ((operator.FS_EXPORT_PREP_OT_prepare_export, "Prepare and Export...", "准备并导出..."),
+           (operator.FS_EXPORT_PREP_OT_export_copy, "Export Copy...", "导出副本..."),
+           (operator.FS_EXPORT_PREP_OT_y_up_view, "Face (-Z)", "正面 (-Z)"),
+           (operator.FS_EXPORT_PREP_OT_y_up_view, "Face (+Z)", "正面 (+Z)"),
+           (operator.FS_EXPORT_PREP_OT_y_up_view, "Back (-Z)", "背面 (-Z)"),
+           (operator.FS_EXPORT_PREP_OT_y_up_view, "Back (+Z)", "背面 (+Z)"),
+           (operator.FS_EXPORT_PREP_OT_y_up_view, "Left (-X)", "左视图 (-X)"),
+           (operator.FS_EXPORT_PREP_OT_y_up_view, "Right (+X)", "右视图 (+X)"),
+           (operator.FS_EXPORT_PREP_OT_y_up_view, "Top (+Y)", "顶视图 (+Y)"),
+           (operator.FS_EXPORT_PREP_OT_y_up_view, "Bottom (-Y)", "底视图 (-Y)"),
+           (operator.FS_EXPORT_PREP_OT_roll_view, "Anti-clockwise", "逆时针"),
+           (operator.FS_EXPORT_PREP_OT_roll_view, "Clockwise", "顺时针"))
 
 
 def fields(text):
@@ -38,7 +38,7 @@ class TableTests(unittest.TestCase):
         self.table = i18n_zh_hans.table()
 
     def test_every_interface_text_has_an_entry(self):
-        options = prefs.FS_FBX_TOOLS_preferences.__annotations__
+        options = prefs.FS_EXPORT_PREP_preferences.__annotations__
         texts = [english for _, english, _ in BUTTONS]
         for command in COMMANDS:
             texts += [command.bl_label, command.__doc__]
@@ -50,9 +50,9 @@ class TableTests(unittest.TestCase):
             for _, item_name, description in options[name].keywords['items']:
                 texts += [item_name, description]
         # Tooltips of the Y-Up View sides and the Roll View directions
-        sides = operator.FS_FBX_TOOLS_OT_y_up_view.__annotations__['side'].keywords['items']
+        sides = operator.FS_EXPORT_PREP_OT_y_up_view.__annotations__['side'].keywords['items']
         texts += [description for _, _, description in sides]
-        directions = operator.FS_FBX_TOOLS_OT_roll_view.__annotations__['direction'].keywords['items']
+        directions = operator.FS_EXPORT_PREP_OT_roll_view.__annotations__['direction'].keywords['items']
         texts += [description for _, _, description in directions]
         texts.append("Y-Up Views")
         texts += list(messages.templates().values())
@@ -95,10 +95,22 @@ class ChineseInterfaceTests(unittest.TestCase):
         (view.language, view.use_translate_interface,
          view.use_translate_tooltips, view.use_translate_reports) = self.saved
 
+    def test_command_tooltips_in_their_own_context(self):
+        # Blender looks a command's tooltip up in the command's translation
+        # context ("Operator"), not the default one
+        tr = bpy.app.translations
+        for command in COMMANDS:
+            # The registered command's RNA holds the tooltip as Blender shows it
+            rna = getattr(bpy.ops.fs_export_prep, command.bl_idname.split('.')[1]).get_rna_type()
+            self.assertTrue(rna.description)
+            with self.subTest(command=command.bl_idname):
+                self.assertNotEqual(
+                    tr.pgettext_tip(rna.description, rna.translation_context), rna.description)
+
     def test_label_tooltip_options_and_reports_in_chinese(self):
         tr = bpy.app.translations
         self.assertEqual(tr.pgettext_iface("Prepare Copy", "Operator"), "准备副本")
-        self.assertEqual(tr.pgettext_tip(operator.FS_FBX_TOOLS_OT_prepare_copy.__doc__),
+        self.assertEqual(tr.pgettext_tip(operator.FS_EXPORT_PREP_OT_prepare_copy.__doc__),
                          "把当前骨架及其网格复制到新集合，并转换为 FbxImporter 读取的坐标轴")
         self.assertEqual(tr.pgettext_iface("Mirror Z"), "镜像 Z")
         self.assertEqual(tr.pgettext_iface("Flip Faces"), "翻转面")

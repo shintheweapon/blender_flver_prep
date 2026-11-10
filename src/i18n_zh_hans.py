@@ -41,10 +41,24 @@ LABELS = {
     "Clockwise": "顺时针",
 }
 
-_TEXTS = {
-    **LABELS,
+# Command tooltips: Blender looks these up in the operator context too
+TOOLTIPS = {
     "Turn the 3D Viewport to a fixed orthographic view of the Y-up copies":
         "把 3D 视图转到 Y 向上副本的固定正交视图",
+    "Turn the 3D Viewport's picture 90 degrees": "把 3D 视图的画面旋转 90 度",
+    "Prepare a copy, then export it as FBX for FbxImporter":
+        "准备副本，然后导出为供 FbxImporter 使用的 FBX",
+    "Export the prepared copy as FBX for FbxImporter":
+        "把已准备的副本导出为供 FbxImporter 使用的 FBX",
+    "Copy the active armature and its meshes into a new collection, in the axes FbxImporter reads":
+        "把当前骨架及其网格复制到新集合，并转换为 FbxImporter 读取的坐标轴",
+    "Remove every Color Attribute (vertex color) from the meshes, in Object Mode":
+        "在物体模式下移除网格的所有颜色属性（顶点色）",
+}
+
+_TEXTS = {
+    **LABELS,
+    **TOOLTIPS,
     "Look from the -Z side towards +Z, with +Y up":
         "从 -Z 一侧看向 +Z，+Y 向上",
     "Look from the +Z side towards -Z, with +Y up":
@@ -58,7 +72,6 @@ _TEXTS = {
     "Look from the -Y side up towards +Y, with -Z up the screen":
         "从 -Y 一侧向上看向 +Y，屏幕上方为 -Z",
     "Y-Up Views": "Y 向上视图",
-    "Turn the 3D Viewport's picture 90 degrees": "把 3D 视图的画面旋转 90 度",
     "Turn the picture 90 degrees anti-clockwise": "把画面逆时针旋转 90 度",
     "Turn the picture 90 degrees clockwise": "把画面顺时针旋转 90 度",
     "Side Up": "侧视图朝上",
@@ -68,12 +81,6 @@ _TEXTS = {
     "Left and Right show +Y up the screen": "左视图和右视图中 +Y 朝向屏幕上方",
     "Left and Right show -Z up the screen, so +Z points down":
         "左视图和右视图中 -Z 朝向屏幕上方，+Z 朝下",
-    "Prepare a copy, then export it as FBX for FbxImporter":
-        "准备副本，然后导出为供 FbxImporter 使用的 FBX",
-    "Export the prepared copy as FBX for FbxImporter":
-        "把已准备的副本导出为供 FbxImporter 使用的 FBX",
-    "Copy the active armature and its meshes into a new collection, in the axes FbxImporter reads":
-        "把当前骨架及其网格复制到新集合，并转换为 FbxImporter 读取的坐标轴",
     "Mirror Z": "镜像 Z",
     "Negate Z of positions and normals, as FbxImporter's Mirror Z does":
         "对位置和法向的 Z 取反，与 FbxImporter 的 Mirror Z 相同",
@@ -93,8 +100,6 @@ _TEXTS = {
     messages.EXPORT_FAILED: "导出失败：{error}",
     messages.EXPORTED_MIRRORED:
         "已将集合 {collection} 中的 {count} 个网格导出到 {path}。已应用镜像 Z：在 FbxImporter 中不要勾选 Mirror Z",
-    "Remove every Color Attribute (vertex color) from the meshes, in Object Mode":
-        "在物体模式下移除网格的所有颜色属性（顶点色）",
     "Meshes": "网格",
     "Which meshes Remove Vertex Colors works on": "“移除顶点色”作用于哪些网格",
     "Selected Meshes": "所选网格",
@@ -121,10 +126,11 @@ def table() -> Dict[Tuple[str, str], str]:
     -------
     dict
         ``{(context, English): Chinese}``. Every text is under the default
-        context; the command labels and the panel's button texts are also
-        under the operator context, where Blender looks them up for buttons
-        and F3 search.
+        context; the command labels, the panel's button texts and the command
+        tooltips are also under the operator context, where Blender looks them
+        up for buttons, F3 search and tooltips.
     """
     entries = {(DEFAULT, english): chinese for english, chinese in _TEXTS.items()}
-    entries.update({(OPERATOR, english): chinese for english, chinese in LABELS.items()})
+    entries.update({(OPERATOR, english): chinese
+                    for english, chinese in {**LABELS, **TOOLTIPS}.items()})
     return entries

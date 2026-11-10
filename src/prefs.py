@@ -8,8 +8,8 @@ import bpy
 from bpy.props import BoolProperty, EnumProperty
 
 
-class FS_FBX_TOOLS_preferences(bpy.types.AddonPreferences):
-    """Options of the FS FBX Tools add-on"""
+class FS_EXPORT_PREP_preferences(bpy.types.AddonPreferences):
+    """Options of the FS Export Prep add-on"""
     bl_idname = __package__
 
     mirror_z: BoolProperty(
@@ -55,7 +55,7 @@ class FS_FBX_TOOLS_preferences(bpy.types.AddonPreferences):
         self.layout.prop(self, "side_up")
 
 
-def get(context: bpy.types.Context) -> Optional[FS_FBX_TOOLS_preferences]:
+def get(context: bpy.types.Context) -> Optional[FS_EXPORT_PREP_preferences]:
     """
     Find the add-on's preferences.
 
@@ -66,7 +66,7 @@ def get(context: bpy.types.Context) -> Optional[FS_FBX_TOOLS_preferences]:
 
     Returns
     -------
-    FS_FBX_TOOLS_preferences or None
+    FS_EXPORT_PREP_preferences or None
         The preferences, or None when the add-on is not enabled.
     """
     addon = context.preferences.addons.get(__package__)
