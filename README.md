@@ -152,6 +152,12 @@ and Ctrl+Z brings the colors back. Two options, remembered between sessions like
 - With Mirror Z, bone heads and tails are mirrored exactly; bone roll is whatever Blender keeps. FbxImporter does not
   use bone roll.
 
+## Normal maps
+
+Elden Ring reads normal maps in the DirectX layout against a tangent frame that FbxImporter does not write by
+itself. [docs/NORMAL_MAPS.md](docs/NORMAL_MAPS.md) explains the convention, how it was established, and how to get
+matching tangents.
+
 ## Develop
 
 The add-on's files are in `src/`:

@@ -17,6 +17,8 @@
 - **Anti-clockwise** and **Clockwise** buttons: turn the current view 90°, as Blender's Shift+Numpad 4 and 6 do.
 - **Remove Vertex Colors** button in the FLVER Prep tab: removes every Color Attribute from the selected meshes or the
   active mesh, optionally keeping the render color. Both options are add-on preferences.
+- `docs/NORMAL_MAPS.md`: Elden Ring's normal-map layout and tangent convention, and how to get matching tangents
+  through FbxImporter.
 
 ### Changed
 - Named **FLVER Prep** (was FS FBX Tools); extension id `flver_prep`, sidebar tab **FLVER Prep**. Install it in
