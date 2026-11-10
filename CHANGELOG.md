@@ -19,6 +19,7 @@
   active mesh, optionally keeping the render color. Both options are add-on preferences.
 - `docs/NORMAL_MAPS.md`: Elden Ring's normal-map layout and tangent convention, and how to get matching tangents
   through FbxImporter.
+- The manifest links to the repository (`website`).
 
 ### Changed
 - The reports and README name FbxImporter 1.11's **Transform** setting (None or Mirror Z) in place of its
