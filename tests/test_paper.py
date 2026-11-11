@@ -13,6 +13,7 @@ FIGURES_DIR = os.path.join(DOCS_DIR, "figures")
 if FIGURES_DIR not in sys.path:
     sys.path.insert(0, FIGURES_DIR)
 
+import frame_survey  # noqa: E402
 import layout_results  # noqa: E402
 import tangent_geometry as mf  # noqa: E402
 from paper_figures import prefix_label  # noqa: E402
@@ -217,6 +218,45 @@ class TestLayoutTable(unittest.TestCase):
         for value in (len(maps), len(maps) - len(testable), len(testable), wins, len(testable) - wins):
             with self.subTest(value=value):
                 self.assertRegex(text, rf"\b{value:,}\b")
+
+
+class TestFrameTable(unittest.TestCase):
+    """Section IV-B's tables are the committed survey of every part model."""
+
+    def section(self):
+        text = read_paper()
+        return text[text.index("### B. Vanilla Frames"):text.index("### C. The In-Game Test")]
+
+    @staticmethod
+    def pct(held):
+        return f"{100 * held[0] / held[1]:.2f}%"
+
+    def table(self, header):
+        lines = self.section().splitlines()
+        start = next(i for i, line in enumerate(lines) if line.startswith(header))
+        rows = []
+        for line in lines[start + 2:]:
+            if not line.startswith("|"):
+                break
+            rows.append([cell.strip() for cell in line.strip().strip("|").split("|")])
+        return rows
+
+    def test_prefix_table_is_the_survey(self):
+        rows = frame_survey.summary_by_prefix(frame_survey.load())
+        expected = [[prefix_label(r["prefix"]), str(r["parts"]), f"{r['corners']:,}",
+                     f"{r['length'][0]:.3f} to {r['length'][1]:.3f}", f"{r['normal_dot_99']:.3f}",
+                     f"{r['v_cos_median']:.3f}", self.pct(r["held"]["+"]), self.pct(r["held"]["-"])] for r in rows]
+        self.assertEqual(self.table("| Prefix | Parts |"), expected)
+
+    def test_cloth_table_is_the_survey(self):
+        split = frame_survey.by_cloth(frame_survey.load())
+        got = self.table("| Meshes | Meshes checked |")
+        self.assertEqual([row[1:] for row in got],
+                         [[f"{split[k]['meshes']:,}", f"{split[k]['parts']:,}", self.pct(split[k]["held"]["+"]),
+                           self.pct(split[k]["held"]["-"])] for k in ("cloth", "other")])
+
+    def test_part_count_is_the_survey(self):
+        self.assertIn(f"{len(frame_survey.load()):,} parts with triangles", self.section())
 
 
 class TestWording(unittest.TestCase):

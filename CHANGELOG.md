@@ -33,6 +33,10 @@
 - Every test in the paper (III-C, IV-A to IV-D, the validation of ER Tangents) opens with its question, why it
   matters and how the test answers it, and ends with its result and its impact on the implementation. IV-A says what
   it cannot tell: a map with both channels inverted, and how the game reads the maps.
+- The paper's check of the vanilla tangent frame ran on every part model of the game (`docs/figures/frame_survey.py`,
+  results in `docs/figures/frame_survey.json`): Section IV-B gives a table per file-name prefix, and reports that
+  meshes with a cloth material keep `W` at -1 on mirrored islands, unlike every other mesh and unlike ER Tangents;
+  the cause and the effect in game were not tested. The guide's summary of the frame says the same.
 
 ## 1.0.0
 

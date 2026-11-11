@@ -308,8 +308,9 @@ models carry.
 **How the test answers it.** The frame a mesh implies follows from its positions and UVs alone, by (15) and (16).
 Comparing it with the stored frame at every triangle corner shows which rule the stored frame follows.
 
-Four vanilla parts were checked: one weapon and three body parts. Each was read with SoulsFormats [7]: for every mesh,
-each vertex's position, normal, first tangent $(\vec{T}, W)$ and first UV, and the triangles of the LOD0 face set.
+Every part model of the game was checked: 1,515 parts with triangles, tangents and UVs. Each was read with
+SoulsFormats [7]: for every mesh, each vertex's position, normal, first tangent $(\vec{T}, W)$ and first UV, and the
+triangles of the LOD0 face set.
 The check then runs per triangle:
 
 - (15) and (16) give $\partial\vec{p}/\partial u$ and $\partial\vec{p}/\partial v$; degenerate triangles and those with
@@ -322,34 +323,49 @@ The check then runs per triangle:
       1 when the tangent lies along +V;
     - whether $W$ equals (9).
 
-The check is the function `frame_checks` in `docs/figures/frame_checks.py`, tested with the paper's other formulas.
-Its results, per part and per UV orientation (the sign of $d$):
+The check is the function `frame_checks` in `docs/figures/frame_checks.py`, tested with the paper's other formulas;
+`docs/figures/frame_survey.py` runs it on every mesh, and its results are in `docs/figures/frame_survey.json`. Per
+file-name prefix, with (9) per UV orientation (the sign of $d$) and pooled over all corners; the other columns give the
+range, the largest value and the smallest value over the prefix's parts:
 
-| Part | Kind | Triangle vertices checked | Length of $\vec{T}$ | $\lvert\hat{T}\cdot\hat{N}\rvert$, 99th percentile | Median cosine with +V | (9) holds, $d > 0$ | (9) holds, $d < 0$ |
+| Prefix | Parts | Triangle vertices checked | Length of $\vec{T}$ | $\lvert\hat{T}\cdot\hat{N}\rvert$, largest 99th percentile | Smallest median cosine with +V | (9) holds, $d > 0$ | (9) holds, $d < 0$ |
 |---|---|---|---|---|---|---|---|
-| WP_A_1253 | weapon | 28884 | 0.988 to 1.012 | 0.014 | 0.998 | 99.98% | 100.00% |
-| BD_M_1730 | body | 118194 | 0.988 to 1.013 | 0.015 | 0.994 | 99.88% | 99.90% |
-| BD_M_2110 | body | 95169 | 0.987 to 1.012 | 0.015 | 0.993 | 99.42% | 99.95% |
-| BD_M_1010 | body | 71571 | 0.987 to 1.013 | 0.015 | 0.993 | 78.32% | 99.74% |
+| WP (weapons) | 575 | 7,303,518 | 0.987 to 1.014 | 0.032 | 0.961 | 99.45% | 99.75% |
+| BD (body) | 334 | 21,370,163 | 0.986 to 1.013 | 0.016 | 0.965 | 92.08% | 99.77% |
+| HD (head) | 217 | 7,071,393 | 0.987 to 1.014 | 0.024 | 0.943 | 91.06% | 99.67% |
+| LG (legs) | 155 | 6,719,632 | 0.987 to 1.013 | 0.024 | 0.974 | 98.61% | 99.70% |
+| AM (arms) | 127 | 2,640,579 | 0.987 to 1.013 | 0.016 | 0.970 | 99.78% | 99.85% |
+| FG | 56 | 443,421 | 0.987 to 1.013 | 0.024 | 0.974 | 99.62% | 99.75% |
+| HR | 36 | 5,812,887 | 0.987 to 1.014 | 0.016 | 0.921 | 99.40% | 99.61% |
+| FC | 15 | 1,106,208 | 0.987 to 1.013 | 0.016 | 0.994 | 99.83% | 99.84% |
 
-**Result.** On every part:
+**Result.** On every part, $W$ is exactly $+1$ or $-1$, and $\vec{T}$ has unit length to within the stored
+precision (0.986 to 1.014). $\vec{T}$ is orthogonal to $\vec{N}$ to within about 2°, and it follows
+the in-plane +V direction: the median cosine is at least 0.99 on 76% of parts, and at least 0.95 on all but
+2 (the lowest, 0.92, on HR_A_0115). Both UV orientations occur on 1,422 parts.
 
-- $W$ is exactly $+1$ or $-1$;
-- $\vec{T}$ has unit length to within the stored precision, is orthogonal to $\vec{N}$ to within about 1°, and lies
-  along the in-plane +V direction to within a few degrees;
-- both UV orientations occur.
+(9) holds on both UV orientations, except on one kind of mesh: those whose material name contains "cloth".
 
-(9) holds at nearly all vertices on three parts, on both UV orientations. On BD_M_1010 it holds on one orientation and
-at most vertices of the other; those exceptions were not investigated. On the weapon, WP_A_1253, whose UVs are mostly
-unmirrored, most vertices carry $W = -1$.
+| Meshes | Meshes checked | Parts | (9) holds, $d > 0$ | (9) holds, $d < 0$ |
+|---|---|---|---|---|
+| Material name contains "cloth" | 1,612 | 490 | 1.39% | 99.73% |
+| All other | 8,033 | 1,515 | 99.65% | 99.73% |
 
-These measurements fix the stored frame: $\vec{T}$ along +V, and $W$ such that $W(\vec{N}\times\vec{T})$ points along
-+U. Which channel the game reads along which direction follows from two other results. The integrability test (IV-A)
-pairs red with U and green with V, and the in-game test (IV-C) confirms the layout and the frame together. So green is
-read along $\vec{T}$ and red along $W(\vec{N}\times\vec{T})$, which is (7).
+On the 17 cloth meshes of four parts that were looked at, $W$ is $-1$ on every vertex, whatever the UV orientation,
+while $\vec{T}$ still follows +V, so (9) fails on their mirrored islands. In the modding community these materials are
+known to mark meshes moved by cloth simulation rather than by bones; why they keep $W = -1$ was not investigated, and
+whether the game uses $W$ on them was not tested. Outside cloth materials, 43 meshes fail (9) on more than 5% of their
+corners; they were not investigated. On the weapon WP_A_1253, whose UVs are mostly unmirrored, most vertices carry $W =
+-1$.
+
+These measurements fix the stored frame outside cloth meshes: $\vec{T}$ along +V, and $W$ such that
+$W(\vec{N}\times\vec{T})$ points along +U. Which channel the game reads along which direction follows from two other
+results. The integrability test (IV-A) pairs red with U and green with V, and the in-game test (IV-C) confirms the
+layout and the frame together. So green is read along $\vec{T}$ and red along $W(\vec{N}\times\vec{T})$, which is (7).
 
 **Impact on the implementation.** ER Tangents builds $\vec{T}$ along +V and $W$ by (19), which gives the same value as
-(9). The meshes on which (9) fails are where ER Tangents may differ from the game's own models.
+(9). On the mirrored islands of cloth meshes, ER Tangents writes $W = +1$ where the game's own models keep $-1$; the
+effect in game was not tested.
 
 ### C. The In-Game Test
 
@@ -591,8 +607,9 @@ on and without ER Tangents, W is undefined, so mirrored UV halves may also read 
 - Reconstructing z (4), normalising (7) and the height relation (5) are common real-time graphics practice. They are
   unconfirmed for Elden Ring, because its shaders have not been examined and no in-game test isolates them.
 - What blue and alpha hold was not tested; this paper follows the modding community's view that blue holds gloss.
-- The handedness of FLVER space was inferred from one model, LOD0 only, and the vanilla frame was measured on four
-  vanilla parts.
+- The handedness of FLVER space was inferred from one model, LOD0 only.
+- Cloth meshes keep $W = -1$ on mirrored islands, unlike (9) and ER Tangents; the cause and the effect in game were not
+  tested.
 - The layout test ran on the game's part normal maps only. Its correlation is moderate, and of the 40 maps on which
   it disagrees, four were viewed.
 - Only Elden Ring was checked; Dark Souls 3, Sekiro, Armored Core 6 and Nightreign were not.

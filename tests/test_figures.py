@@ -11,6 +11,7 @@ if FIGURES_DIR not in sys.path:
 
 import axes  # noqa: E402
 import frame_checks  # noqa: E402
+import frame_survey  # noqa: E402
 import integrability  # noqa: E402
 import layout_results  # noqa: E402
 import make_figures  # noqa: E402
@@ -541,6 +542,51 @@ class TestLayoutTest(unittest.TestCase):
         figure = make_figures.build_all()["paper_layout_test.svg"]
         for row in rows:
             self.assertIn(f">{paper_figures.prefix_label(row['prefix'])}<", figure)
+
+
+class TestFrameSurvey(unittest.TestCase):
+    """The survey behind the paper's Section IV-B: per mesh, per prefix, cloth meshes and exceptions."""
+
+    @staticmethod
+    def mesh(material, mirrored=False, flip_w=False):
+        uvs = [(-u, v) for u, v in EXAMPLE_UVS] if mirrored else list(EXAMPLE_UVS)
+        frames = mf.build_frame(EXAMPLE_POSITIONS, [EXAMPLE_NORMAL] * 3, uvs, [(0, 1, 2)], NO_FALLBACK)
+        vertices = [{"p": list(p), "n": list(EXAMPLE_NORMAL), "t": [list(t) + [-w if flip_w else w]], "uv": [list(uv)]}
+                    for p, uv, (t, w) in zip(EXAMPLE_POSITIONS, uvs, frames)]
+        return {"material": material, "vertices": vertices, "triangles": [0, 1, 2]}
+
+    def test_frames_in_the_game_convention_hold_everywhere(self):
+        part = frame_survey.part_survey("BD_M_0000", [self.mesh("Fabric"), self.mesh("Fabric", mirrored=True)])
+        self.assertEqual(part["corners"], 6)
+        self.assertTrue(part["w_exact"])
+        self.assertEqual(part["held"], {"+": [3, 3], "-": [3, 3]})
+
+    def test_flipped_w_fails_and_meshes_without_tangents_are_skipped(self):
+        empty = {"material": "x", "vertices": [], "triangles": []}
+        part = frame_survey.part_survey("BD_M_0000", [self.mesh("Fabric_Cloth", flip_w=True), empty])
+        self.assertEqual([m["index"] for m in part["meshes"]], [0])
+        self.assertEqual(part["held"]["+"], [0, 3])
+        self.assertIsNone(frame_survey.part_survey("BD_M_0001", [empty]))
+
+    def test_cloth_split_and_exceptions(self):
+        parts = [frame_survey.part_survey("BD_M_0000", [self.mesh("Fabric"), self.mesh("Fabric_Cloth", flip_w=True)]),
+                 frame_survey.part_survey("WP_A_0000", [self.mesh("Metal")])]
+        split = frame_survey.by_cloth(parts)
+        self.assertEqual((split["cloth"]["meshes"], split["cloth"]["parts"]), (1, 1))
+        self.assertEqual(split["cloth"]["held"]["+"], [0, 3])
+        self.assertEqual((split["other"]["meshes"], split["other"]["parts"]), (2, 2))
+        groups = frame_survey.exceptions(parts)
+        self.assertEqual([(g["material"], g["meshes"], g["failed"]) for g in groups],
+                         [("Fabric_Cloth", [("BD_M_0000", 1)], 3)])
+        rows = frame_survey.summary_by_prefix(parts)
+        self.assertEqual([(r["prefix"], r["parts"], r["corners"]) for r in rows], [("BD", 1, 6), ("WP", 1, 3)])
+
+    def test_committed_survey_has_no_paths(self):
+        for part in frame_survey.load():
+            with self.subTest(part=part["name"]):
+                self.assertNotRegex(part["name"], r"[\\/:]")
+                for mesh in part["meshes"]:
+                    self.assertNotRegex(mesh["material"], r"^[A-Za-z]:|[\\/]")
 
 
 if __name__ == "__main__":
