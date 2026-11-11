@@ -668,35 +668,35 @@ tests. shintheweapon carried out the in-game tests and the test imports, and mad
 ## References
 
 [1] soulsmods, "SoulsFormatsNEXT," GitHub repository. [Online]. Available: https://github.com/soulsmods/SoulsFormatsNEXT.
-Accessed: Nov. 11, 2026.
+Accessed: 11 Nov. 2026.
 
 [2] Autodesk, *FBX SDK 2020.2.1*, header files `fbxsdk/scene/fbxaxissystem.h` (`FbxAxisSystem`) and
 `fbxsdk/scene/geometry/fbxmesh.h` (`FbxMesh::GenerateTangentsDataForAllUVSets`). [Online]. Available:
-https://help.autodesk.com/view/FBX/2020/ENU/. Accessed: Nov. 11, 2026.
+https://help.autodesk.com/view/FBX/2020/ENU/. Accessed: 11 Nov. 2026.
 
 [3] J. F. Blinn, "Simulation of wrinkled surfaces," *ACM SIGGRAPH Comput. Graph.*, vol. 12, no. 3, pp. 286-292,
 Aug. 1978, doi: 10.1145/965139.507101.
 
 [4] Adobe, "What is the difference between the OpenGL and DirectX normal format?," Substance 3D Bakers documentation,
-May 1, 2026. [Online]. Available:
+1 May 2026. [Online]. Available:
 https://experienceleague.adobe.com/en/docs/substance-3d/bakers/common-questions/what-is-the-difference-between-the-opengl-and-directx-normal-format.
-Accessed: Nov. 11, 2026.
+Accessed: 11 Nov. 2026.
 
 [5] shintheweapon, "blender_flver_prep," GitHub repository, branch develop: `docs/figures/` (the scripts
 and results of Sections IV-A and IV-B) and `docs/paper/README.md` (how to reproduce them). [Online].
-Available: https://github.com/shintheweapon/blender_flver_prep/tree/develop. Accessed: Nov. 11, 2026.
+Available: https://github.com/shintheweapon/blender_flver_prep/tree/develop. Accessed: 11 Nov. 2026.
 
 [6] shintheweapon, "FbxImporter," fork, branch develop; and "Add an ER Tangents import option," pull request #10.
 [Online]. Available: https://github.com/shintheweapon/FbxImporter/tree/develop and
-https://github.com/The12thAvenger/FbxImporter/pull/10. Accessed: Nov. 11, 2026.
+https://github.com/The12thAvenger/FbxImporter/pull/10. Accessed: 11 Nov. 2026.
 
-[7] E. Lengyel, "Computing tangent space basis vectors for an arbitrary mesh," Terathon Software, Mar. 15, 2004.
-[Online]. Available: https://terathon.com/code/tangent.php. Accessed: Nov. 11, 2026.
+[7] E. Lengyel, "Computing tangent space basis vectors for an arbitrary mesh," Terathon Software, 15 Mar. 2004.
+[Online]. Available: https://terathon.com/code/tangent.php. Accessed: 11 Nov. 2026.
 
 [8] M. Mikkelsen, "Simulation of wrinkled surfaces revisited," M.S. thesis, Dept. Comput. Sci. (DIKU), Univ.
 Copenhagen, Copenhagen, Denmark, Mar. 2008. [Online]. Available:
-http://image.diku.dk/projects/media/morten.mikkelsen.08.pdf. Accessed: Nov. 11, 2026.
+http://image.diku.dk/projects/media/morten.mikkelsen.08.pdf. Accessed: 11 Nov. 2026.
 
 [9] M. S. Mikkelsen, "MikkTSpace," GitHub repository, 2011. [Online]. Available: https://github.com/mmikk/MikkTSpace.
 Blender's port: `intern/mikktspace` and `source/blender/blenkernel/intern/mesh_tangent.cc`, Blender 4.5, [Online].
-Available: https://github.com/blender/blender. Accessed: Nov. 11, 2026.
+Available: https://github.com/blender/blender. Accessed: 11 Nov. 2026.

@@ -110,7 +110,12 @@ class TestCitations(unittest.TestCase):
         for entry in re.split(r"\n\n+", references.strip()):
             if "[Online]" in entry:
                 with self.subTest(entry=entry[:40]):
-                    self.assertRegex(entry, r"Accessed: [A-Z][a-z]{2}\.? \d{1,2}, \d{4}\.")
+                    self.assertRegex(entry, r"Accessed: \d{1,2} [A-Z][a-z]{2}\.? \d{4}\.")
+
+    def test_dates_are_written_day_first(self):
+        # UK order, an exception to IEEE's US order, as the paper's house style
+        references = read_paper().split(REFERENCES_HEADING)[1]
+        self.assertIsNone(re.search(r"\b[A-Z][a-z]{2}\.? \d{1,2}, \d{4}\b", references))
 
 
 class TestFigures(unittest.TestCase):

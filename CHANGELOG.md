@@ -57,6 +57,7 @@
   signed axis labels, up, forward and left labels that move with the character, a colour legend and a short text for
   each step. (b) is the three static stages. Both are drawn by `docs/figures/axis_swap_figure.py`. The paper and
   its figures call the facing direction "forward", as Blender's FBX settings do.
+- The paper's references write dates day first, in UK order (for example "Accessed: 11 Nov. 2026").
 
 ## 1.0.0
 

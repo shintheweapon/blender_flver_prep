@@ -5,7 +5,8 @@ and the maths behind it: the tangent-bitangent-normal frame, handedness, tangent
 Tangents import step, and matching the map to the tangents instead. Every formula is stated in words as well.
 
 It follows the IEEE style (abstract, numbered sections and equations, tables numbered TABLE I, II and so on with
-captions above them, numbered references) as a house style; it is not
+captions above them, numbered references, with dates written day first in UK order rather than IEEE's US order)
+as a house style; it is not
 submitted anywhere. For the settings to use, see the practical guide, [`../NORMAL_MAPS.md`](../NORMAL_MAPS.md).
 
 The paper names no tool: it describes the importer and Blender's own operations in general terms. It uses standard
