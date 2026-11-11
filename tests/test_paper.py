@@ -113,6 +113,15 @@ class TestFigures(unittest.TestCase):
         numbers = [int(n) for n in re.findall(r"^\*Fig\. (\d+)\.", read_paper(), flags=re.MULTILINE)]
         self.assertEqual(numbers, list(range(1, len(numbers) + 1)))
 
+    def test_screenshots(self):
+        # The two in-game screenshots, cropped and small, each with alt text
+        shots = re.findall(r"!\[([^\]]*)\]\((images/[^)]+)\)", read_paper())
+        self.assertEqual([path for _, path in shots], ["images/ingame_layout_test.webp", "images/ingame_er_tangents.webp"])
+        for alt, path in shots:
+            with self.subTest(path=path):
+                self.assertTrue(alt.startswith("In game:"))
+                self.assertLess(os.path.getsize(os.path.join(PAPER_DIR, path)), 300 * 1024)
+
 
 class TestWorkedExample(unittest.TestCase):
     """The numbers in the paper's worked example are what tangent_geometry computes."""
@@ -175,6 +184,15 @@ class TestWording(unittest.TestCase):
                         r"(?i)\blength 1\b", r"(?i)\bUV steps\b", r"(?i)\bslopes?\b", r"(?i)\barrows?\b"):
             with self.subTest(pattern=pattern):
                 self.assertIsNone(re.search(pattern, text))
+
+    def test_blue_is_marked_untested(self):
+        # What blue holds comes from the modding community, not from this paper's tests
+        paragraphs = [p for p in re.split(r"\n\n+", read_paper().split(REFERENCES_HEADING)[0]) if "gloss" in p]
+        self.assertTrue(paragraphs)
+        for paragraph in paragraphs:
+            with self.subTest(paragraph=paragraph[:60]):
+                self.assertIn("modding community", paragraph)
+                self.assertRegex(paragraph, r"not tested|did not test")
 
     def test_british_spelling(self):
         text = read_paper()

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="680" height="320" viewBox="0 0 680 320" role="img">
 <title>The layout of a normal map</title>
-<desc>A texture with U running right and V running down from row 0 at the top. Red stores the tangent-space normal's x component (towards +U), green its y component (towards +V). Blue holds gloss and alpha other data. On a raised bump, red is high on its +U side and green on its +V side.</desc>
+<desc>A texture with U running right and V running down from row 0 at the top. Red stores the tangent-space normal's x component (towards +U), green its y component (towards +V). Blue is held to store gloss and alpha other data; this was not tested. On a raised bump, red is high on its +U side and green on its +V side.</desc>
 <style>
 .t{fill:#1f2328;font:14px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
 .h{font-weight:600}
@@ -33,7 +33,7 @@
 <text class="t h" x="340" y="128" text-anchor="start">Green: y component, towards +V</text>
 <text class="s" x="340" y="148" text-anchor="start">V runs down the image (DirectX layout)</text>
 <text class="t h" x="340" y="180" text-anchor="start">Blue: gloss. Alpha: other data</text>
-<text class="s" x="340" y="200" text-anchor="start">Neither is part of the normal</text>
+<text class="s" x="340" y="200" text-anchor="start">As held by modders; not tested here</text>
 <text class="s" x="340" y="240" text-anchor="start">On a raised bump, red is high on its +U side</text>
 <text class="s" x="340" y="258" text-anchor="start">and green is high on its +V side</text>
 </svg>

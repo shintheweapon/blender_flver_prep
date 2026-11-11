@@ -103,8 +103,10 @@ view's rotation in Blender 4.5. So Blender's 3D space is right-handed with Z up.
 ### A. Layout
 
 Elden Ring's normal maps use the DirectX layout (Fig. 1). Red holds the tangent-space normal's x component, towards +U,
-and green its y component, towards +V, with +V running down the image. Blue holds gloss and alpha other data, so
-neither belongs to the normal. With the red and green values $R$ and $G$ between 0 and 1:
+and green its y component, towards +V, with +V running down the image. Blue and alpha hold no part of the normal in
+the reading used here: it has long been held in the FromSoftware modding community that blue stores gloss and alpha
+other data. This paper did not test what blue or alpha hold. With the red and green values $R$ and $G$ between 0 and
+1:
 
 $$
 x = 2R - 1, \qquad y = 2G - 1 \tag{3}
@@ -113,11 +115,13 @@ $$
 *In words:* a channel value of one half means a component of zero; values above it give a positive component, towards
 +U (red) or +V (green), and values below it a negative one.
 
+With blue holding no part of the normal, z is not stored and is reconstructed:
+
 $$
 z = \sqrt{1 - x^2 - y^2} \tag{4}
 $$
 
-*In words:* the z component is not stored. It is reconstructed so that the normal has unit length.
+*In words:* z is chosen so that the normal has unit length.
 
 Reconstructing $z$ this way is common real-time graphics practice. It is unconfirmed for Elden Ring, because the game's
 shaders have not been examined (decompiled) and no in-game test isolates it. For a surface with height $h(u, v)$, the
@@ -232,15 +236,56 @@ pairing is the DirectX layout.
 
 ### B. Vanilla Frames
 
-On vanilla body and weapon parts, the stored tangent points along +V, and (9) holds on almost all triangles of each part
-checked, mirrored islands included. On the weapon checked, whose UVs are mostly unmirrored, most vertices carry
-$W = -1$.
+Four vanilla parts were checked: one weapon and three body parts. Each was read with SoulsFormats [7]: for every mesh,
+each vertex's position, normal, first tangent $(\vec{T}, W)$ and first UV, and the triangles of the LOD0 face set.
+The check then runs per triangle:
+
+- (15) and (16) give $\partial\vec{p}/\partial u$ and $\partial\vec{p}/\partial v$; degenerate triangles and those with
+  no area in UV space are skipped;
+- at each of the triangle's three vertices, the stored frame is compared with them:
+    - the value of $W$;
+    - the length of $\vec{T}$;
+    - $|\hat{T}\cdot\hat{N}|$, which is 0 when the tangent is orthogonal to the normal;
+    - the cosine between $\vec{T}$ and $\partial\vec{p}/\partial v$ with its component along $\vec{N}$ removed, which is
+      1 when the tangent lies along +V;
+    - whether $W$ equals (9).
+
+The check is the function `frame_checks` in `docs/figures/frame_checks.py`, tested with the paper's other formulas.
+Its results, per part and per UV orientation (the sign of $d$):
+
+| Part | Kind | Triangle vertices checked | Length of $\vec{T}$ | $\lvert\hat{T}\cdot\hat{N}\rvert$, 99th percentile | Median cosine with +V | (9) holds, $d > 0$ | (9) holds, $d < 0$ |
+|---|---|---|---|---|---|---|---|
+| WP_A_1253 | weapon | 28884 | 0.988 to 1.012 | 0.014 | 0.998 | 99.98% | 100.00% |
+| BD_M_1730 | body | 118194 | 0.988 to 1.013 | 0.015 | 0.994 | 99.88% | 99.90% |
+| BD_M_2110 | body | 95169 | 0.987 to 1.012 | 0.015 | 0.993 | 99.42% | 99.95% |
+| BD_M_1010 | body | 71571 | 0.987 to 1.013 | 0.015 | 0.993 | 78.32% | 99.74% |
+
+On every part:
+
+- $W$ is exactly $+1$ or $-1$;
+- $\vec{T}$ has unit length to within the stored precision, is orthogonal to $\vec{N}$ to within about 1°, and lies
+  along the in-plane +V direction to within a few degrees;
+- both UV orientations occur.
+
+(9) holds at nearly all vertices on three parts, on both UV orientations. On BD_M_1010 it holds on one orientation and
+at most vertices of the other; those exceptions were not investigated. On the weapon, WP_A_1253, whose UVs are mostly
+unmirrored, most vertices carry $W = -1$.
+
+These measurements fix the stored frame: $\vec{T}$ along +V, and $W$ such that $W(\vec{N}\times\vec{T})$ points along
++U. Which channel the game reads along which direction follows from two other results. The integrability test (IV-A)
+pairs red with U and green with V, and the in-game test (IV-C) confirms the layout and the frame together. So green is
+read along $\vec{T}$ and red along $W(\vec{N}\times\vec{T})$, which is (7).
 
 ### C. The In-Game Test
 
-A vanilla body part was given a test map whose rows alternate two encodings of the same raised shapes: DirectX, and
-DirectX with green inverted. In game, only the DirectX rows look raised, with their bright side towards the light. This
-confirms the layout and the frame together.
+A vanilla body part, BD_M_1730, was given a test map whose rows alternate two encodings of the same raised shapes:
+DirectX, and DirectX with green inverted. The part's albedo tints the rows, warm on the DirectX rows and cool on the
+green-inverted ones. In game (Fig. 3), with the light from above, only the DirectX rows look raised, with their bright
+side towards the light; the green-inverted rows look dented. This confirms the layout and the frame together.
+
+![In game: the cape of BD_M_1730 wearing the test map, lit from above; the warm rows look raised and the cool rows dented](images/ingame_layout_test.webp)
+
+*Fig. 3. In-game test on BD_M_1730. Warm rows: the DirectX encoding, raised. Cool rows: green inverted, dented.*
 
 ### D. Import Measurements
 
@@ -273,15 +318,15 @@ $$
 
 *In words:* without a mirror, the (x, y) components of every tangent-space normal are rotated by 90°; with Z mirrored,
 they are reflected about the line U = V. A raised dome then reads lit from the side, or raised on one diagonal and
-dented on the other (Fig. 4).
+dented on the other (Fig. 5).
 
 ![Three sheets with N up: vanilla tangents read green along +V and red along +U; tangents along +U read green along +U, with red along -V (without a mirror) or +V (with Z mirrored)](../figures/paper_tangent_directions.svg)
 
-*Fig. 3. The directions in which the game reads green and red, for vanilla tangents and for tangents along +U.*
+*Fig. 4. The directions in which the game reads green and red, for vanilla tangents and for tangents along +U.*
 
 ![Animated: the frame and the decoded tangent-space normals around a raised dome; vanilla normals point outward, without a mirror every normal rotates by 90°, with Z mirrored every normal is reflected about the U = V diagonal](../figures/paper_dome_tilts.svg)
 
-*Fig. 4. Animated: the decoded tangent-space normals around a raised dome in each case.*
+*Fig. 5. Animated: the decoded tangent-space normals around a raised dome in each case.*
 
 ## VI. ER Tangents
 
@@ -370,8 +415,12 @@ $(0, 0)$, $(0.5, 0)$, $(0, 0.25)$; normal $\vec{N} = (0, -1, 0)$ at every vertex
 - on vanilla parts, the recomputed tangents point almost the same way as the stored ones;
 - imports through it follow the game's frame on both UV halves, without a mirror and with Z mirrored;
 - unticked, the importer writes exactly what the upstream release writes;
-- in game, a ticked and an unticked plane side by side with the test map: only the ticked one looks right on both
-  halves.
+- in game, a ticked and an unticked plane side by side with the test map (Fig. 6): only the ticked one looks right on
+  both halves.
+
+![In game: two planes with the test map; left, ER Tangents ticked, both UV halves look alike; right, unticked, the halves disagree](images/ingame_er_tangents.webp)
+
+*Fig. 6. In-game check of ER Tangents. Left: ticked, both UV halves raised alike. Right: unticked, the halves disagree.*
 
 It starts ticked for Elden Ring FLVERs only, and is offered upstream as a pull request [6].
 
@@ -408,20 +457,22 @@ that every island is unmirrored, or that mirrored islands read the same way.
 
 ## VIII. Practical Use
 
-There are two ways out of Blender (Fig. 5): its FBX export with Tangent Space off, which writes no tangents, and with
+There are two ways out of Blender (Fig. 7): its FBX export with Tangent Space off, which writes no tangents, and with
 Tangent Space on, which writes tangents along +U with no W. Without ER Tangents, both give tangents along +U, since the
 importer generates them when the file has none. With it, both give a FLVER in the game's convention. With Tangent Space
 on and without ER Tangents, W is undefined, so mirrored UV halves may also read wrong; this has not been tested.
 
 ![Two routes into the importer: Blender's FBX export with Tangent Space off, with no tangents, and with Tangent Space on, with +U tangents and no W; with ER Tangents ticked, both give a FLVER in the game's frame](../figures/paper_ways_out_of_blender.svg)
 
-*Fig. 5. The ways out of Blender, and the tangents each one gives.*
+*Fig. 7. The ways out of Blender, and the tangents each one gives.*
 
 ## IX. Limitations
 
 - Reconstructing z (4), normalising (7) and the height relation (5) are common real-time graphics practice. They are
   unconfirmed for Elden Ring, because its shaders have not been examined and no in-game test isolates them.
-- The handedness of FLVER space was inferred from one model, LOD0 only.
+- What blue and alpha hold was not tested; this paper follows the modding community's view that blue holds gloss.
+- The handedness of FLVER space was inferred from one model, LOD0 only, and the vanilla frame was measured on four
+  vanilla parts.
 - Only Elden Ring was checked; Dark Souls 3, Sekiro, Armored Core 6 and Nightreign were not.
 
 ## X. Conclusion

@@ -16,7 +16,9 @@
   common convention", and Figs. 3 and 4 title those panels "Tangents along +U". The paper describes the importer and
   Blender's own operations in general terms, with its own versions of Figs. 1 and 3 to 5; the guide keeps the tool
   settings. The paper uses standard mathematical and graphics terms (vector, scalar, component, normalised,
-  tangent-space normal).
+  tangent-space normal). It states the modding community's view that blue holds gloss, untested here, shows how the
+  vanilla frame was measured, with the check as a tested function (`docs/figures/frame_checks.py`), and includes
+  screenshots of the two in-game tests.
 
 ## 1.0.0
 

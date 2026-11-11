@@ -9,6 +9,7 @@ FIGURES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 if FIGURES_DIR not in sys.path:
     sys.path.insert(0, FIGURES_DIR)
 
+import frame_checks  # noqa: E402
 import make_figures  # noqa: E402
 import route_chart  # noqa: E402
 import tangent_geometry as mf  # noqa: E402
@@ -262,6 +263,61 @@ class TestBuildFrame(unittest.TestCase):
         frames = mf.build_frame(EXAMPLE_POSITIONS, [EXAMPLE_NORMAL] * 3, [(0.0, 0.0), (0.5, 0.0), (1.0, 0.0)],
                                 [(0, 1, 2)], [(0.0, 1.0, 0.0, 1.0)] * 3)
         self.assertEqual(frames, [((0.0, 1.0, 0.0), 1)] * 3)
+
+
+class TestFrameChecks(unittest.TestCase):
+    """The check of the paper's Section IV-B, on frames built in the game's convention."""
+
+    def checks(self, uvs, tangents=None, triangles=((0, 1, 2),)):
+        normals = [EXAMPLE_NORMAL] * 3
+        if tangents is None:
+            tangents = [tuple(t) + (w,) for t, w in mf.build_frame(EXAMPLE_POSITIONS, normals, uvs, triangles,
+                                                                   NO_FALLBACK)]
+        return frame_checks.frame_checks(EXAMPLE_POSITIONS, normals, uvs, triangles, tangents)
+
+    def test_frames_in_the_game_convention_pass_on_both_uv_orientations(self):
+        for uvs in (EXAMPLE_UVS, [(-u, v) for u, v in EXAMPLE_UVS]):
+            corners = self.checks(uvs)
+            self.assertEqual(len(corners), 3)
+            for corner in corners:
+                with self.subTest(uvs=uvs):
+                    self.assertTrue(corner.w_rule)
+                    self.assertAlmostEqual(corner.v_cos, 1.0)
+                    self.assertAlmostEqual(corner.normal_dot, 0.0)
+                    self.assertAlmostEqual(corner.length, 1.0)
+        self.assertEqual({c.uv_sign for c in self.checks(EXAMPLE_UVS)}, {1})
+        self.assertEqual({c.uv_sign for c in self.checks([(-u, v) for u, v in EXAMPLE_UVS])}, {-1})
+
+    def test_flipped_w_breaks_the_rule(self):
+        corners = self.checks(EXAMPLE_UVS, [(0.0, 0.0, 1.0, 1.0)] * 3)
+        self.assertFalse(any(corner.w_rule for corner in corners))
+
+    def test_tangent_along_u_is_orthogonal_to_v(self):
+        corners = self.checks(EXAMPLE_UVS, [(1.0, 0.0, 0.0, -1.0)] * 3)
+        for corner in corners:
+            self.assertAlmostEqual(corner.v_cos, 0.0)
+
+    def test_degenerate_triangles_are_skipped(self):
+        tangents = [(0.0, 0.0, 1.0, -1.0)] * 3
+        self.assertEqual(len(self.checks(EXAMPLE_UVS, tangents)), 3)
+        self.assertEqual(self.checks(EXAMPLE_UVS, tangents, ((0, 0, 2),)), [])
+        self.assertEqual(self.checks([(0.0, 0.0), (0.5, 0.0), (1.0, 0.0)], tangents), [])
+        self.assertEqual(self.checks(EXAMPLE_UVS, NO_FALLBACK), [])
+
+    def test_summarise(self):
+        corners = self.checks(EXAMPLE_UVS) + self.checks(EXAMPLE_UVS, [(0.0, 0.0, 2.0, 1.0)] * 3)
+        summary = frame_checks.summarise(corners)
+        self.assertEqual(summary["w_values"], [-1, 1])
+        self.assertTrue(close(summary["length"], (1.0, 2.0)))
+        self.assertAlmostEqual(summary["normal_dot_99"], 0.0)
+        self.assertAlmostEqual(summary["v_cos_median"], 1.0)
+        self.assertAlmostEqual(summary["w_rule"], 0.5)
+        self.assertEqual(summary["w_rule_by_uv_sign"][1], 0.5)
+        self.assertIsNone(summary["w_rule_by_uv_sign"][-1])
+
+    def test_summarise_needs_corners(self):
+        with self.assertRaises(ValueError):
+            frame_checks.summarise([])
 
 
 class TestDecodeMatrices(unittest.TestCase):

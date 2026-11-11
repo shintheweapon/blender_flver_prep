@@ -110,6 +110,9 @@ class Labels:
         The layout figure's labels for the red and green channels.
     stores : str
         The layout figure's description of what red and green store.
+    blue_note, blue : str
+        The layout figure's line under its blue and alpha label, and its
+        description of what blue and alpha hold.
     dome_title : str
         The dome figure's accessible name.
     outcomes : tuple of str
@@ -125,7 +128,7 @@ class Labels:
     """
 
     def __init__(self, titles, note, no_mirror, z_mirror, red, green, stores, dome_title, outcomes, decoded,
-                 turn, dome_desc):
+                 turn, dome_desc, blue_note, blue):
         self.titles = titles
         self.note = note
         self.no_mirror = no_mirror
@@ -138,6 +141,8 @@ class Labels:
         self.decoded = decoded
         self.turn = turn
         self.dome_desc = dome_desc
+        self.blue_note = blue_note
+        self.blue = blue
 
 
 VANILLA_TITLE = ("Vanilla tangents", "as the game's own", "models store them")
@@ -163,6 +168,8 @@ GUIDE_LABELS = Labels(
                "{no_mirror}: the frame and every tilt turn a quarter, so the tilts run round the dome. {z_mirror}: "
                "the frame and every tilt flip across the U = V diagonal, so the tilts on the diagonal stay outward "
                "(raised) and the others turn inward (dented)."),
+    blue_note="Neither is part of the normal",
+    blue="Blue holds gloss and alpha other data.",
 )
 
 # The paper names the two cases only, for any importer, in standard terms
@@ -185,6 +192,8 @@ PAPER_LABELS = Labels(
                "reads raised. {no_mirror}: the frame and every normal rotate by 90°, so the normals run round the "
                "dome. {z_mirror}: the frame and every normal are reflected about the U = V diagonal, so the normals "
                "on the diagonal stay outward (raised) and the others turn inward (dented)."),
+    blue_note="As held by modders; not tested here",
+    blue="Blue is held to store gloss and alpha other data; this was not tested.",
 )
 
 NOTE_HEIGHT = 32
@@ -218,14 +227,13 @@ def figure_layout(labels=GUIDE_LABELS):
         text(340, 128, labels.green, "t h"),
         text(340, 148, "V runs down the image (DirectX layout)"),
         text(340, 180, "Blue: gloss. Alpha: other data", "t h"),
-        text(340, 200, "Neither is part of the normal"),
+        text(340, 200, labels.blue_note),
         text(340, 240, "On a raised bump, red is high on its +U side"),
         text(340, 258, "and green is high on its +V side"),
     ]
     return svg(680, 320, "The layout of a normal map",
                f"A texture with U running right and V running down from row 0 at the top. {labels.stores}. "
-               "Blue holds gloss and alpha other data. On a raised bump, red is high on its +U side and green on "
-               "its +V side.", body)
+               f"{labels.blue} On a raised bump, red is high on its +U side and green on its +V side.", body)
 
 
 def figure_tangent_frame():
