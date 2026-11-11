@@ -112,6 +112,12 @@ It was checked in four ways:
 - in game, a ticked and an unticked plane side by side with the test map: only the ticked one looks right on both
   halves.
 
+**Cloth materials.** The fork also has a **Cloth W (cloth materials only)** check box under ER Tangents. Almost all of
+the game's own cloth meshes (materials with "cloth" in the name, used for Havok cloth simulation) keep `W` at -1 on
+mirrored UV islands, unlike every other mesh. Tick it only for a mesh with a cloth material, to copy that; it starts
+unticked for every import. It was measured on the game's files, not tested in game, and is not part of the upstream pull
+request.
+
 ## Without the fix
 
 With FbxImporter 1.7.0 to 1.11.0, change the normal map instead (worked out from the frames above; not tested in game):

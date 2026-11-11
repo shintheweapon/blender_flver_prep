@@ -642,7 +642,7 @@ class TestFrameSurvey(unittest.TestCase):
         frames = mf.build_frame(EXAMPLE_POSITIONS, [EXAMPLE_NORMAL] * 3, uvs, [(0, 1, 2)], NO_FALLBACK)
         vertices = [{"p": list(p), "n": list(EXAMPLE_NORMAL), "t": [list(t) + [-w if flip_w else w]], "uv": [list(uv)]}
                     for p, uv, (t, w) in zip(EXAMPLE_POSITIONS, uvs, frames)]
-        return {"material": material, "mtd": "N:\\data\\" + (mtd or f"P[X]_{material}.matxml"), "vertices": vertices,
+        return {"material": material, "mtd": "data\\" + (mtd or f"P[X]_{material}.matxml"), "vertices": vertices,
                 "triangles": [0, 1, 2]}
 
     def test_frames_in_the_game_convention_hold_everywhere(self):
