@@ -294,6 +294,45 @@ class TestFrameTable(unittest.TestCase):
         self.assertIn(f"{len(frame_survey.load()):,} parts with triangles", self.section())
 
 
+ROMAN = ("I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII")
+CAPTION = re.compile(r'^<p align="center">TABLE ([IVX]+)<br>([^<]+)</p>$')
+
+
+class TestTables(unittest.TestCase):
+    """Tables are captioned and cited in the IEEE style: TABLE and a Roman numeral above each, cited in order."""
+
+    def tables(self):
+        """Per table, in order: the last non-empty line before its header row."""
+        lines = read_paper().split(REFERENCES_HEADING)[0].splitlines()
+        found = []
+        for i, line in enumerate(lines):
+            if line.startswith("|") and (i == 0 or not lines[i - 1].startswith("|")):
+                before = next(lines[j] for j in range(i - 1, -1, -1) if lines[j].strip())
+                found.append(before)
+        return found
+
+    def test_every_table_has_a_caption_numbered_in_order(self):
+        captions = self.tables()
+        self.assertTrue(captions)
+        for number, line in zip(ROMAN, captions):
+            with self.subTest(table=number):
+                match = CAPTION.match(line)
+                self.assertIsNotNone(match, line)
+                self.assertEqual(match.group(1), number)
+                text = match.group(2)
+                self.assertEqual(text, text.upper())
+                self.assertFalse(text.endswith("."))
+
+    def test_tables_are_cited_in_order(self):
+        body = read_paper().split(REFERENCES_HEADING)[0]
+        text = "\n".join(line for line in body.splitlines() if not CAPTION.match(line))
+        first = []
+        for number in re.findall(r"\bTable ([IVX]+)\b", text):
+            if number not in first:
+                first.append(number)
+        self.assertEqual(first, list(ROMAN[:len(self.tables())]))
+
+
 class TestWording(unittest.TestCase):
 
     def test_no_dash_punctuation(self):
@@ -302,6 +341,17 @@ class TestWording(unittest.TestCase):
         self.assertNotIn("\u2013", text)
         self.assertNotRegex(text, r"(?<![-|])--(?![-|])")
         self.assertNotRegex(text, r"[A-Za-z,] - [A-Za-z]")
+
+    def test_equation_numbers_do_not_start_a_sentence(self):
+        # IEEE: "Equation (1)" at the start of a sentence, "(1)" elsewhere, never "Eq. (1)"
+        body = without_maths(read_paper().split(REFERENCES_HEADING)[0])
+        prose = [line for line in body.splitlines() if not line.startswith("|")]
+        self.assertNotRegex("\n".join(prose), r"\bEq\.")
+        flat = " ".join(" ".join(prose).split())
+        self.assertIsNone(re.search(r"(?:^|[.!?:] |\*\* )\(\d+\)", flat))
+        for line in prose:
+            with self.subTest(line=line[:40]):
+                self.assertNotRegex(line, r"^\s*(?:- )?\(\d+\) (?!=)")
 
     def test_standard_terms(self):
         # Vectors, scalars, components and tangent-space normals, not arrows, numbers, parts and tilts; the one

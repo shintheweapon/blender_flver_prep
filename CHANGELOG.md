@@ -40,6 +40,9 @@
 - IV-B also compares that behaviour with the material file each mesh uses, which is what an importer sees: meshes
   whose material file contains "cloth" keep `W` at -1 on 96.0% of meshes and 98.1% of corners, the exceptions are
   described, and the paper mentions an optional import step that could copy the cloth frame.
+- The paper follows the IEEE Editorial Style Manual on equations and tables: "Equation (n)" at the start of a sentence
+  and "(n)" elsewhere, and every table numbered TABLE I, II and so on, with a caption above it and a citation in the
+  text in order.
 
 ## 1.0.0
 

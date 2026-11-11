@@ -264,7 +264,9 @@ when a channel does not vary at all or every tile is skipped.
 
 The test ran on every normal map of the game's parts, one per file name: 1,437 maps, of which
 50 are untestable. The test is the function `test_map` in `docs/figures/integrability.py`, and
-its results are in `docs/figures/integrability_maps.json`. Per file-name prefix, over the testable maps:
+its results are in `docs/figures/integrability_maps.json`. Per file-name prefix, over the testable maps (Table I):
+
+<p align="center">TABLE I<br>LAYOUT TEST ON THE GAME'S PART NORMAL MAPS, PER FILE-NAME PREFIX</p>
 
 | Prefix | Maps tested | Untestable | DirectX pairing wins, positive | Median correlation, DirectX | Median correlation, swapped |
 |---|---|---|---|---|---|
@@ -313,7 +315,7 @@ SoulsFormats [7]: for every mesh, each vertex's position, normal, first tangent 
 triangles of the LOD0 face set.
 The check then runs per triangle:
 
-- (15) and (16) give $\partial\vec{p}/\partial u$ and $\partial\vec{p}/\partial v$; degenerate triangles and those with
+- Equations (15) and (16) give $\partial\vec{p}/\partial u$ and $\partial\vec{p}/\partial v$; degenerate triangles and those with
   no area in UV space are skipped;
 - at each of the triangle's three vertices, the stored frame is compared with them:
     - the value of $W$;
@@ -326,7 +328,9 @@ The check then runs per triangle:
 The check is the function `frame_checks` in `docs/figures/frame_checks.py`, tested with the paper's other formulas;
 `docs/figures/frame_survey.py` runs it on every mesh, and its results are in `docs/figures/frame_survey.json`. Per
 file-name prefix, with (9) per UV orientation (the sign of $d$) and pooled over all corners; the other columns give the
-range, the largest value and the smallest value over the prefix's parts:
+range, the largest value and the smallest value over the prefix's parts (Table II):
+
+<p align="center">TABLE II<br>STORED TANGENT FRAMES OF THE GAME'S PART MODELS, PER FILE-NAME PREFIX</p>
 
 | Prefix | Parts | Triangle vertices checked | Length of $\vec{T}$ | $\lvert\hat{T}\cdot\hat{N}\rvert$, largest 99th percentile | Smallest median cosine with +V | (9) holds, $d > 0$ | (9) holds, $d < 0$ |
 |---|---|---|---|---|---|---|---|
@@ -344,7 +348,10 @@ precision (0.986 to 1.014). $\vec{T}$ is orthogonal to $\vec{N}$ to within about
 the in-plane +V direction: the median cosine is at least 0.99 on 76% of parts, and at least 0.95 on all but
 2 (the lowest, 0.92, on HR_A_0115). Both UV orientations occur on 1,422 parts.
 
-(9) holds on both UV orientations, except on one kind of mesh: those whose material name contains "cloth".
+Equation (9) holds on both UV orientations, except on one kind of mesh: those whose material name contains "cloth"
+(Table III).
+
+<p align="center">TABLE III<br>RULE (9) ON CLOTH AND OTHER MESHES</p>
 
 | Meshes | Meshes checked | Parts | (9) holds, $d > 0$ | (9) holds, $d < 0$ |
 |---|---|---|---|---|
@@ -361,7 +368,9 @@ $W = -1$.
 An importer sees the material file each mesh uses (the matxml its material names) rather than its material name. On the
 meshes with corners where $d > 0$, a mesh keeps $W = -1$ when (9) fails on at least 95% of those corners, follows (9)
 when it holds on at least 95%, and is mixed otherwise; it agrees when its material file contains "cloth" and it keeps
-$W = -1$, or its file does not and it follows (9):
+$W = -1$, or its file does not and it follows (9) (Table IV):
+
+<p align="center">TABLE IV<br>HOW MESHES STORE W ON MIRRORED CORNERS, BY MATERIAL FILE</p>
 
 | Material file | Meshes | Keep $W = -1$ | Follow (9) | Mixed | Agree, by meshes | Agree, by corners |
 |---|---|---|---|---|---|---|
@@ -530,7 +539,9 @@ both numerators in (16). The directions and $\lVert\vec{e}_1\times\vec{e}_2\rVer
 same for either winding order.
 
 **Worked example.** One triangle: $\vec{p}_0 = (0, 0, 0)$, $\vec{p}_1 = (2, 0, 0)$, $\vec{p}_2 = (0, 0, 1)$; UVs
-$(0, 0)$, $(0.5, 0)$, $(0, 0.25)$; normal $\vec{N} = (0, -1, 0)$ at every vertex.
+$(0, 0)$, $(0.5, 0)$, $(0, 0.25)$; normal $\vec{N} = (0, -1, 0)$ at every vertex (Table V).
+
+<p align="center">TABLE V<br>WORKED EXAMPLE FOR ONE TRIANGLE</p>
 
 | Quantity | Value |
 |---|---|
@@ -598,7 +609,10 @@ $$
 *In words:* with Z mirrored, red and green swap.
 
 Blue and alpha stay as they are. Both changes are worked out from the measured frames, not tested in game
-(Fig. 10). They assume that every island is unmirrored, or that mirrored islands read the same way.
+(Fig. 10). They assume that every island is unmirrored, or that mirrored islands read the same way. Table VI lists
+both.
+
+<p align="center">TABLE VI<br>CHANNEL CHANGES THAT MATCH THE MAP TO TANGENTS ALONG +U</p>
 
 | Import | New red | New green |
 |---|---|---|
