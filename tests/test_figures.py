@@ -93,7 +93,7 @@ class TestPaperFigures(unittest.TestCase):
     def test_paper_figures_name_no_tool_setting_or_release(self):
         import re
         paper = {name: content for name, content in make_figures.build_all().items() if name.startswith("paper_")}
-        self.assertEqual(len(paper), 8)
+        self.assertEqual(len(paper), 9)
         for name, content in paper.items():
             with self.subTest(name=name):
                 self.assertEqual(re.findall(self.FORBIDDEN, content), [])
@@ -220,7 +220,7 @@ class TestAxisSwapAnimation(unittest.TestCase):
 
     def test_svg_keyframes_and_steps(self):
         import re
-        figure = make_figures.build_all()["paper_axis_swap.svg"]
+        figure = make_figures.build_all()["paper_axis_swap_animated.svg"]
         animations = re.findall(r'<animate attributeName="[^"]+" values="([^"]*)" keyTimes="([^"]*)"[^>]*dur="(\d+)s"',
                                 figure)
         self.assertTrue(animations)
@@ -230,6 +230,34 @@ class TestAxisSwapAnimation(unittest.TestCase):
         headings = [f"{i + 1}. {heading}" for i, (heading, _) in enumerate(axis_swap_figure.STEPS)]
         positions = [figure.index(f">{h}<") for h in headings]
         self.assertEqual(positions, sorted(positions))
+
+    def test_notation(self):
+        import re
+        figure = make_figures.build_all()["paper_axis_swap_animated.svg"]
+        for label in ("+X", "+Y", "+Z"):
+            self.assertIn(f">{label}<", figure)
+        for label, _, _, _, _ in axis_swap_figure.LIVE_LABELS:
+            with self.subTest(label=label):
+                element = re.search(rf'<text [^>]*class="s halo"[^>]*>(.*?){label}</text>', figure)
+                self.assertIsNotNone(element)
+                self.assertIn('attributeName="x"', element.group(1))
+                self.assertIn('attributeName="y"', element.group(1))
+        for _, label in axis_swap_figure.LEGEND:
+            self.assertIn(f">{label}<", figure)
+
+    def test_nose_is_drawn_over_the_head(self):
+        figure = make_figures.build_all()["paper_axis_swap_animated.svg"]
+        head = figure.index(f'r="14" fill="{axis_swap_figure.BODY}"')
+        nose_line = figure.index(f'stroke="{axis_swap_figure.FORWARD}"')
+        nose_head = figure.index(f'<polygon points=')
+        self.assertLess(head, nose_line)
+        self.assertLess(head, nose_head)
+
+    def test_forward_label_hides_while_the_nose_has_no_length(self):
+        fig = axis_swap_figure
+        middle = (fig.NEGATE[0] + fig.NEGATE[1]) / 2
+        frame = {name: fig.to_screen(p) for name, p in fig.character_points(fig.stage_matrix(middle)).items()}
+        self.assertLess(fig.nose_length(frame), fig.SHORT_NOSE)
 
 
 class TestUvTriangle(unittest.TestCase):

@@ -217,17 +217,19 @@ island whose texture looks unmirrored in game, $\vec{N}\times\vec{T}$ points alo
 test has limits: one model, LOD0 only, and handedness inferred from anatomy and winding.
 
 **Impact on the implementation.** Equation (9), and the import step of Section VI, ER Tangents, through (19), give
-$W = -1$ on unmirrored islands. A Blender scene is carried into this space by swapping its Y and Z axes (Fig. 3): a −90°
+$W = -1$ on unmirrored islands. A Blender scene is carried into this space by swapping its Y and Z axes (Fig. 3(a) and (b)): a −90°
 rotation about X, which brings Blender's up (+Z) to +Y and its forward direction (−Y) to +Z, then Z negated, which
 brings forward to −Z. The swap is a reflection (determinant −1), which changes handedness, so the character stays the
 right way round, with its left side at +X.
 
-![Animated on top: a character in fixed axes drawn as Blender's Front view shows them stands facing the viewer, is rotated −90° about X onto its back, then turned face down as Z is negated. Below, three panels of its axes seen from in front: in Blender X right, Z up and Y into the screen, right-handed; after the rotation, Y up and Z out of the screen, right-handed; after Z is negated, Z into the screen, left-handed](../figures/paper_axis_swap.svg)
+![Animated: fixed axes drawn as Blender's Front view shows them, +X right, +Z up and +Y into the scene; a character labelled up, forward and left stands facing the viewer, is rotated −90° about X onto its back, then turned face down as Z is negated; a text names each step and a legend gives the colours](../figures/paper_axis_swap_animated.svg)
 
-Fig. 3. Axis swap from Blender into FLVER space. Top, animated: a character's coordinates through the rotation about X
-and the negation of Z, in fixed axes drawn as Blender's Front view shows them. Below: each stage seen from in front of
-the character, whose left side is to the right; a circle with a dot points out of the screen, a circle with a cross
-into it.
+![Three panels of a character's axes seen from in front: in Blender X right, Z up and Y into the screen, right-handed; after the rotation about X, Y up and Z out of the screen, right-handed; after Z is negated, Z into the screen, left-handed](../figures/paper_axis_swap.svg)
+
+Fig. 3. Axis swap from Blender into FLVER space. (a) Animated: a character's coordinates through the rotation about X
+and the negation of Z, in fixed axes drawn as Blender's Front view shows them. (b) Each stage seen from in front of the
+character, whose left side is to the right; a circle with a dot points out of the screen, a circle with a cross into
+it.
 
 ## IV. Measurements
 
