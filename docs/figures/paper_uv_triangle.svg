@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="366" viewBox="0 0 680 366" role="img">
+<title>One triangle in UV space and in game</title>
+<desc>The worked example's triangle twice. Left, in UV space with U to the right and V down: p0 at the corner, p1 0.5 to the right, p2 0.25 down. Right, in game seen from below, with x to the right, -z up and the normal N out of the screen: the edge e1 along the partial derivative along U, e2 along the partial derivative along V, the tangent T pointing down along +V, N x T pointing left by the left-hand rule, and B = W(N x T) with W = -1 pointing right, along +U, as in the UV panel.</desc>
+<style>
+.t{fill:#1f2328;font:14px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
+.h{font-weight:600}
+.s{fill:#59636e;font:12px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
+.o{stroke:#59636e}
+.of{fill:#59636e}
+.p{fill:#f6f8fa;stroke:#8c959f}
+.g{stroke:#8c959f}
+@media (prefers-color-scheme: dark){
+.t{fill:#e6edf3}
+.s{fill:#9198a1}
+.o{stroke:#9198a1}
+.of{fill:#9198a1}
+.p{fill:#151b23;stroke:#656c76}
+.g{stroke:#656c76}
+}
+</style>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#E24B4A"/></marker><marker id="ag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#639922"/></marker><marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#378ADD"/></marker><marker id="ao" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="of" d="M1 1L9 5L1 9z"/></marker></defs>
+<polygon class="p" points="110,70 310,70 110,170" stroke-width="1"/>
+<text class="t" x="104" y="64" text-anchor="end">p₀</text>
+<text class="t" x="316" y="64" text-anchor="start">p₁</text>
+<text class="t" x="104" y="184" text-anchor="end">p₂</text>
+<text class="s" x="210" y="62" text-anchor="middle">Δu₁ = 0.5</text>
+<text class="s" x="102" y="124" text-anchor="end">Δv₂ = 0.25</text>
+<line x1="230" y1="190" x2="280" y2="190" class="o" stroke-width="1" marker-end="url(#ao)"/>
+<text class="s" x="286" y="194" text-anchor="start">+U</text>
+<line x1="230" y1="190" x2="230" y2="230" class="o" stroke-width="1" marker-end="url(#ao)"/>
+<text class="s" x="230" y="246" text-anchor="middle">+V</text>
+<text class="t h" x="210" y="276" text-anchor="middle">UV space</text>
+<text class="s" x="210" y="294" text-anchor="middle">U right, V down</text>
+<polygon class="p" points="420,70 620,70 420,170" stroke-width="1"/>
+<text class="t" x="414" y="64" text-anchor="end">p₀</text>
+<text class="t" x="626" y="64" text-anchor="start">p₁</text>
+<text class="t" x="414" y="184" text-anchor="end">p₂</text>
+<text class="s" x="520" y="62" text-anchor="middle">e₁, along ∂p/∂u</text>
+<text class="s" x="412" y="124" text-anchor="end">e₂, along ∂p/∂v</text>
+<line x1="480" y1="100" x2="480" y2="144" stroke="#639922" stroke-width="2" marker-end="url(#ag)"/>
+<line x1="480" y1="100" x2="524" y2="100" stroke="#E24B4A" stroke-width="2" marker-end="url(#ar)"/>
+<line x1="480" y1="100" x2="444" y2="100" stroke="#E24B4A" stroke-width="1" stroke-dasharray="4 3"/>
+<circle cx="480" cy="100" r="6" fill="none" class="o" stroke-width="1.5"/>
+<circle cx="480" cy="100" r="2" class="of"/>
+<text class="s" x="490" y="92" text-anchor="start">N</text>
+<text class="t h" x="520" y="276" text-anchor="middle">In game, seen from below</text>
+<text class="s" x="520" y="294" text-anchor="middle">x right, −z up, N out of the screen</text>
+<text class="s" x="520" y="310" text-anchor="middle">∂p/∂u = (4, 0, 0), ∂p/∂v = (0, 0, 4)</text>
+<line x1="40" y1="342" x2="64" y2="342" stroke="#639922" stroke-width="2"/>
+<text class="s" x="70" y="346" text-anchor="start">T, along +V</text>
+<line x1="180" y1="342" x2="204" y2="342" stroke="#E24B4A" stroke-width="2"/>
+<text class="s" x="210" y="346" text-anchor="start">B = W(N × T), along +U</text>
+<line x1="390" y1="342" x2="414" y2="342" stroke="#E24B4A" stroke-width="1" stroke-dasharray="4 3"/>
+<text class="s" x="420" y="346" text-anchor="start">N × T (left-hand rule), W = −1</text>
+</svg>

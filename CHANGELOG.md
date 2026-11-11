@@ -23,6 +23,8 @@
 - The paper states how handedness shows on screen (with x to the right and y up, z out of the screen is
   right-handed) and has a figure of the axis swap from Blender into FLVER space, drawn by
   `docs/figures/paper_figures.py` from `docs/figures/axes.py`.
+- The paper's worked example has a figure: the triangle in UV space and in game, with its partial derivatives and
+  tangent frame.
 
 ## 1.0.0
 

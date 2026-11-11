@@ -88,7 +88,7 @@ class TestPaperFigures(unittest.TestCase):
     def test_paper_figures_name_no_tool_setting_or_release(self):
         import re
         paper = {name: content for name, content in make_figures.build_all().items() if name.startswith("paper_")}
-        self.assertEqual(len(paper), 5)
+        self.assertEqual(len(paper), 6)
         for name, content in paper.items():
             with self.subTest(name=name):
                 self.assertEqual(re.findall(self.FORBIDDEN, content), [])
@@ -166,6 +166,39 @@ class TestAxisSwap(unittest.TestCase):
             with self.subTest(front=front):
                 self.assertIn(f"{handedness.capitalize()}-handed", figure)
                 self.assertIn(f"Front {front.replace('-', '−')}, up {up}, left side {left}", figure)
+
+
+class TestUvTriangle(unittest.TestCase):
+    """Fig. 7 of the paper: the worked example in UV space and in game, seen from below."""
+
+    def test_view_from_below_is_left_handed_like_flver(self):
+        self.assertEqual(axes.screen_handedness(*axes.FLVER_BELOW_VIEW), "left")
+        self.assertEqual(axes.screen_handedness(*axes.FLVER_BELOW_VIEW),
+                         axes.screen_handedness(*axes.FLVER_FRONT_VIEW))
+
+    def test_frame_is_the_worked_example(self):
+        frame = paper_figures.example_frame()
+        self.assertTrue(close(frame["dp_du"], (4, 0, 0)))
+        self.assertTrue(close(frame["dp_dv"], (0, 0, 4)))
+        self.assertTrue(close(frame["T"], (0, 0, 1)))
+        self.assertEqual(frame["W"], -1)
+
+    def test_drawn_directions_match_the_uv_panel(self):
+        # On screen (right, down): T down like +V, B right like +U, N x T left, N out of the screen
+        frame = paper_figures.example_frame()
+        self.assertTrue(close(paper_figures.drawn(frame["T"]), (0, 1, 0)))
+        self.assertTrue(close(paper_figures.drawn(frame["B"]), (1, 0, 0)))
+        self.assertTrue(close(paper_figures.drawn(frame["N x T"]), (-1, 0, 0)))
+        self.assertTrue(close(paper_figures.drawn(frame["N"]), (0, 0, 1)))
+        for i, (u, v) in enumerate(paper_figures.EXAMPLE_UVS):
+            with self.subTest(corner=i):
+                right, down, _ = paper_figures.drawn(paper_figures.EXAMPLE_POSITIONS[i])
+                self.assertTrue(close((right, down), (4 * u, 4 * v)))
+
+    def test_figure_states_the_values(self):
+        figure = make_figures.build_all()["paper_uv_triangle.svg"]
+        self.assertIn("∂p/∂u = (4, 0, 0), ∂p/∂v = (0, 0, 4)", figure)
+        self.assertIn("W = −1", figure)
 
 
 class TestReadDirections(unittest.TestCase):

@@ -420,17 +420,22 @@ $(0, 0)$, $(0.5, 0)$, $(0, 0.25)$; normal $\vec{N} = (0, -1, 0)$ at every vertex
 | $W$ by (19), and by (9) | $-1$ |
 | $\vec{B}$ by (6) | $(1, 0, 0)$, along +U |
 
+![The worked example's triangle twice: in UV space with U right and V down, and in game seen from below with the normal out of the screen; T points down along +V, N × T points left, and B = W(N × T) points right along +U](../figures/paper_uv_triangle.svg)
+
+*Fig. 7. The worked example's triangle in UV space and in game, seen from below with $\vec{N}$ out of the screen. The
+tangent follows +V, and $W = -1$ turns $\vec{N}\times\vec{T}$ onto +U.*
+
 **Validation.** ER Tangents was checked in four ways [6]:
 
 - on vanilla parts, the recomputed tangents point almost the same way as the stored ones;
 - imports with ER Tangents follow the game's frame on both UV halves, without a mirror and with Z mirrored;
 - without ER Tangents, the importer writes exactly what the upstream release writes;
-- in game, a plane imported with ER Tangents and one imported without, side by side with the test map (Fig. 7): only
+- in game, a plane imported with ER Tangents and one imported without, side by side with the test map (Fig. 8): only
   the one with ER Tangents looks right on both halves.
 
 ![In game: two planes with the test map; left, with ER Tangents, both UV halves look alike; right, without ER Tangents, the halves disagree](images/ingame_er_tangents.webp)
 
-*Fig. 7. In-game check of ER Tangents. Left: with ER Tangents, both UV halves raised alike. Right: without ER Tangents, the halves disagree.*
+*Fig. 8. In-game check of ER Tangents. Left: with ER Tangents, both UV halves raised alike. Right: without ER Tangents, the halves disagree.*
 
 It is offered upstream as a pull request [6].
 
@@ -467,14 +472,14 @@ that every island is unmirrored, or that mirrored islands read the same way.
 
 ## VIII. Practical Use
 
-There are two ways out of Blender (Fig. 8): its FBX export with Tangent Space off, which writes no tangents, and with
+There are two ways out of Blender (Fig. 9): its FBX export with Tangent Space off, which writes no tangents, and with
 Tangent Space on, which writes tangents along +U with no W. Without ER Tangents, both give tangents along +U, since the
 importer generates them when the file has none. With it, both give a FLVER in the game's convention. With Tangent Space
 on and without ER Tangents, W is undefined, so mirrored UV halves may also read wrong; this has not been tested.
 
 ![Two routes into the importer: Blender's FBX export with Tangent Space off, with no tangents, and with Tangent Space on, with +U tangents and no W; with ER Tangents, both give a FLVER in the game's frame](../figures/paper_ways_out_of_blender.svg)
 
-*Fig. 8. The ways out of Blender, and the tangents each one gives.*
+*Fig. 9. The ways out of Blender, and the tangents each one gives.*
 
 ## IX. Limitations
 
