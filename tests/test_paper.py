@@ -167,6 +167,22 @@ class TestWording(unittest.TestCase):
         self.assertNotRegex(text, r"(?<![-|])--(?![-|])")
         self.assertNotRegex(text, r"[A-Za-z,] - [A-Za-z]")
 
+    def test_standard_terms(self):
+        # Vectors, scalars, components and tangent-space normals, not arrows, numbers, parts and tilts; the one
+        # arrow left is the dashed arrow drawn in Fig. 2
+        text = without_maths(read_paper()).replace("dashed arrow", "")
+        for pattern in (r"(?i)\btilt", r"(?i)\bquarter\b", r"(?i)\bvotes?\b", r"(?i)\bat right angles\b",
+                        r"(?i)\blength 1\b", r"(?i)\bUV steps\b", r"(?i)\bslopes?\b", r"(?i)\barrows?\b"):
+            with self.subTest(pattern=pattern):
+                self.assertIsNone(re.search(pattern, text))
+
+    def test_british_spelling(self):
+        text = read_paper()
+        for pattern in (r"(?i)\bcolor", r"(?i)counterclockwise", r"Acknowledgment",
+                        r"(?i)\b[a-z]{3,}iz(?:e|es|ed|ing|ation)\b"):
+            with self.subTest(pattern=pattern):
+                self.assertIsNone(re.search(pattern, text))
+
 
 class TestToolNeutral(unittest.TestCase):
     """The paper names no tool, setting or release, except in the reference that cites ER Tangents' code."""
@@ -193,7 +209,7 @@ class TestToolNeutral(unittest.TestCase):
 
     def test_paper_shows_the_paper_figures(self):
         images = re.findall(r"!\[[^\]]*\]\(\.\./figures/([^)]+)\)", read_paper())
-        self.assertEqual(images, ["normal_map_layout.svg", "tangent_frame.svg", "paper_tangent_directions.svg",
+        self.assertEqual(images, ["paper_normal_map_layout.svg", "tangent_frame.svg", "paper_tangent_directions.svg",
                                   "paper_dome_tilts.svg", "paper_ways_out_of_blender.svg"])
 
 

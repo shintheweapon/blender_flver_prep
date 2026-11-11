@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="680" height="392" viewBox="0 0 680 392" role="img">
-<title>The tilts the game decodes around a raised dome</title>
-<desc>Animated. Three panels, each with the frame (green T, red W(N x T)) and the surface tilts the game decodes around a raised dome. Vanilla tangents: the tilts point outward and the dome reads raised. Tangents along +U, imported without a mirror: the frame and every tilt turn a quarter, so the tilts run round the dome. Tangents along +U, imported with Z mirrored: the frame and every tilt flip across the U = V diagonal, so the tilts on the diagonal stay outward (raised) and the others turn inward (dented).</desc>
+<title>The tangent-space normals the game decodes around a raised dome</title>
+<desc>Animated. Three panels, each with the frame (green T, red W(N x T)) and the tangent-space normals the game decodes around a raised dome. Vanilla tangents: the normals point outward and the dome reads raised. Tangents along +U, imported without a mirror: the frame and every normal rotate by 90°, so the normals run round the dome. Tangents along +U, imported with Z mirrored: the frame and every normal are reflected about the U = V diagonal, so the normals on the diagonal stay outward (raised) and the others turn inward (dented).</desc>
 <style>
 .t{fill:#1f2328;font:14px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
 .h{font-weight:600}
@@ -57,7 +57,7 @@
 <text class="t h" x="350" y="248" text-anchor="middle">Tangents along +U</text>
 <text class="s" x="350" y="268" text-anchor="middle">imported</text>
 <text class="s" x="350" y="284" text-anchor="middle">without a mirror</text>
-<text class="s" x="350" y="306" text-anchor="middle">Tilts turn a quarter: twisted</text>
+<text class="s" x="350" y="306" text-anchor="middle">Rotated 90°: twisted</text>
 <g transform="translate(570,40)"><g class="flip"><line x1="0" y1="0" x2="0" y2="26" stroke="#639922" stroke-width="2" marker-end="url(#ag)"/><line x1="0" y1="0" x2="26" y2="0" stroke="#E24B4A" stroke-width="2" marker-end="url(#ar)"/></g></g>
 <circle cx="570" cy="160" r="40" fill="none" class="o" stroke-width="0.5" stroke-dasharray="3 3"/>
 <line x1="525" y1="115" x2="615" y2="205" class="o" stroke-width="0.5" stroke-dasharray="2 4"/>
@@ -72,13 +72,13 @@
 <text class="t h" x="570" y="248" text-anchor="middle">Tangents along +U</text>
 <text class="s" x="570" y="268" text-anchor="middle">imported</text>
 <text class="s" x="570" y="284" text-anchor="middle">with Z mirrored</text>
-<text class="s" x="570" y="306" text-anchor="middle">Tilts flip on the diagonal</text>
+<text class="s" x="570" y="306" text-anchor="middle">Reflected about U = V</text>
 <line x1="40" y1="338" x2="64" y2="338" stroke="#639922" stroke-width="2"/>
 <text class="s" x="70" y="342" text-anchor="start">T: the game reads green along it</text>
 <line x1="300" y1="338" x2="324" y2="338" stroke="#E24B4A" stroke-width="2"/>
 <text class="s" x="330" y="342" text-anchor="start">W(N × T): the game reads red along it</text>
 <line x1="40" y1="364" x2="64" y2="364" class="o" stroke-width="2" marker-end="url(#ao)"/>
-<text class="s" x="70" y="368" text-anchor="start">Surface tilt the game decodes</text>
+<text class="s" x="70" y="368" text-anchor="start">Decoded normal (x, y)</text>
 <line x1="300" y1="364" x2="324" y2="364" stroke="#E24B4A" stroke-width="2" marker-end="url(#ar)"/>
 <text class="s" x="330" y="368" text-anchor="start">On the diagonal: stays out (raised)</text>
 <line x1="540" y1="364" x2="564" y2="364" stroke="#378ADD" stroke-width="2" marker-end="url(#ab)"/>

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="680" height="318" viewBox="0 0 680 318" role="img">
 <title>The directions the game reads green and red</title>
-<desc>Three sheets lying flat with N up, +U to the right and +V towards the viewer. Vanilla tangents: green is read along +V and red along +U. Tangents along +U, imported without a mirror: green along +U and red along -V, a quarter turn. Tangents along +U, imported with Z mirrored: green along +U and red along +V, red and green swapped.</desc>
+<desc>Three sheets lying flat with N up, +U to the right and +V towards the viewer. Vanilla tangents: green is read along +V and red along +U. Tangents along +U, imported without a mirror: green along +U and red along -V, a 90° rotation. Tangents along +U, imported with Z mirrored: green along +U and red along +V, red and green swapped.</desc>
 <style>
 .t{fill:#1f2328;font:14px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
 .h{font-weight:600}

@@ -14,7 +14,9 @@
   explained in words, handedness, the common tangent convention and the game's, ER Tangents and matching the map
   instead, with references; the guide links to it, its section "What FbxImporter writes" is now "Tangents in the
   common convention", and Figs. 3 and 4 title those panels "Tangents along +U". The paper describes the importer and
-  Blender's own operations in general terms, with its own versions of Figs. 3 to 5; the guide keeps the tool settings.
+  Blender's own operations in general terms, with its own versions of Figs. 1 and 3 to 5; the guide keeps the tool
+  settings. The paper uses standard mathematical and graphics terms (vector, scalar, component, normalised,
+  tangent-space normal).
 
 ## 1.0.0
 

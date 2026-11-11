@@ -77,22 +77,30 @@ class TestRouteChart(unittest.TestCase):
 
 
 class TestPaperFigures(unittest.TestCase):
-    """The paper's versions of the figures name no tool, setting or release."""
+    """The paper's versions of the figures name no tool, setting or release, and use standard terms."""
 
     FORBIDDEN = r"FbxImporter|FLVER Prep|Transform|Mirror ticked|Mirror unticked|\b1\.(?:3|6\.1|7\.0|10\.2|11\.0)\b"
 
     def test_paper_figures_name_no_tool_setting_or_release(self):
         import re
         paper = {name: content for name, content in make_figures.build_all().items() if name.startswith("paper_")}
-        self.assertEqual(len(paper), 3)
+        self.assertEqual(len(paper), 4)
         for name, content in paper.items():
             with self.subTest(name=name):
                 self.assertEqual(re.findall(self.FORBIDDEN, content), [])
 
+    def test_paper_figures_use_standard_terms(self):
+        import re
+        for name, content in make_figures.build_all().items():
+            if name.startswith("paper_"):
+                with self.subTest(name=name):
+                    self.assertEqual(re.findall(r"(?i)\btilt|\bquarter\b", content), [])
+
     def test_guide_figures_keep_the_settings(self):
-        content = make_figures.build_all()["fbximporter_tangents.svg"]
-        self.assertIn("1.11.0: Transform None", content)
-        self.assertIn("In 1.3 to 1.6.1", content)
+        figures = make_figures.build_all()
+        self.assertIn("1.11.0: Transform None", figures["fbximporter_tangents.svg"])
+        self.assertIn("In 1.3 to 1.6.1", figures["fbximporter_tangents.svg"])
+        self.assertIn("Red: the surface tilts towards +U", figures["normal_map_layout.svg"])
 
 
 class TestTangentFrame(unittest.TestCase):
