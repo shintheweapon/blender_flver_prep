@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="320" viewBox="0 0 680 320" role="img">
+<title>The layout of a normal map</title>
+<desc>A texture with U running right and V running down from row 0 at the top. Red stores the tangent-space normal's x component (towards +U), green its y component (towards +V). Blue is held to store gloss and alpha other data; this was not tested. On a raised bump, red is high on its +U side and green on its +V side.</desc>
+<style>
+.t{fill:#1f2328;font:14px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
+.h{font-weight:600}
+.s{fill:#59636e;font:12px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
+.o{stroke:#59636e}
+.of{fill:#59636e}
+.p{fill:#f6f8fa;stroke:#8c959f}
+.g{stroke:#8c959f}
+@media (prefers-color-scheme: dark){
+.t{fill:#e6edf3}
+.s{fill:#9198a1}
+.o{stroke:#9198a1}
+.of{fill:#9198a1}
+.p{fill:#151b23;stroke:#656c76}
+.g{stroke:#656c76}
+}
+</style>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#E24B4A"/></marker><marker id="ag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#639922"/></marker><marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#378ADD"/></marker><marker id="ao" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="of" d="M1 1L9 5L1 9z"/></marker></defs>
+<rect class="p" x="80" y="60" width="220" height="220" rx="4" stroke-width="0.5"/>
+<line x1="90" y1="40" x2="290" y2="40" stroke="#E24B4A" stroke-width="2" marker-end="url(#ar)"/>
+<text class="t h" x="306" y="44" text-anchor="start">+U</text>
+<line x1="58" y1="70" x2="58" y2="270" stroke="#639922" stroke-width="2" marker-end="url(#ag)"/>
+<text class="t h" x="58" y="298" text-anchor="middle">+V</text>
+<text class="s" x="92" y="82" text-anchor="start">(0, 0), row 0</text>
+<circle cx="190" cy="175" r="48" fill="none" class="o" stroke-width="1" stroke-dasharray="3 3"/>
+<text class="s" x="190" y="179" text-anchor="middle">bump</text>
+<line x1="226" y1="175" x2="270" y2="175" stroke="#E24B4A" stroke-width="2" marker-end="url(#ar)"/>
+<line x1="190" y1="211" x2="190" y2="258" stroke="#639922" stroke-width="2" marker-end="url(#ag)"/>
+<text class="t h" x="340" y="96" text-anchor="start">Red: x component, towards +U</text>
+<text class="t h" x="340" y="128" text-anchor="start">Green: y component, towards +V</text>
+<text class="s" x="340" y="148" text-anchor="start">V runs down the image (DirectX layout)</text>
+<text class="t h" x="340" y="180" text-anchor="start">Blue: gloss. Alpha: other data</text>
+<text class="s" x="340" y="200" text-anchor="start">As held by modders; not tested here</text>
+<text class="s" x="340" y="240" text-anchor="start">On a raised bump, red is high on its +U side</text>
+<text class="s" x="340" y="258" text-anchor="start">and green is high on its +V side</text>
+</svg>

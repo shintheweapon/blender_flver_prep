@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="212" viewBox="0 0 680 212" role="img">
+<title>Ways out of Blender</title>
+<desc>Two routes from Blender into the importer: Blender's FBX export with Tangent Space off, with no tangents, and with Tangent Space on, with tangents along +U and no W. With ER Tangents, the importer writes a FLVER whose tangents follow the game's frame, whichever route the file took.</desc>
+<style>
+.t{fill:#1f2328;font:14px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
+.h{font-weight:600}
+.s{fill:#59636e;font:12px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
+.o{stroke:#59636e}
+.of{fill:#59636e}
+.p{fill:#f6f8fa;stroke:#8c959f}
+.g{stroke:#8c959f}
+@media (prefers-color-scheme: dark){
+.t{fill:#e6edf3}
+.s{fill:#9198a1}
+.o{stroke:#9198a1}
+.of{fill:#9198a1}
+.p{fill:#151b23;stroke:#656c76}
+.g{stroke:#656c76}
+}
+</style>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#E24B4A"/></marker><marker id="ag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#639922"/></marker><marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#378ADD"/></marker><marker id="ao" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="of" d="M1 1L9 5L1 9z"/></marker></defs>
+<rect class="p" x="40" y="20" width="220" height="78" rx="6" stroke-width="0.5"/>
+<text class="t h" x="150" y="45" text-anchor="middle">FBX export</text>
+<text class="s" x="150" y="63" text-anchor="middle">Tangent Space off</text>
+<text class="s" x="150" y="81" text-anchor="middle">no tangents</text>
+<rect class="p" x="40" y="114" width="220" height="78" rx="6" stroke-width="0.5"/>
+<text class="t h" x="150" y="139" text-anchor="middle">FBX export</text>
+<text class="s" x="150" y="157" text-anchor="middle">Tangent Space on</text>
+<text class="s" x="150" y="175" text-anchor="middle">+U tangents with no W</text>
+<rect class="p" x="320" y="74" width="170" height="64" rx="6" stroke-width="0.5"/>
+<text class="t h" x="405" y="101" text-anchor="middle">Importer</text>
+<text class="s" x="405" y="119" text-anchor="middle">with ER Tangents</text>
+<rect class="p" x="520" y="74" width="150" height="64" rx="6" stroke-width="0.5"/>
+<text class="t h" x="595" y="101" text-anchor="middle">FLVER</text>
+<text class="s" x="595" y="119" text-anchor="middle">the game's frame</text>
+<line x1="260" y1="59" x2="290" y2="59" class="o" stroke-width="1"/>
+<line x1="260" y1="153" x2="290" y2="153" class="o" stroke-width="1"/>
+<line x1="290" y1="59" x2="290" y2="153" class="o" stroke-width="1"/>
+<line x1="290" y1="106" x2="318" y2="106" class="o" stroke-width="1" marker-end="url(#ao)"/>
+<line x1="490" y1="106" x2="518" y2="106" class="o" stroke-width="1" marker-end="url(#ao)"/>
+</svg>
