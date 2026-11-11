@@ -548,12 +548,13 @@ class TestFrameSurvey(unittest.TestCase):
     """The survey behind the paper's Section IV-B: per mesh, per prefix, cloth meshes and exceptions."""
 
     @staticmethod
-    def mesh(material, mirrored=False, flip_w=False):
+    def mesh(material, mirrored=False, flip_w=False, mtd=None):
         uvs = [(-u, v) for u, v in EXAMPLE_UVS] if mirrored else list(EXAMPLE_UVS)
         frames = mf.build_frame(EXAMPLE_POSITIONS, [EXAMPLE_NORMAL] * 3, uvs, [(0, 1, 2)], NO_FALLBACK)
         vertices = [{"p": list(p), "n": list(EXAMPLE_NORMAL), "t": [list(t) + [-w if flip_w else w]], "uv": [list(uv)]}
                     for p, uv, (t, w) in zip(EXAMPLE_POSITIONS, uvs, frames)]
-        return {"material": material, "vertices": vertices, "triangles": [0, 1, 2]}
+        return {"material": material, "mtd": "N:\\data\\" + (mtd or f"P[X]_{material}.matxml"), "vertices": vertices,
+                "triangles": [0, 1, 2]}
 
     def test_frames_in_the_game_convention_hold_everywhere(self):
         part = frame_survey.part_survey("BD_M_0000", [self.mesh("Fabric"), self.mesh("Fabric", mirrored=True)])
@@ -581,12 +582,48 @@ class TestFrameSurvey(unittest.TestCase):
         rows = frame_survey.summary_by_prefix(parts)
         self.assertEqual([(r["prefix"], r["parts"], r["corners"]) for r in rows], [("BD", 1, 6), ("WP", 1, 3)])
 
+    def test_material_file_is_stored_without_its_path(self):
+        part = frame_survey.part_survey("BD_M_0000", [self.mesh("Fabric")])
+        self.assertEqual(part["meshes"][0]["mtd"], "P[X]_Fabric.matxml")
+
+    def test_mesh_behaviour(self):
+        entry = lambda held, total: {"held": {"+": [held, total], "-": [0, 0]}}
+        self.assertEqual(frame_survey.mesh_behaviour(entry(100, 100)), frame_survey.FOLLOWS)
+        self.assertEqual(frame_survey.mesh_behaviour(entry(2, 100)), frame_survey.KEEPS)
+        self.assertEqual(frame_survey.mesh_behaviour(entry(50, 100)), frame_survey.MIXED)
+        self.assertIsNone(frame_survey.mesh_behaviour(entry(0, 0)))
+
+    def test_cloth_rule(self):
+        # The unmirrored UVs of the example give d > 0 corners, where (9) asks for W = +1
+        parts = [frame_survey.part_survey("BD_M_0000", [
+            self.mesh("Fabric"),
+            self.mesh("Fabric_Cloth", flip_w=True),
+            self.mesh("skirt_cloth", mtd="P[X]_Skirt.matxml", flip_w=True)])]
+        rule = frame_survey.cloth_rule(parts)
+        self.assertEqual(rule["counts"], {(False, frame_survey.FOLLOWS): 1, (True, frame_survey.KEEPS): 1,
+                                          (False, frame_survey.KEEPS): 1})
+        self.assertEqual(rule["name_and_file_differ"], 1)
+        self.assertEqual(rule["file_right"], 0)
+        self.assertEqual(rule["disagreeing"],
+                         [("BD_M_0000", 2, "skirt_cloth", "P[X]_Skirt.matxml", frame_survey.KEEPS)])
+
+    def test_misfits(self):
+        parts = [frame_survey.part_survey("BD_M_0000", [
+            self.mesh("Fabric"),
+            self.mesh("Metal", flip_w=True),
+            self.mesh("Fabric_Cloth", flip_w=False)])]
+        found = frame_survey.misfits(parts)
+        self.assertEqual((found["meshes"], found["corners"], found["small"]), (2, 6, 2))
+        self.assertEqual(found["large_other_mixed"]["meshes"], 0)
+        self.assertEqual(found["large_cloth_following"], [])
+
     def test_committed_survey_has_no_paths(self):
         for part in frame_survey.load():
             with self.subTest(part=part["name"]):
                 self.assertNotRegex(part["name"], r"[\\/:]")
                 for mesh in part["meshes"]:
                     self.assertNotRegex(mesh["material"], r"^[A-Za-z]:|[\\/]")
+                    self.assertNotRegex(mesh["mtd"], r"^[A-Za-z]:|[\\/]")
 
 
 if __name__ == "__main__":

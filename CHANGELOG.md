@@ -37,6 +37,9 @@
   results in `docs/figures/frame_survey.json`): Section IV-B gives a table per file-name prefix, and reports that
   meshes with a cloth material keep `W` at -1 on mirrored islands, unlike every other mesh and unlike ER Tangents;
   the cause and the effect in game were not tested. The guide's summary of the frame says the same.
+- IV-B also compares that behaviour with the material file each mesh uses, which is what an importer sees: meshes
+  whose material file contains "cloth" keep `W` at -1 on 96.0% of meshes and 98.1% of corners, the exceptions are
+  described, and the paper mentions an optional import step that could copy the cloth frame.
 
 ## 1.0.0
 

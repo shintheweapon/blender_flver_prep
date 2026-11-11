@@ -25,6 +25,26 @@ FIGURES_DIR = os.path.dirname(os.path.abspath(__file__))
 RESULTS = os.path.join(FIGURES_DIR, "frame_survey.json")
 SIGNS = {"+": 1, "-": -1}
 EXCEPTION_SHARE = 0.05
+CLOTH_RULE_SHARE = 0.95
+KEEPS = "keeps -1"
+FOLLOWS = "follows (9)"
+MIXED = "mixed"
+
+
+def file_name(path):
+    """
+    The file name at the end of a material path: the text after the last
+    backslash or slash.
+
+    Parameters
+    ----------
+    path : str
+
+    Returns
+    -------
+    str
+    """
+    return path.replace("\\", "/").rsplit("/", 1)[-1]
 
 
 def mesh_corners(mesh):
@@ -80,8 +100,8 @@ def part_survey(name, meshes):
         corners = mesh_corners(mesh)
         if corners:
             every += corners
-            per_mesh.append({"index": index, "material": mesh["material"], "corners": len(corners),
-                             "held": _held(corners)})
+            per_mesh.append({"index": index, "material": mesh["material"], "mtd": file_name(mesh.get("mtd", "")),
+                             "corners": len(corners), "held": _held(corners)})
     if not every:
         return None
     values = summarise(every)
@@ -189,6 +209,120 @@ def by_cloth(parts):
     for group in groups.values():
         group["parts"] = len(group["parts"])
     return groups
+
+
+def mesh_behaviour(entry, share=CLOTH_RULE_SHARE):
+    """
+    How one surveyed mesh stores W on its corners with d > 0, where (9) asks
+    for W = +1 with FLVER's winding.
+
+    Parameters
+    ----------
+    entry : dict
+        A mesh entry of ``part_survey``.
+    share : float
+        The share of those corners that decides.
+
+    Returns
+    -------
+    str or None
+        ``KEEPS`` when (9) fails on at least ``share`` of them, ``FOLLOWS``
+        when it holds on at least ``share``, ``MIXED`` otherwise, and None
+        when the mesh has no corners with d > 0.
+    """
+    held, total = entry["held"]["+"]
+    if total == 0:
+        return None
+    if held >= share * total:
+        return FOLLOWS
+    if total - held >= share * total:
+        return KEEPS
+    return MIXED
+
+
+def cloth_rule(parts):
+    """
+    Whether "the material file name contains cloth" predicts ``KEEPS``.
+
+    Parameters
+    ----------
+    parts : list of dict
+
+    Returns
+    -------
+    dict
+        ``counts``: per ``(file contains cloth, behaviour)`` the number of
+        meshes with a behaviour; ``name_and_file_differ``: the meshes whose
+        material name and material file disagree on containing "cloth", and
+        ``file_right``: those of them on which the material file predicts the
+        behaviour;
+        ``disagreeing``: ``(part, index, material, mtd, behaviour)`` for each
+        mesh that does not follow the rule (a cloth file that does not keep
+        -1, or another file that does not follow (9)).
+    """
+    counts, differ, file_right, disagreeing = {}, 0, 0, []
+    for part in parts:
+        for mesh in part["meshes"]:
+            behaviour = mesh_behaviour(mesh)
+            if behaviour is None:
+                continue
+            cloth_file = is_cloth(mesh["mtd"])
+            counts[(cloth_file, behaviour)] = counts.get((cloth_file, behaviour), 0) + 1
+            follows_rule = behaviour == (KEEPS if cloth_file else FOLLOWS)
+            if cloth_file != is_cloth(mesh["material"]):
+                differ += 1
+                file_right += follows_rule
+            if not follows_rule:
+                disagreeing.append((part["name"], mesh["index"], mesh["material"], mesh["mtd"], behaviour))
+    return {"counts": counts, "name_and_file_differ": differ, "file_right": file_right, "disagreeing": disagreeing}
+
+
+SMALL_MESH = 30
+LARGE_MESH = 300
+
+
+def misfits(parts):
+    """
+    The meshes that do not follow ``cloth_rule``, described.
+
+    Parameters
+    ----------
+    parts : list of dict
+
+    Returns
+    -------
+    dict
+        ``meshes`` and ``corners`` (their corners with d > 0); ``small``: the
+        misfits with fewer than ``SMALL_MESH`` such corners;
+        ``large_other_mixed``: the ``MIXED`` meshes without a cloth material
+        file and with at least ``LARGE_MESH`` such corners, with
+        ``lowest_share`` (the lowest share of those corners where (9) holds)
+        and ``gaps`` (per mesh, the difference between that share and the
+        share on corners with d < 0); ``large_cloth_following``: ``(part,
+        material file, corners)`` for cloth material files that follow (9)
+        on at least ``LARGE_MESH`` such corners.
+    """
+    rows = []
+    for part in parts:
+        for mesh in part["meshes"]:
+            behaviour = mesh_behaviour(mesh)
+            if behaviour is not None and behaviour != (KEEPS if is_cloth(mesh["mtd"]) else FOLLOWS):
+                rows.append((part["name"], mesh, behaviour))
+    share = lambda held: held[0] / held[1]
+    large_mixed = [m for _, m, b in rows if b == MIXED and not is_cloth(m["mtd"])
+                   and m["held"]["+"][1] >= LARGE_MESH and m["held"]["-"][1]]
+    return {
+        "meshes": len(rows),
+        "corners": sum(m["held"]["+"][1] for _, m, _ in rows),
+        "small": sum(m["held"]["+"][1] < SMALL_MESH for _, m, _ in rows),
+        "large_other_mixed": {
+            "meshes": len(large_mixed),
+            "lowest_share": min(share(m["held"]["+"]) for m in large_mixed) if large_mixed else None,
+            "gaps": sorted(abs(share(m["held"]["+"]) - share(m["held"]["-"])) for m in large_mixed),
+        },
+        "large_cloth_following": [(n, m["mtd"], m["held"]["+"][1]) for n, m, b in rows
+                                  if b == FOLLOWS and m["held"]["+"][1] >= LARGE_MESH],
+    }
 
 
 def exceptions(parts, share=EXCEPTION_SHARE):

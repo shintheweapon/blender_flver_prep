@@ -355,8 +355,25 @@ On the 17 cloth meshes of four parts that were looked at, $W$ is $-1$ on every v
 while $\vec{T}$ still follows +V, so (9) fails on their mirrored islands. In the modding community these materials are
 known to mark meshes moved by cloth simulation rather than by bones; why they keep $W = -1$ was not investigated, and
 whether the game uses $W$ on them was not tested. Outside cloth materials, 43 meshes fail (9) on more than 5% of their
-corners; they were not investigated. On the weapon WP_A_1253, whose UVs are mostly unmirrored, most vertices carry $W =
--1$.
+corners; they were not investigated. On the weapon WP_A_1253, whose UVs are mostly unmirrored, most vertices carry
+$W = -1$.
+
+An importer sees the material file each mesh uses (the matxml its material names) rather than its material name. On the
+meshes with corners where $d > 0$, a mesh keeps $W = -1$ when (9) fails on at least 95% of those corners, follows (9)
+when it holds on at least 95%, and is mixed otherwise; it agrees when its material file contains "cloth" and it keeps
+$W = -1$, or its file does not and it follows (9):
+
+| Material file | Meshes | Keep $W = -1$ | Follow (9) | Mixed | Agree, by meshes | Agree, by corners |
+|---|---|---|---|---|---|---|
+| Contains "cloth" | 854 | 820 | 3 | 31 | 96.0% | 98.1% |
+| All other | 6,345 | 45 | 6,116 | 184 | 96.4% | 99.5% |
+
+The material file and the material name disagree on containing "cloth" on 22 meshes; on 21 of them the material file
+predicts the frame. The 263 meshes that do not agree hold 97,170 of the 16,729,648 corners where $d > 0$. 192 of them
+have fewer than 30 such corners. The 22 mixed meshes without a cloth material file that have 300 or more follow (9) on
+at least 83% of them, and on nearly the same share of the corners where $d < 0$ (a difference of 2 points at the median
+and 12 at most), so they look imprecise rather than like cloth. One large mesh with a cloth material file, on FC_M_0105,
+follows (9) on all 4,806 of its corners where $d > 0$. The rule was not investigated further.
 
 These measurements fix the stored frame outside cloth meshes: $\vec{T}$ along +V, and $W$ such that
 $W(\vec{N}\times\vec{T})$ points along +U. Which channel the game reads along which direction follows from two other
@@ -365,7 +382,9 @@ layout and the frame together. So green is read along $\vec{T}$ and red along $W
 
 **Impact on the implementation.** ER Tangents builds $\vec{T}$ along +V and $W$ by (19), which gives the same value as
 (9). On the mirrored islands of cloth meshes, ER Tangents writes $W = +1$ where the game's own models keep $-1$; the
-effect in game was not tested.
+effect in game was not tested. An optional import step could set $W = -1$ on every tangent of a mesh with a cloth
+material, matching almost all of the game's cloth meshes. Because the name rule has exceptions, the step would be chosen
+for each import rather than applied by the material name, and it is not tested in game.
 
 ### C. The In-Game Test
 

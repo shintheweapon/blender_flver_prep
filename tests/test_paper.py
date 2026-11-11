@@ -255,6 +255,41 @@ class TestFrameTable(unittest.TestCase):
                          [[f"{split[k]['meshes']:,}", f"{split[k]['parts']:,}", self.pct(split[k]["held"]["+"]),
                            self.pct(split[k]["held"]["-"])] for k in ("cloth", "other")])
 
+    def test_material_file_table_is_the_survey(self):
+        parts = frame_survey.load()
+        counts = frame_survey.cloth_rule(parts)["counts"]
+        corners = {}
+        for part in parts:
+            for mesh in part["meshes"]:
+                behaviour = frame_survey.mesh_behaviour(mesh)
+                if behaviour:
+                    key = (frame_survey.is_cloth(mesh["mtd"]), behaviour)
+                    corners[key] = corners.get(key, 0) + mesh["held"]["+"][1]
+        got = self.table("| Material file | Meshes |")
+        for row, cloth in zip(got, (True, False)):
+            keeps, follows, mixed = (counts.get((cloth, b), 0) for b in
+                                     (frame_survey.KEEPS, frame_survey.FOLLOWS, frame_survey.MIXED))
+            agree = frame_survey.KEEPS if cloth else frame_survey.FOLLOWS
+            total_corners = sum(v for (k, _), v in corners.items() if k == cloth)
+            with self.subTest(cloth=cloth):
+                self.assertEqual(row[1:], [f"{keeps + follows + mixed:,}", f"{keeps:,}", f"{follows:,}", f"{mixed:,}",
+                                           f"{100 * counts.get((cloth, agree), 0) / (keeps + follows + mixed):.1f}%",
+                                           f"{100 * corners.get((cloth, agree), 0) / total_corners:.1f}%"])
+
+    def test_misfit_numbers_are_the_survey(self):
+        parts = frame_survey.load()
+        rule, found = frame_survey.cloth_rule(parts), frame_survey.misfits(parts)
+        text = " ".join(self.section().split())
+        [(part, _, corners)] = found["large_cloth_following"]
+        for phrase in (f"on {rule['name_and_file_differ']} meshes; on {rule['file_right']} of them",
+                       f"The {found['meshes']} meshes that do not agree hold {found['corners']:,} of the",
+                       f"{found['small']} of them have fewer than {frame_survey.SMALL_MESH}",
+                       f"The {found['large_other_mixed']['meshes']} mixed meshes",
+                       f"at least {100 * found['large_other_mixed']['lowest_share']:.0f}% of them",
+                       f"on {part}, follows (9) on all {corners:,}"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, text)
+
     def test_part_count_is_the_survey(self):
         self.assertIn(f"{len(frame_survey.load()):,} parts with triangles", self.section())
 
