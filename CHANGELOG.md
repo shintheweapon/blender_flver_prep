@@ -43,6 +43,11 @@
 - The paper follows the IEEE Editorial Style Manual on equations and tables: "Equation (n)" at the start of a sentence
   and "(n)" elsewhere, and every table numbered TABLE I, II and so on, with a caption above it and a citation in the
   text in order.
+- The paper names none of this repository's files: its scripts and results are cited as a reference, and
+  `docs/paper/README.md` explains how to reproduce Sections IV-A and IV-B, with the FLVER dumper
+  (`docs/figures/flverdump/`, built against SoulsFormatsNEXT) and the survey driver (`docs/figures/survey_parts.py`)
+  now in the repository. The references are numbered in order of first citation, and the paper names
+  SoulsFormatsNEXT, the library it was read with.
 
 ## 1.0.0
 

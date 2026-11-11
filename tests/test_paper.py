@@ -97,6 +97,14 @@ class TestCitations(unittest.TestCase):
         self.assertEqual(listed, list(range(1, len(listed) + 1)))
         self.assertEqual(cited, set(listed))
 
+    def test_references_are_numbered_in_order_of_first_citation(self):
+        body = read_paper().split(REFERENCES_HEADING)[0]
+        first = []
+        for n in re.findall(r"\[(\d+)\](?!\()", body):
+            if int(n) not in first:
+                first.append(int(n))
+        self.assertEqual(first, list(range(1, len(first) + 1)))
+
     def test_every_online_reference_has_an_access_date(self):
         references = read_paper().split(REFERENCES_HEADING)[1]
         for entry in re.split(r"\n\n+", references.strip()):
@@ -402,6 +410,13 @@ class TestToolNeutral(unittest.TestCase):
                         r"(?i)\bimport option\b"):
             with self.subTest(pattern=pattern):
                 self.assertIsNone(re.search(pattern, text))
+
+    def test_body_names_no_file_of_this_repository(self):
+        # The scripts and results are cited through the repository reference, not named in the sections
+        body = read_paper().split(REFERENCES_HEADING)[0]
+        for pattern in (r"docs/", r"\b[\w-]+\.py\b", r"\b[\w-]+\.json\b"):
+            with self.subTest(pattern=pattern):
+                self.assertIsNone(re.search(pattern, body))
 
     def test_paper_shows_the_paper_figures(self):
         images = re.findall(r"!\[[^\]]*\]\(\.\./figures/([^)]+)\)", read_paper())

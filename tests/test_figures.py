@@ -16,6 +16,7 @@ import integrability  # noqa: E402
 import layout_results  # noqa: E402
 import make_figures  # noqa: E402
 import paper_figures  # noqa: E402
+import survey_parts  # noqa: E402
 import route_chart  # noqa: E402
 import tangent_geometry as mf  # noqa: E402
 
@@ -616,6 +617,16 @@ class TestFrameSurvey(unittest.TestCase):
         self.assertEqual((found["meshes"], found["corners"], found["small"]), (2, 6, 2))
         self.assertEqual(found["large_other_mixed"]["meshes"], 0)
         self.assertEqual(found["large_cloth_following"], [])
+
+    def test_flver_paths_lists_one_file_per_name(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as root:
+            for folder, name in (("b", "BD_M_0001.flver"), ("a", "bd_m_0001.flver"), ("a", "WP_A_0001.flver"),
+                                 ("a", "notes.txt")):
+                os.makedirs(os.path.join(root, folder), exist_ok=True)
+                open(os.path.join(root, folder, name), "w").close()
+            found = [os.path.relpath(p, root) for p in survey_parts.flver_paths(root)]
+        self.assertEqual(found, [os.path.join("a", "bd_m_0001.flver"), os.path.join("a", "WP_A_0001.flver")])
 
     def test_committed_survey_has_no_paths(self):
         for part in frame_survey.load():

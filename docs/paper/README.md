@@ -23,3 +23,22 @@ test is
 `../figures/integrability_maps.json`, read by [`../figures/layout_results.py`](../figures/layout_results.py).
 `tests/test_figures.py` and `tests/test_paper.py` check
 them and the paper's worked example.
+
+## Reproducing the measurements
+
+The paper cites this repository for the scripts and results of Sections IV-A and IV-B. The committed results
+(`../figures/integrability_maps.json` and `../figures/frame_survey.json`) give every number in those sections' tables,
+and the tests check the tables against them. Regenerating the results needs your own copy of Elden Ring, whose files
+are not distributed here.
+
+1. **Unpack the parts.** Unpack the game's `parts/*.partsbnd.dcx` binders, leaving out the `_l` (low-detail) ones,
+   and then the `.tpf` texture files inside them, into one folder, with a BND tool such as WitchyBND.
+2. **IV-A, the layout test:** `python docs/figures/integrability.py <unpack folder>` tests every `*_n.dds` file (one
+   per file name) and rewrites `integrability_maps.json`. It needs numpy and Pillow.
+3. **Build the FLVER dumper** in [`../figures/flverdump/`](../figures/flverdump/), a small .NET 9 program that writes
+   each mesh of a FLVER as JSON. It is built against SoulsFormatsNEXT (GPL-3,
+   https://github.com/soulsmods/SoulsFormatsNEXT), which is not included here:
+   `dotnet build docs/figures/flverdump -c Release -p:SoulsFormatsProject=<path to SoulsFormatsNEXT>/SoulsFormats/SoulsFormats.csproj`.
+4. **IV-B, the frame survey:** `python docs/figures/survey_parts.py <path to flverdump.exe> <unpack folder>` dumps and
+   surveys every `.flver` (one per file name) and rewrites `frame_survey.json`. It keeps its progress in the unpack
+   folder, so a stopped run resumes.

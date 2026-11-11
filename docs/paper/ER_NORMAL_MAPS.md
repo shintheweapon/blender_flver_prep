@@ -40,7 +40,7 @@ frame on a mesh follows a different convention from the one the map was made for
 the wrong basis: raised details look dented, or lit from the side.
 
 Meshes made in Blender reach Elden Ring through an importer that converts FBX files to the game's model format, FLVER
-[7]. The importer keeps the tangents of the FBX file, or generates them with the FBX SDK [8], in the common convention.
+[1]. The importer keeps the tangents of the FBX file, or generates them with the FBX SDK [2], in the common convention.
 The game's own models use a different one, so the two disagree. This paper:
 
 - measures the convention of the game's own models (Sections III and IV);
@@ -52,7 +52,7 @@ The game's own models use a different one, so the two disagree. This paper:
 
 ### A. Normal Mapping and the TBN Frame
 
-Blinn introduced shading with a perturbed normal [1]. A real-time normal map stores the perturbed normal in tangent
+Blinn introduced shading with a perturbed normal [3]. A real-time normal map stores the perturbed normal in tangent
 space: relative to the surface at that point rather than to the world. One map then serves a surface in any position,
 and the same UV island can be reused on several parts. To shade, the renderer needs, at each point, the surface normal
 $\vec{N}$ and two vectors in the tangent plane, the tangent $\vec{T}$ and the bitangent $\vec{B}$, which give the
@@ -71,7 +71,7 @@ the tangent, the bitangent and the surface normal with these weights, normalised
 
 The two common layouts differ in how the green channel is read. In the DirectX layout the first row of the image is at
 the top, so +V runs down the image; in the OpenGL layout it is at the bottom, so +V runs up. A map converts from one
-layout to the other by inverting green [5].
+layout to the other by inverting green [4].
 
 ### C. Handedness
 
@@ -94,7 +94,7 @@ system, the left hand does. Handedness decides two things that matter here:
 
 A reflection, a scaling by $-1$ along one axis, reverses both. An FBX file declares its axis system, which may be
 right-handed or left-handed: the FBX SDK's presets for Maya, 3ds Max, MotionBuilder and OpenGL are right-handed, and
-those for DirectX and Lightwave are left-handed [8]. The SDK describes its 3ds Max preset as x to the right, z up and y
+those for DirectX and Lightwave are left-handed [2]. The SDK describes its 3ds Max preset as x to the right, z up and y
 into the screen. Blender's Front view shows the same: +X to the right, +Z up and +Y into the screen, read from the
 view's rotation in Blender 4.5. So Blender's 3D space is right-handed with Z up.
 
@@ -206,7 +206,7 @@ $W$ an island whose texture looks unmirrored needs.
 
 - **Anatomy:** the character stands along +Y, faces −Z, and has its left side at +X. Seen from in front, x points to
   the right, y up and z into the screen. In the FBX SDK's terms that is a left-handed coordinate system, the same as its
-  DirectX preset [8].
+  DirectX preset [2].
 - **Winding:** computed with (2), $(\vec{p}_1-\vec{p}_0)\times(\vec{p}_2-\vec{p}_0)$ points opposite to the stored
   normal on almost all LOD0 triangles. Front faces therefore run clockwise under right-handed maths, which is
   anticlockwise as seen in a left-handed space.
@@ -263,8 +263,8 @@ swapped pairing), was correlated in the same way, and the pairing with the large
 when a channel does not vary at all or every tile is skipped.
 
 The test ran on every normal map of the game's parts, one per file name: 1,437 maps, of which
-50 are untestable. The test is the function `test_map` in `docs/figures/integrability.py`, and
-its results are in `docs/figures/integrability_maps.json`. Per file-name prefix, over the testable maps (Table I):
+50 are untestable. The test's script and its per-map results are published with this paper [5]; reproducing them
+needs the game's own files, which are not distributed. Per file-name prefix, over the testable maps (Table I):
 
 <p align="center">TABLE I<br>LAYOUT TEST ON THE GAME'S PART NORMAL MAPS, PER FILE-NAME PREFIX</p>
 
@@ -311,12 +311,12 @@ models carry.
 Comparing it with the stored frame at every triangle corner shows which rule the stored frame follows.
 
 Every part model of the game was checked: 1,515 parts with triangles, tangents and UVs. Each was read with
-SoulsFormats [7]: for every mesh, each vertex's position, normal, first tangent $(\vec{T}, W)$ and first UV, and the
-triangles of the LOD0 face set.
+SoulsFormatsNEXT [1], the community continuation of TKGP's SoulsFormats: for every mesh, each vertex's position, normal,
+first tangent $(\vec{T}, W)$ and first UV, and the triangles of the LOD0 face set.
 The check then runs per triangle:
 
-- Equations (15) and (16) give $\partial\vec{p}/\partial u$ and $\partial\vec{p}/\partial v$; degenerate triangles and those with
-  no area in UV space are skipped;
+- Equations (15) and (16) give $\partial\vec{p}/\partial u$ and $\partial\vec{p}/\partial v$; degenerate triangles and
+  those with no area in UV space are skipped;
 - at each of the triangle's three vertices, the stored frame is compared with them:
     - the value of $W$;
     - the length of $\vec{T}$;
@@ -325,8 +325,8 @@ The check then runs per triangle:
       1 when the tangent lies along +V;
     - whether $W$ equals (9).
 
-The check is the function `frame_checks` in `docs/figures/frame_checks.py`, tested with the paper's other formulas;
-`docs/figures/frame_survey.py` runs it on every mesh, and its results are in `docs/figures/frame_survey.json`. Per
+The check, its survey of every mesh and the per-mesh results are published with this paper [5], and the check is
+tested with the paper's other formulas. Per
 file-name prefix, with (9) per UV orientation (the sign of $d$) and pooled over all corners; the other columns give the
 range, the largest value and the smallest value over the prefix's parts (Table II):
 
@@ -437,7 +437,7 @@ removes, and that the channel changes of Section VII undo instead.
 
 ## V. Tangents in the Common Convention
 
-The tangents an FBX file carries, and those the FBX SDK generates for a file without them [8], point along +U, as
+The tangents an FBX file carries, and those the FBX SDK generates for a file without them [2], point along +U, as
 measured in Section IV-D. The importer keeps them as they are. With the frames measured there, the basis vectors the
 game uses become
 
@@ -474,7 +474,7 @@ dented on the other (Fig. 7).
 
 ER Tangents is an import step [6] that builds tangents in the game's convention. With it, the importer builds the
 tangents from the mesh after the importer's axis change, in place of the file's. It is adapted from Lengyel's method
-[2], which computes per-triangle tangents, averages them per vertex, orthogonalises them against the normal
+[7], which computes per-triangle tangents, averages them per vertex, orthogonalises them against the normal
 (Gram-Schmidt) and stores the handedness as ±1. Here the tangent follows +V instead of +U, and each triangle
 contributes normalised directions weighted by its area. The steps run as follows.
 
@@ -585,8 +585,8 @@ unchanged.
 
 It is offered upstream as a pull request [6].
 
-**Relation to MikkTSpace.** MikkTSpace [3], [4] is the tangent method Blender uses: its `Mesh.calc_tangents` runs it
-[4], and Blender's FBX exporter calls `calc_tangents` when Tangent Space is on. These tangents follow +U and the
+**Relation to MikkTSpace.** MikkTSpace [8], [9] is the tangent method Blender uses: its `Mesh.calc_tangents` runs it
+[9], and Blender's FBX exporter calls `calc_tangents` when Tangent Space is on. These tangents follow +U and the
 exporter writes no W, so they follow the common convention, like the FBX SDK's. ER Tangents builds its own tangents
 from the mesh, so every route out of Blender gives the same result.
 
@@ -663,32 +663,36 @@ tests. shintheweapon carried out the in-game tests and the test imports, and mad
 
 ## References
 
-[1] J. F. Blinn, "Simulation of wrinkled surfaces," *ACM SIGGRAPH Comput. Graph.*, vol. 12, no. 3, pp. 286-292,
+[1] soulsmods, "SoulsFormatsNEXT," GitHub repository. [Online]. Available: https://github.com/soulsmods/SoulsFormatsNEXT.
+Accessed: Nov. 11, 2026.
+
+[2] Autodesk, *FBX SDK 2020.2.1*, header files `fbxsdk/scene/fbxaxissystem.h` (`FbxAxisSystem`) and
+`fbxsdk/scene/geometry/fbxmesh.h` (`FbxMesh::GenerateTangentsDataForAllUVSets`). [Online]. Available:
+https://help.autodesk.com/view/FBX/2020/ENU/. Accessed: Nov. 11, 2026.
+
+[3] J. F. Blinn, "Simulation of wrinkled surfaces," *ACM SIGGRAPH Comput. Graph.*, vol. 12, no. 3, pp. 286-292,
 Aug. 1978, doi: 10.1145/965139.507101.
 
-[2] E. Lengyel, "Computing tangent space basis vectors for an arbitrary mesh," Terathon Software, Mar. 15, 2004.
-[Online]. Available: https://terathon.com/code/tangent.php. Accessed: Nov. 11, 2026.
-
-[3] M. Mikkelsen, "Simulation of wrinkled surfaces revisited," M.S. thesis, Dept. Comput. Sci. (DIKU), Univ.
-Copenhagen, Copenhagen, Denmark, Mar. 2008. [Online]. Available:
-http://image.diku.dk/projects/media/morten.mikkelsen.08.pdf. Accessed: Nov. 11, 2026.
-
-[4] M. S. Mikkelsen, "MikkTSpace," GitHub repository, 2011. [Online]. Available: https://github.com/mmikk/MikkTSpace.
-Blender's port: `intern/mikktspace` and `source/blender/blenkernel/intern/mesh_tangent.cc`, Blender 4.5, [Online].
-Available: https://github.com/blender/blender. Accessed: Nov. 11, 2026.
-
-[5] Adobe, "What is the difference between the OpenGL and DirectX normal format?," Substance 3D Bakers documentation,
+[4] Adobe, "What is the difference between the OpenGL and DirectX normal format?," Substance 3D Bakers documentation,
 May 1, 2026. [Online]. Available:
 https://experienceleague.adobe.com/en/docs/substance-3d/bakers/common-questions/what-is-the-difference-between-the-opengl-and-directx-normal-format.
 Accessed: Nov. 11, 2026.
+
+[5] shintheweapon, "blender_flver_prep," GitHub repository, branch develop: `docs/figures/` (the scripts
+and results of Sections IV-A and IV-B) and `docs/paper/README.md` (how to reproduce them). [Online].
+Available: https://github.com/shintheweapon/blender_flver_prep/tree/develop. Accessed: Nov. 11, 2026.
 
 [6] shintheweapon, "FbxImporter," fork, branch develop; and "Add an ER Tangents import option," pull request #10.
 [Online]. Available: https://github.com/shintheweapon/FbxImporter/tree/develop and
 https://github.com/The12thAvenger/FbxImporter/pull/10. Accessed: Nov. 11, 2026.
 
-[7] soulsmods, "SoulsFormatsNEXT," GitHub repository. [Online]. Available: https://github.com/soulsmods/SoulsFormatsNEXT.
-Accessed: Nov. 11, 2026.
+[7] E. Lengyel, "Computing tangent space basis vectors for an arbitrary mesh," Terathon Software, Mar. 15, 2004.
+[Online]. Available: https://terathon.com/code/tangent.php. Accessed: Nov. 11, 2026.
 
-[8] Autodesk, *FBX SDK 2020.2.1*, header files `fbxsdk/scene/fbxaxissystem.h` (`FbxAxisSystem`) and
-`fbxsdk/scene/geometry/fbxmesh.h` (`FbxMesh::GenerateTangentsDataForAllUVSets`). [Online]. Available:
-https://help.autodesk.com/view/FBX/2020/ENU/. Accessed: Nov. 11, 2026.
+[8] M. Mikkelsen, "Simulation of wrinkled surfaces revisited," M.S. thesis, Dept. Comput. Sci. (DIKU), Univ.
+Copenhagen, Copenhagen, Denmark, Mar. 2008. [Online]. Available:
+http://image.diku.dk/projects/media/morten.mikkelsen.08.pdf. Accessed: Nov. 11, 2026.
+
+[9] M. S. Mikkelsen, "MikkTSpace," GitHub repository, 2011. [Online]. Available: https://github.com/mmikk/MikkTSpace.
+Blender's port: `intern/mikktspace` and `source/blender/blenkernel/intern/mesh_tangent.cc`, Blender 4.5, [Online].
+Available: https://github.com/blender/blender. Accessed: Nov. 11, 2026.
