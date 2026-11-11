@@ -1,6 +1,9 @@
 """
 The rules the figures of docs/NORMAL_MAPS.md draw: the tangent frame, the
 directions in which the game reads green and red, and the tilts it decodes.
+It also holds the formulas of the paper docs/paper/ER_NORMAL_MAPS.md: the
+colour encoding, the per-triangle UV directions, the tangents in the game's
+convention, and the channel workarounds.
 
 Two coordinate systems are used:
 
@@ -197,6 +200,187 @@ def decode(tilt, case):
     green, red = read_directions(case)
     a, b = tilt
     return (a * red[0] + b * green[0], a * red[1] + b * green[1])
+
+
+def decode_colour(red, green):
+    """
+    The tilt a normal-map pixel stores, from its red and green values.
+
+    Parameters
+    ----------
+    red, green : float
+        Channel values from 0 to 1.
+
+    Returns
+    -------
+    tuple of float
+        ``(x, y, z)``: ``x = 2R - 1``, ``y = 2G - 1``, and ``z`` rebuilt so the
+        tilt has length 1 (0 when x and y already reach length 1).
+    """
+    x = 2.0 * red - 1.0
+    y = 2.0 * green - 1.0
+    return (x, y, math.sqrt(max(0.0, 1.0 - x * x - y * y)))
+
+
+def encode_colour(x, y):
+    """
+    The red and green values that store a tilt: the inverse of ``decode_colour``.
+
+    Parameters
+    ----------
+    x, y : float
+        The tilt's +U and +V parts, from -1 to 1.
+
+    Returns
+    -------
+    tuple of float
+        ``(R, G)``.
+    """
+    return ((x + 1.0) / 2.0, (y + 1.0) / 2.0)
+
+
+def _sub(a, b):
+    return tuple(x - y for x, y in zip(a, b))
+
+
+def _add(a, b):
+    return tuple(x + y for x, y in zip(a, b))
+
+
+def _scale(a, s):
+    return tuple(x * s for x in a)
+
+
+def _length_squared(a):
+    return dot(a, a)
+
+
+def uv_derivatives(positions, uvs):
+    """
+    The directions along which U and V increase across one triangle.
+
+    Solves ``e1 = du1 dp/du + dv1 dp/dv`` and ``e2 = du2 dp/du + dv2 dp/dv``
+    for the two directions, as FbxImporter's ``TangentBuilder.Build`` does.
+
+    Parameters
+    ----------
+    positions : sequence of tuple of float
+        The three corners ``p0, p1, p2``.
+    uvs : sequence of tuple of float
+        Their ``(u, v)`` values, as stored in the FLVER.
+
+    Returns
+    -------
+    tuple or None
+        ``(d, dp_du, dp_dv)``, where ``d = du1 dv2 - du2 dv1``; None when the
+        triangle has no UV area (``|d| < 1e-12``).
+    """
+    e1, e2 = _sub(positions[1], positions[0]), _sub(positions[2], positions[0])
+    (du1, dv1), (du2, dv2) = _sub(uvs[1], uvs[0]), _sub(uvs[2], uvs[0])
+    d = du1 * dv2 - du2 * dv1
+    if abs(d) < 1e-12:
+        return None
+    dp_du = _scale(_sub(_scale(e1, dv2), _scale(e2, dv1)), 1.0 / d)
+    dp_dv = _scale(_sub(_scale(e2, du1), _scale(e1, du2)), 1.0 / d)
+    return d, dp_du, dp_dv
+
+
+def build_frame(positions, normals, uvs, triangles, fallback):
+    """
+    Tangents in the game's convention, step by step as ``TangentBuilder.Build``
+    builds them: T along +V and W so that W(N x T) points along +U.
+
+    Each triangle adds its +U and +V directions, at length ``|e1 x e2|``, to
+    its three corners; triangles with a repeated corner, no UV area or no
+    size are skipped. Each vertex's +V sum, less its part along the normal,
+    is its tangent, and W comes from the +U sum. A vertex without a usable
+    normal or +V sum keeps its fallback tangent, with W made +1 or -1.
+
+    Parameters
+    ----------
+    positions, normals : sequence of tuple of float
+        One 3D position and normal per vertex.
+    uvs : sequence of tuple of float
+        One ``(u, v)`` per vertex.
+    triangles : sequence of tuple of int
+        Three vertex indices per triangle.
+    fallback : sequence of tuple of float
+        One ``(x, y, z, w)`` tangent per vertex.
+
+    Returns
+    -------
+    list of tuple
+        One ``(T, W)`` per vertex.
+    """
+    count = len(positions)
+    u_sum = [(0.0, 0.0, 0.0)] * count
+    v_sum = [(0.0, 0.0, 0.0)] * count
+    for a, b, c in triangles:
+        if a == b or b == c or a == c:
+            continue
+        corners = (positions[a], positions[b], positions[c])
+        solved = uv_derivatives(corners, (uvs[a], uvs[b], uvs[c]))
+        size = math.sqrt(_length_squared(cross(_sub(corners[1], corners[0]), _sub(corners[2], corners[0]))))
+        if solved is None or size < 1e-20:
+            continue
+        _, dp_du, dp_dv = solved
+        if _length_squared(dp_du) < 1e-24 or _length_squared(dp_dv) < 1e-24:
+            continue
+        u_vote = _scale(dp_du, size / math.sqrt(_length_squared(dp_du)))
+        v_vote = _scale(dp_dv, size / math.sqrt(_length_squared(dp_dv)))
+        for i in (a, b, c):
+            u_sum[i] = _add(u_sum[i], u_vote)
+            v_sum[i] = _add(v_sum[i], v_vote)
+
+    frames = []
+    for i in range(count):
+        n = normals[i]
+        n = _scale(n, 1.0 / math.sqrt(_length_squared(n))) if _length_squared(n) > 0 else (0.0, 0.0, 0.0)
+        t = _sub(v_sum[i], _scale(n, dot(n, v_sum[i])))
+        if (_length_squared(n) == 0 or _length_squared(v_sum[i]) == 0
+                or _length_squared(t) <= 1e-8 * _length_squared(v_sum[i])):
+            frames.append((tuple(fallback[i][:3]), -1 if fallback[i][3] < 0 else 1))
+            continue
+        t = _scale(t, 1.0 / math.sqrt(_length_squared(t)))
+        frames.append((t, 1 if dot(cross(n, t), u_sum[i]) >= 0 else -1))
+    return frames
+
+
+WORKAROUND_SETTINGS = ("none", "mirror_z")
+
+
+def workaround(red, green, setting):
+    """
+    The red and green values that make a map read as authored through
+    tangents along +U, without ER Tangents.
+
+    Transform None reads a stored tilt (a', b') as (b', -a'), so the map
+    stores (-b, a); Transform Mirror Z reads it as (b', a'), so the map
+    stores (b, a).
+
+    Parameters
+    ----------
+    red, green : float
+        The authored channel values, from 0 to 1.
+    setting : str
+        ``"none"`` (Transform None, Mirror unticked) or ``"mirror_z"``
+        (Transform Mirror Z, Mirror ticked).
+
+    Returns
+    -------
+    tuple of float
+        The new ``(R, G)``.
+
+    Raises
+    ------
+    ValueError
+        For any other setting.
+    """
+    if setting == "none":
+        return (1.0 - green, red)
+    if setting == "mirror_z":
+        return (green, red)
+    raise ValueError(f"unknown setting {setting!r}; expected one of {WORKAROUND_SETTINGS}")
 
 
 def dome_points(count=8):

@@ -134,5 +134,155 @@ class TestDome(unittest.TestCase):
                 self.assertTrue(close(mf.apply_motion(motion, mf.U), red))
 
 
+# The worked example of the paper: one triangle, its UVs and its normal
+EXAMPLE_POSITIONS = [(0.0, 0.0, 0.0), (2.0, 0.0, 0.0), (0.0, 0.0, 1.0)]
+EXAMPLE_UVS = [(0.0, 0.0), (0.5, 0.0), (0.0, 0.25)]
+EXAMPLE_NORMAL = (0.0, -1.0, 0.0)
+NO_FALLBACK = [(0.0, 0.0, 0.0, 1.0)] * 3
+
+
+def w_rule(normal, dp_du, dp_dv):
+    """W = -sign(N . (dp/du x dp/dv)), the rule measured on vanilla models."""
+    return -1 if mf.dot(normal, mf.cross(dp_du, dp_dv)) > 0 else 1
+
+
+class TestColourEncoding(unittest.TestCase):
+
+    def test_half_values_store_no_tilt(self):
+        self.assertTrue(close(mf.decode_colour(0.5, 0.5), (0.0, 0.0, 1.0)))
+
+    def test_decoded_tilt_has_length_one(self):
+        for red, green in ((0.9, 0.5), (0.2, 0.7), (0.65, 0.35)):
+            with self.subTest(red=red, green=green):
+                self.assertAlmostEqual(mf.dot(mf.decode_colour(red, green), mf.decode_colour(red, green)), 1.0)
+
+    def test_encode_is_the_inverse_of_decode(self):
+        for a, b in mf.dome_points():
+            with self.subTest(tilt=(a, b)):
+                x, y, _ = mf.decode_colour(*mf.encode_colour(0.6 * a, 0.6 * b))
+                self.assertTrue(close((x, y), (0.6 * a, 0.6 * b)))
+
+
+class TestWorkedExample(unittest.TestCase):
+
+    def test_uv_derivatives(self):
+        d, dp_du, dp_dv = mf.uv_derivatives(EXAMPLE_POSITIONS, EXAMPLE_UVS)
+        self.assertAlmostEqual(d, 0.125)
+        self.assertTrue(close(dp_du, (4.0, 0.0, 0.0)))
+        self.assertTrue(close(dp_dv, (0.0, 0.0, 4.0)))
+
+    def test_frame(self):
+        [(t, w)] = mf.build_frame(EXAMPLE_POSITIONS, [EXAMPLE_NORMAL] * 3, EXAMPLE_UVS, [(0, 1, 2)], NO_FALLBACK)[:1]
+        self.assertTrue(close(t, (0.0, 0.0, 1.0)))
+        self.assertTrue(close(mf.cross(EXAMPLE_NORMAL, t), (-1.0, 0.0, 0.0)))
+        self.assertEqual(w, -1)
+        self.assertTrue(close(tuple(w * c for c in mf.cross(EXAMPLE_NORMAL, t)), (1.0, 0.0, 0.0)))
+
+    def test_w_matches_the_vanilla_rule(self):
+        _, dp_du, dp_dv = mf.uv_derivatives(EXAMPLE_POSITIONS, EXAMPLE_UVS)
+        self.assertEqual(w_rule(EXAMPLE_NORMAL, dp_du, dp_dv), -1)
+
+    def test_every_vertex_gets_the_same_frame(self):
+        frames = mf.build_frame(EXAMPLE_POSITIONS, [EXAMPLE_NORMAL] * 3, EXAMPLE_UVS, [(0, 1, 2)], NO_FALLBACK)
+        for t, w in frames:
+            self.assertTrue(close(t, (0.0, 0.0, 1.0)))
+            self.assertEqual(w, -1)
+
+
+class TestBuildFrame(unittest.TestCase):
+
+    def test_corner_order_does_not_change_the_frame(self):
+        forward = mf.build_frame(EXAMPLE_POSITIONS, [EXAMPLE_NORMAL] * 3, EXAMPLE_UVS, [(0, 1, 2)], NO_FALLBACK)
+        reversed_ = mf.build_frame(EXAMPLE_POSITIONS, [EXAMPLE_NORMAL] * 3, EXAMPLE_UVS, [(0, 2, 1)], NO_FALLBACK)
+        for (t1, w1), (t2, w2) in zip(forward, reversed_):
+            self.assertTrue(close(t1, t2))
+            self.assertEqual(w1, w2)
+
+    def test_mirrored_uvs_flip_w_and_keep_t(self):
+        mirrored = [(-u, v) for u, v in EXAMPLE_UVS]
+        [(t, w)] = mf.build_frame(EXAMPLE_POSITIONS, [EXAMPLE_NORMAL] * 3, mirrored, [(0, 1, 2)], NO_FALLBACK)[:1]
+        _, dp_du, dp_dv = mf.uv_derivatives(EXAMPLE_POSITIONS, mirrored)
+        self.assertTrue(close(t, (0.0, 0.0, 1.0)))
+        self.assertEqual(w, 1)
+        self.assertEqual(w_rule(EXAMPLE_NORMAL, dp_du, dp_dv), 1)
+
+    def test_tangent_is_perpendicular_to_a_tilted_normal(self):
+        normal = (0.0, -0.8, 0.6)
+        [(t, _)] = mf.build_frame(EXAMPLE_POSITIONS, [normal] * 3, EXAMPLE_UVS, [(0, 1, 2)], NO_FALLBACK)[:1]
+        self.assertAlmostEqual(mf.dot(t, normal), 0.0)
+        self.assertAlmostEqual(mf.dot(t, t), 1.0)
+
+    def test_vertex_without_triangles_keeps_its_fallback(self):
+        positions = EXAMPLE_POSITIONS + [(5.0, 0.0, 0.0)]
+        fallback = NO_FALLBACK + [(1.0, 0.0, 0.0, -0.5)]
+        frames = mf.build_frame(positions, [EXAMPLE_NORMAL] * 4, EXAMPLE_UVS + [(1.0, 1.0)], [(0, 1, 2)], fallback)
+        self.assertEqual(frames[3], ((1.0, 0.0, 0.0), -1))
+
+    def test_triangle_without_uv_area_is_skipped(self):
+        self.assertIsNone(mf.uv_derivatives(EXAMPLE_POSITIONS, [(0.0, 0.0), (0.5, 0.0), (1.0, 0.0)]))
+        frames = mf.build_frame(EXAMPLE_POSITIONS, [EXAMPLE_NORMAL] * 3, [(0.0, 0.0), (0.5, 0.0), (1.0, 0.0)],
+                                [(0, 1, 2)], [(0.0, 1.0, 0.0, 1.0)] * 3)
+        self.assertEqual(frames, [((0.0, 1.0, 0.0), 1)] * 3)
+
+
+class TestDecodeMatrices(unittest.TestCase):
+
+    MATRICES = {"none": ((0, 1), (-1, 0)), "mirror_z": ((0, 1), (1, 0))}
+
+    def test_matrices_equal_decode_at_every_dome_point(self):
+        for key, ((m00, m01), (m10, m11)) in self.MATRICES.items():
+            for a, b in mf.dome_points():
+                with self.subTest(case=key, tilt=(a, b)):
+                    self.assertTrue(close((m00 * a + m01 * b, m10 * a + m11 * b), mf.decode((a, b), CASE[key])))
+
+
+class TestWorkaround(unittest.TestCase):
+
+    def test_workaround_reads_back_as_authored(self):
+        for setting in mf.WORKAROUND_SETTINGS:
+            for a, b in mf.dome_points():
+                with self.subTest(setting=setting, tilt=(a, b)):
+                    red, green = mf.workaround(*mf.encode_colour(0.6 * a, 0.6 * b), setting)
+                    x, y, _ = mf.decode_colour(red, green)
+                    self.assertTrue(close(mf.decode((x, y), CASE[setting]), (0.6 * a, 0.6 * b)))
+
+    def test_unknown_setting_is_refused(self):
+        with self.assertRaises(ValueError):
+            mf.workaround(0.5, 0.5, "mirror_x")
+
+
+class TestSlopeTest(unittest.TestCase):
+    """The layout test of the paper on a synthetic height field: dR/dv matches dG/du in the DirectX layout."""
+
+    @staticmethod
+    def correlation(red, green):
+        import numpy as np
+        dr_dv = np.gradient(red, axis=0)  # rows run along +V (row 0 at the top)
+        dg_du = np.gradient(green, axis=1)  # columns run along +U
+        detail = np.abs(dr_dv) + np.abs(dg_du)
+        keep = detail > np.median(detail)  # the more detailed half of the pixels
+        return float(np.corrcoef(dr_dv[keep], dg_du[keep])[0, 1])
+
+    @staticmethod
+    def height_field():
+        import numpy as np
+        size = 128
+        v, u = np.mgrid[0:size, 0:size] / size
+        height = (0.04 * np.sin(2 * np.pi * 3 * u) * np.cos(2 * np.pi * 2 * v)
+                  + 0.08 * np.exp(-((u - 0.3) ** 2 + (v - 0.6) ** 2) / 0.01)
+                  - 0.05 * np.exp(-((u - 0.7) ** 2 + (v - 0.25) ** 2) / 0.005))
+        dh_dv, dh_du = np.gradient(height, 1.0 / size)
+        scale = np.sqrt(1 + dh_du ** 2 + dh_dv ** 2)
+        return (-dh_du / scale + 1) / 2, (-dh_dv / scale + 1) / 2
+
+    def test_directx_layout_passes(self):
+        red, green = self.height_field()
+        self.assertGreater(self.correlation(red, green), 0.9)
+
+    def test_inverted_green_fails(self):
+        red, green = self.height_field()
+        self.assertLess(self.correlation(red, 1 - green), -0.9)
+
+
 if __name__ == "__main__":
     unittest.main()
