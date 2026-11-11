@@ -1,10 +1,11 @@
 """
-The "Ways out of Blender" chart of docs/NORMAL_MAPS.md: the three routes from
-Blender into FbxImporter, which with ER Tangents ticked all give a FLVER in the
-game's tangent frame.
+The "Ways out of Blender" chart: the routes from Blender into the importer,
+which with ER Tangents ticked all give a FLVER in the game's tangent frame.
+The guide's chart (``GUIDE_CHART``) has three routes and names the tools; the
+paper's (``PAPER_CHART``) has Blender's two FBX export routes and names none.
 
-The boxes are data (``ROUTE_BOXES``), so the tests can check that every label
-fits its box without reading the SVG.
+The boxes are data, so the tests can check that every label fits its box
+without reading the SVG.
 """
 
 from svg_parts import line, svg, text
@@ -76,6 +77,46 @@ ROUTE_BOXES = (
 BUS_X = 290
 
 
+class Chart:
+    """
+    One document's route chart.
+
+    Parameters
+    ----------
+    boxes : tuple of Box
+        The source boxes, then the importer box, then the FLVER box.
+    height : float
+        Height of the figure.
+    description : str
+        The figure's description, read by screen readers.
+    """
+
+    def __init__(self, boxes, height, description):
+        self.boxes = boxes
+        self.height = height
+        self.description = description
+
+
+GUIDE_CHART = Chart(
+    ROUTE_BOXES, HEIGHT,
+    "Three routes from Blender into FbxImporter: FLVER Prep's export, with no tangents; Blender's FBX "
+    "export with Tangent Space off, with no tangents; and Blender's FBX export with Tangent Space on, "
+    "with tangents along +U and no W. With ER Tangents ticked, FbxImporter writes a FLVER whose "
+    "tangents follow the game's frame, whichever route the file took.")
+
+PAPER_CHART = Chart(
+    (
+        Box(40, 20, 220, 78, ("FBX export", "Tangent Space off", "no tangents")),
+        Box(40, 114, 220, 78, ("FBX export", "Tangent Space on", "+U tangents with no W")),
+        Box(320, 74, 170, 64, ("Importer", "ER Tangents ticked")),
+        Box(520, 74, 150, 64, ("FLVER", "the game's frame")),
+    ),
+    212,
+    "Two routes from Blender into the importer: Blender's FBX export with Tangent Space off, with no "
+    "tangents, and with Tangent Space on, with tangents along +U and no W. With ER Tangents ticked, the "
+    "importer writes a FLVER whose tangents follow the game's frame, whichever route the file took.")
+
+
 def draw_box(box):
     """
     A box with its lines centred in it.
@@ -97,27 +138,28 @@ def draw_box(box):
     return body
 
 
-def figure_ways_out():
+def figure_ways_out(chart=None):
     """
-    The three routes out of Blender, joined into FbxImporter and on to the
-    FLVER.
+    The routes out of Blender, joined into the importer and on to the FLVER.
+
+    Parameters
+    ----------
+    chart : Chart, optional
+        The chart to draw; the guide's when omitted.
 
     Returns
     -------
     str
     """
-    sources = ROUTE_BOXES[:3]
-    importer, flver = ROUTE_BOXES[3], ROUTE_BOXES[4]
+    chart = chart or GUIDE_CHART
+    sources = chart.boxes[:-2]
+    importer, flver = chart.boxes[-2], chart.boxes[-1]
     body = []
-    for box in ROUTE_BOXES:
+    for box in chart.boxes:
         body += draw_box(box)
     for box in sources:
         body.append(line(box.x + box.width, box.middle, BUS_X, box.middle, None, 1.0, head=False))
     body.append(line(BUS_X, sources[0].middle, BUS_X, sources[-1].middle, None, 1.0, head=False))
     body.append(line(BUS_X, importer.middle, importer.x - 2, importer.middle, None, 1.0))
     body.append(line(importer.x + importer.width, importer.middle, flver.x - 2, flver.middle, None, 1.0))
-    return svg(WIDTH, HEIGHT, "Ways out of Blender",
-               "Three routes from Blender into FbxImporter: FLVER Prep's export, with no tangents; Blender's FBX "
-               "export with Tangent Space off, with no tangents; and Blender's FBX export with Tangent Space on, "
-               "with tangents along +U and no W. With ER Tangents ticked, FbxImporter writes a FLVER whose "
-               "tangents follow the game's frame, whichever route the file took.", body)
+    return svg(WIDTH, chart.height, "Ways out of Blender", chart.description, body)

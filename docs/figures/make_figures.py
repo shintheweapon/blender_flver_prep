@@ -1,5 +1,8 @@
 """
-Write the figures of docs/NORMAL_MAPS.md.
+Write the figures of docs/NORMAL_MAPS.md and the paper
+docs/paper/ER_NORMAL_MAPS.md. The paper's versions of the tangent figures and
+the route chart (``paper_*.svg``) name no tool: the same drawings, with the
+paper's labels.
 
 Run ``python docs/figures/make_figures.py`` from the repository folder to
 rewrite the SVG files next to this script. The geometry comes from
@@ -10,7 +13,7 @@ committed files equal what this script writes.
 
 import os
 
-from route_chart import figure_ways_out
+from route_chart import PAPER_CHART, figure_ways_out
 from svg_parts import BLUE, GREEN, RED, fmt, legend, line, svg, text
 from tangent_geometry import (CASES, MOTION, NORMAL, V, cross_as_drawn, decode, dome_points, dot, read_directions,
                               to_3d, vanilla_sign)
@@ -159,14 +162,52 @@ def figure_tangent_frame():
                "island +U runs left, N x T already points along +U, and W = +1.", body)
 
 
-TITLES = (
-    ("Vanilla tangents", "as the game's own", "models store them"),
-    ("Tangents along +U", "1.11.0: Transform None", "1.7.0 to 1.10.2: Mirror unticked"),
-    ("Tangents along +U", "1.11.0: Transform Mirror Z", "1.7.0 to 1.10.2: Mirror ticked"),
+class Labels:
+    """
+    One document's wording for the panels of the tangent figures.
+
+    Parameters
+    ----------
+    titles : tuple of tuple of str
+        Three title lines per panel: vanilla, then the two cases with
+        tangents along +U.
+    note : tuple of str or None
+        Two lines under the legend, or None for no note.
+    no_mirror, z_mirror : str
+        How the descriptions name the two cases with tangents along +U.
+    """
+
+    def __init__(self, titles, note, no_mirror, z_mirror):
+        self.titles = titles
+        self.note = note
+        self.no_mirror = no_mirror
+        self.z_mirror = z_mirror
+
+
+VANILLA_TITLE = ("Vanilla tangents", "as the game's own", "models store them")
+
+# The guide names FbxImporter's setting in each release
+GUIDE_LABELS = Labels(
+    titles=(VANILLA_TITLE,
+            ("Tangents along +U", "1.11.0: Transform None", "1.7.0 to 1.10.2: Mirror unticked"),
+            ("Tangents along +U", "1.11.0: Transform Mirror Z", "1.7.0 to 1.10.2: Mirror ticked")),
+    note=("In 1.3 to 1.6.1, Mirror unticked reads as the middle column;",
+          "Mirror ticked mirrored X instead (not shown)."),
+    no_mirror="Tangents along +U with FbxImporter 1.11.0 Transform None (1.7.0 to 1.10.2 Mirror unticked)",
+    z_mirror="Tangents along +U with FbxImporter 1.11.0 Transform Mirror Z (1.7.0 to 1.10.2 Mirror ticked)",
 )
 
-NOTE = ("In 1.3 to 1.6.1, Mirror unticked reads as the middle column;",
-        "Mirror ticked mirrored X instead (not shown).")
+# The paper names the two cases only, for any importer
+PAPER_LABELS = Labels(
+    titles=(VANILLA_TITLE,
+            ("Tangents along +U", "imported", "without a mirror"),
+            ("Tangents along +U", "imported", "with Z mirrored")),
+    note=None,
+    no_mirror="Tangents along +U, imported without a mirror",
+    z_mirror="Tangents along +U, imported with Z mirrored",
+)
+
+NOTE_HEIGHT = 32
 
 
 def panel_titles(cx, y, titles):
@@ -182,10 +223,15 @@ def panel_titles(cx, y, titles):
             text(cx, y + 36, third, anchor="middle")]
 
 
-def figure_fbximporter_tangents():
+def figure_fbximporter_tangents(labels=GUIDE_LABELS):
     """
     The directions the game reads green and red in each case, in
     perspective.
+
+    Parameters
+    ----------
+    labels : Labels
+        The document's panel titles, note and case names.
 
     Returns
     -------
@@ -203,17 +249,20 @@ def figure_fbximporter_tangents():
         body.append(arrow_3d(origin, centre, to_3d(green, False), 50 if green[0] else 66, GREEN))
         body.append(arrow_3d(origin, centre, to_3d(red, False), 50 if red[0] else 66, RED))
         body.append(f'<circle cx="{fmt(cx)}" cy="{fmt(cy)}" r="3" class="of"/>')
-        body += panel_titles(cx, 220, TITLES[index])
+        body += panel_titles(cx, 220, labels.titles[index])
     body += legend(60, 290, GREEN, "T: the game reads green along it")
     body += legend(330, 290, RED, "W(N × T): the game reads red along it")
-    body.append(text(340, 318, NOTE[0], anchor="middle"))
-    body.append(text(340, 334, NOTE[1], anchor="middle"))
-    return svg(680, 350, "The directions the game reads green and red",
+    height = 350
+    if labels.note:
+        body.append(text(340, 318, labels.note[0], anchor="middle"))
+        body.append(text(340, 334, labels.note[1], anchor="middle"))
+    else:
+        height -= NOTE_HEIGHT
+    return svg(680, height, "The directions the game reads green and red",
                "Three sheets lying flat with N up, +U to the right and +V towards the viewer. Vanilla "
-               "tangents: green is read along +V and red along +U. Tangents along +U with FbxImporter 1.11.0 "
-               "Transform None (1.7.0 to 1.10.2 Mirror unticked): green along +U and red along -V, a quarter "
-               "turn. Tangents along +U with FbxImporter 1.11.0 Transform Mirror Z (1.7.0 to 1.10.2 Mirror "
-               "ticked): green along +U and red along +V, red and green swapped.", body)
+               f"tangents: green is read along +V and red along +U. {labels.no_mirror}: green along +U and red "
+               f"along -V, a quarter turn. {labels.z_mirror}: green along +U and red along +V, red and green "
+               "swapped.", body)
 
 
 
@@ -246,10 +295,15 @@ def moving(x, y, motion, parts):
     return f'<g transform="translate({fmt(x)},{fmt(y)})"><g class="{motion}">{inner}</g></g>'
 
 
-def figure_dome_tilts():
+def figure_dome_tilts(labels=GUIDE_LABELS):
     """
     The tilts the game decodes around a raised dome in each case, animated
     from the vanilla frame into each case's frame.
+
+    Parameters
+    ----------
+    labels : Labels
+        The document's panel titles, note and case names.
 
     Returns
     -------
@@ -279,7 +333,7 @@ def figure_dome_tilts():
             px, py = cx + 40 * direction[0], cy + 40 * direction[1]
             body.append(moving(px, py, motion,
                                [line(0, 0, 18 * direction[0], 18 * direction[1], colour, 1.5)]))
-        body += panel_titles(cx, 248, TITLES[index])
+        body += panel_titles(cx, 248, labels.titles[index])
         outcome = ("Dome reads raised", "Tilts turn a quarter: twisted", "Tilts flip on the diagonal")[index]
         body.append(text(cx, 306, outcome, anchor="middle"))
     body += legend(40, 338, GREEN, "T: the game reads green along it")
@@ -287,14 +341,17 @@ def figure_dome_tilts():
     body += legend(40, 364, None, "Surface tilt the game decodes", head=True)
     body += legend(300, 364, RED, "On the diagonal: stays out (raised)", head=True)
     body += legend(540, 364, BLUE, "Turns in (dented)", head=True)
-    body.append(text(340, 394, NOTE[0], anchor="middle"))
-    body.append(text(340, 410, NOTE[1], anchor="middle"))
-    return svg(680, 424, "The tilts the game decodes around a raised dome",
+    height = 424
+    if labels.note:
+        body.append(text(340, 394, labels.note[0], anchor="middle"))
+        body.append(text(340, 410, labels.note[1], anchor="middle"))
+    else:
+        height -= NOTE_HEIGHT
+    return svg(680, height, "The tilts the game decodes around a raised dome",
                "Animated. Three panels, each with the frame (green T, red W(N x T)) and the surface tilts the "
                "game decodes around a raised dome. Vanilla tangents: the tilts point outward and the dome "
-               "reads raised. Tangents along +U with FbxImporter 1.11.0 Transform None (1.7.0 to 1.10.2 Mirror "
-               "unticked): the frame and every tilt turn a quarter, so the tilts run round the dome. Tangents "
-               "along +U with FbxImporter 1.11.0 Transform Mirror Z (1.7.0 to 1.10.2 Mirror ticked): the frame "
+               f"reads raised. {labels.no_mirror}: the frame and every tilt turn a quarter, so the tilts run "
+               f"round the dome. {labels.z_mirror}: the frame "
                "and every tilt flip across the U = V "
                "diagonal, so the tilts on the diagonal stay outward (raised) and the others turn inward "
                "(dented).", body)
@@ -306,6 +363,9 @@ FIGURES = {
     "fbximporter_tangents.svg": figure_fbximporter_tangents,
     "dome_tilts.svg": figure_dome_tilts,
     "ways_out_of_blender.svg": figure_ways_out,
+    "paper_tangent_directions.svg": lambda: figure_fbximporter_tangents(PAPER_LABELS),
+    "paper_dome_tilts.svg": lambda: figure_dome_tilts(PAPER_LABELS),
+    "paper_ways_out_of_blender.svg": lambda: figure_ways_out(PAPER_CHART),
 }
 
 

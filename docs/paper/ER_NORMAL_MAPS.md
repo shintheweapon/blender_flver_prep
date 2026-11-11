@@ -14,7 +14,7 @@ derives both effects, describes an import option, ER Tangents, that builds the t
 the mesh and its UVs, and derives channel changes that match the map to the tangents instead. Every formula is stated
 in words as well.
 
-**Index Terms:** normal mapping, tangent space, handedness, Elden Ring, FLVER, FbxImporter.
+**Index Terms:** normal mapping, tangent space, handedness, Elden Ring, FLVER, FBX import.
 
 ## Notation
 
@@ -33,8 +33,8 @@ A normal map stores, for each pixel, a small tilt of the surface. The game turns
 using a frame of three arrows stored on every vertex. When the frame on a mesh follows a different convention from the
 one the map was made for, every tilt is read in the wrong direction: raised details look dented, or lit from the side.
 
-Meshes made in Blender reach Elden Ring through FbxImporter [6], which writes them into the game's model format, FLVER
-[8]. FbxImporter keeps the tangents of the FBX file, or generates them with the FBX SDK [9], in the common convention.
+Meshes made in Blender reach Elden Ring through an importer that converts FBX files to the game's model format, FLVER
+[7]. The importer keeps the tangents of the FBX file, or generates them with the FBX SDK [8], in the common convention.
 The game's own models use a different one, so the two disagree. This paper:
 
 - measures the convention of the game's own models (Sections III and IV);
@@ -88,7 +88,7 @@ things that matter here:
 
 A mirror, a scale of $-1$ along one axis, swaps both. An FBX file declares its axis system, which may be right-handed or
 left-handed: the FBX SDK's presets for Maya, 3ds Max, MotionBuilder and OpenGL are right-handed, and those for DirectX
-and Lightwave are left-handed [9]. The SDK describes its 3ds Max preset as x to the right, z up and y into the screen.
+and Lightwave are left-handed [8]. The SDK describes its 3ds Max preset as x to the right, z up and y into the screen.
 Blender's Front view shows the same: +X to the right, +Z up and +Y into the screen, read from the view's rotation in
 Blender 4.5. So Blender's 3D space is right-handed with Z up.
 
@@ -185,16 +185,17 @@ FLVER files state no handedness. It was found on one vanilla model, the face par
 
 - **Anatomy:** the character stands along +Y, faces −Z, and has its left side at +X. Seen from in front, x points to
   the right, y up and z into the screen. In the FBX SDK's terms that is a left-handed set, the same as its DirectX
-  preset [9].
+  preset [8].
 - **Winding:** computed with (2), $(\vec{p}_1-\vec{p}_0)\times(\vec{p}_2-\vec{p}_0)$ points against the stored normal on
   almost all LOD0 triangles. Front faces therefore run clockwise under right-handed maths, which is anticlockwise as
   seen in a left-handed space.
 
 The test has limits: one model, LOD0 only, and handedness inferred from anatomy and winding. What follows from it is
 that, as seen in game, $\vec{N}\times\vec{T}$ follows the left-hand rule. On an island whose texture looks unmirrored in
-game, $\vec{N}\times\vec{T}$ points along −U, and (6) needs $W = -1$. FLVER Prep [10] carries a Blender scene into this
-space with its Mirror Z option: Y becomes up and Z is reversed. A mirror changes handedness, so the character stays the
-right way round.
+game, $\vec{N}\times\vec{T}$ points along −U, and (6) needs $W = -1$. A Blender scene is carried into this space by
+swapping its Y and Z axes: a −90° turn about X, which brings Blender's up (+Z) to +Y and its front (−Y) to +Z, then Z
+reversed, which brings the front to −Z. The swap is a mirror, which changes handedness, so the character stays the right
+way round, with its left side at +X.
 
 ## IV. Measurements
 
@@ -235,56 +236,47 @@ confirms the layout and the frame together.
 
 ### D. Import Measurements
 
-A test plane with one unmirrored and one mirrored UV half was imported with FbxImporter 1.11.0, once under Transform
-None and once under Transform Mirror Z. Under None, the tangent points along +U, $W = -1$ on the unmirrored half, and red
-is read along −V. Under Mirror Z, red is read along +V.
+A test plane with one unmirrored and one mirrored UV half was imported twice, once without a mirror and once with Z
+mirrored. Without a mirror, the tangent points along +U, $W = -1$ on the unmirrored half, and red is read along −V.
+With Z mirrored, red is read along +V.
 
 ## V. Tangents in the Common Convention
 
-The tangents an FBX file carries, and those the FBX SDK generates for a file without them [9], point along +U, as
-measured in Section IV-D. FbxImporter keeps them as they are. With the frames measured there, the arrows the game uses
+The tangents an FBX file carries, and those the FBX SDK generates for a file without them [8], point along +U, as
+measured in Section IV-D. The importer keeps them as they are. With the frames measured there, the arrows the game uses
 become
 
 $$
 \vec{T}' = \hat{u}, \qquad
-\vec{B}' = W'\,(\vec{N}\times\hat{u}) = \begin{cases} -\hat{v} & \text{Transform None} \\ +\hat{v} & \text{Transform Mirror Z} \end{cases} \tag{12}
+\vec{B}' = W'\,(\vec{N}\times\hat{u}) = \begin{cases} -\hat{v} & \text{without a mirror} \\ +\hat{v} & \text{with Z mirrored} \end{cases} \tag{12}
 $$
 
 *In words:* $\hat{u}$ and $\hat{v}$ are the unit arrows along +U and +V on the surface. With tangents along +U, green is
-read along +U, and red along −V (Transform None) or +V (Transform Mirror Z).
+read along +U, and red along −V (without a mirror) or +V (with Z mirrored).
 
 An authored tilt $(a, b)$, $a$ towards +U and $b$ towards +V, is meant as the direction $a\,\hat{u} + b\,\hat{v}$. By (7)
 the game reads it as $a\,\vec{B}' + b\,\vec{T}'$, which in $(U, V)$ parts is
 
 $$
-\begin{pmatrix} b \\ -a \end{pmatrix} = \begin{pmatrix} 0 & 1 \\ -1 & 0 \end{pmatrix}\begin{pmatrix} a \\ b \end{pmatrix} \ \text{(None)}, \qquad
-\begin{pmatrix} b \\ a \end{pmatrix} = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}\begin{pmatrix} a \\ b \end{pmatrix} \ \text{(Mirror Z)} \tag{13}
+\begin{pmatrix} b \\ -a \end{pmatrix} = \begin{pmatrix} 0 & 1 \\ -1 & 0 \end{pmatrix}\begin{pmatrix} a \\ b \end{pmatrix} \ \text{(without a mirror)}, \qquad
+\begin{pmatrix} b \\ a \end{pmatrix} = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}\begin{pmatrix} a \\ b \end{pmatrix} \ \text{(with Z mirrored)} \tag{13}
 $$
 
-*In words:* under Transform None every tilt is turned a quarter turn; under Mirror Z every tilt is reflected across the
+*In words:* without a mirror every tilt is turned a quarter turn; with Z mirrored every tilt is reflected across the
 diagonal U = V. A raised dome then reads lit from the side, or raised on one diagonal and dented on the other (Fig. 4).
 
-The setting has a different name in different releases of FbxImporter, read from the source of every release tag [6]:
-
-- **1.11.0:** the Transform list (None, Mirror X, Y or Z, and presets).
-- **1.7.0 to 1.10.2:** a Mirror check box that reverses Z; unticked reads as Transform None and ticked as Transform
-  Mirror Z.
-- **1.3 to 1.6.1:** a Mirror check box that reverses X; that case is not covered here.
-
-The FBX SDK has generated the tangents since release 1.3.
-
-![Three sheets with N up: vanilla tangents read green along +V and red along +U; tangents along +U read green along +U, with red along -V (Transform None) or +V (Transform Mirror Z)](../figures/fbximporter_tangents.svg)
+![Three sheets with N up: vanilla tangents read green along +V and red along +U; tangents along +U read green along +U, with red along -V (without a mirror) or +V (with Z mirrored)](../figures/paper_tangent_directions.svg)
 
 *Fig. 3. The directions in which the game reads green and red, for vanilla tangents and for tangents along +U.*
 
-![Animated: the frame and the decoded tilts around a raised dome; vanilla tilts point outward, Transform None turns every tilt a quarter, Transform Mirror Z flips every tilt across the U = V diagonal](../figures/dome_tilts.svg)
+![Animated: the frame and the decoded tilts around a raised dome; vanilla tilts point outward, without a mirror every tilt turns a quarter, with Z mirrored every tilt flips across the U = V diagonal](../figures/paper_dome_tilts.svg)
 
 *Fig. 4. Animated: the decoded tilts around a raised dome under each setting.*
 
 ## VI. ER Tangents
 
-ER Tangents is an import option, in a fork of FbxImporter [7], that builds tangents in the game's convention. When it is
-ticked, the importer builds the tangents from the mesh after the Transform, in place of the file's. It is adapted from
+ER Tangents is an import option [6] that builds tangents in the game's convention. When it is ticked, the importer
+builds the tangents from the mesh after the importer's axis change, in place of the file's. It is adapted from
 Lengyel's method [2], which computes per-triangle tangents, averages them per vertex, makes them perpendicular to the
 normal (Gram-Schmidt) and stores the handedness as ±1. Here the tangent follows +V instead of +U, and each triangle adds
 unit directions weighted by its size. The steps run as follows.
@@ -360,15 +352,15 @@ $(0, 0)$, $(0.5, 0)$, $(0, 0.25)$; normal $\vec{N} = (0, -1, 0)$ at every corner
 | $W$ by (19), and by (9) | $-1$ |
 | $\vec{B}$ by (6) | $(1, 0, 0)$, along +U |
 
-**Validation.** ER Tangents was checked in four ways [7]:
+**Validation.** ER Tangents was checked in four ways [6]:
 
 - on vanilla parts, the rebuilt tangents point almost the same way as the stored ones;
-- imports through it follow the game's frame on both UV halves, under Transform None and Mirror Z;
+- imports through it follow the game's frame on both UV halves, without a mirror and with Z mirrored;
 - unticked, the importer writes exactly what the upstream release writes;
 - in game, a ticked and an unticked plane side by side with the test map: only the ticked one looks right on both
   halves.
 
-It starts ticked for Elden Ring FLVERs only, and is offered to FbxImporter [6] as a pull request [7].
+It starts ticked for Elden Ring FLVERs only, and is offered upstream as a pull request [6].
 
 **Relation to MikkTSpace.** MikkTSpace [3], [4] is the tangent method Blender uses: its `Mesh.calc_tangents` runs it
 [4], and Blender's FBX exporter calls `calc_tangents` when Tangent Space is on. These tangents follow +U and the
@@ -377,37 +369,37 @@ from the mesh, so every route out of Blender gives the same result.
 
 ## VII. Matching the Map Instead of the Tangents
 
-Without ER Tangents, the map can be changed so that (13) reads it as authored. Under Transform None a stored tilt
+Without ER Tangents, the map can be changed so that (13) reads it as authored. Without a mirror a stored tilt
 $(a', b')$ is read as $(b', -a')$, so storing $a' = -b$, $b' = a$ gives back $(a, b)$. With (3):
 
 $$
 R' = 1 - G, \qquad G' = R \tag{20}
 $$
 
-*In words:* under Transform None (Mirror unticked), the new red is one minus the old green, and the new green is the old
-red.
+*In words:* without a mirror, the new red is one minus the old green, and the new green is the old red.
 
 $$
 R' = G, \qquad G' = R \tag{21}
 $$
 
-*In words:* under Transform Mirror Z (Mirror ticked), red and green swap.
+*In words:* with Z mirrored, red and green swap.
 
 Blue and alpha stay as they are. Both changes are worked out from the measured frames, not tested in game. They assume
 that every island is unmirrored, or that mirrored islands read the same way.
 
-| FbxImporter 1.11.0 | FbxImporter 1.7.0 to 1.10.2 | New red | New green |
-|---|---|---|---|
-| Transform None | Mirror unticked | 1 − green | red |
-| Transform Mirror Z | Mirror ticked | green | red |
+| Import | New red | New green |
+|---|---|---|
+| Without a mirror | 1 − green | red |
+| With Z mirrored | green | red |
 
 ## VIII. Practical Use
 
-There are three ways out of Blender (Fig. 5): FLVER Prep's Prepare and Export [10], and Blender's FBX export with Tangent
-Space on or off. Without ER Tangents, all three give tangents along +U. With it, all three give a FLVER in the game's
-convention. The settings for each route are in the FLVER Prep guide, [`docs/NORMAL_MAPS.md`](../NORMAL_MAPS.md).
+There are two ways out of Blender (Fig. 5): its FBX export with Tangent Space off, which writes no tangents, and with
+Tangent Space on, which writes tangents along +U with no W. Without ER Tangents, both give tangents along +U, since the
+importer generates them when the file has none. With it, both give a FLVER in the game's convention. With Tangent Space
+on and without ER Tangents, W is undefined, so mirrored UV halves may also read wrong; this has not been tested.
 
-![Three routes into FbxImporter: FLVER Prep's export and Blender's FBX export with Tangent Space off, both with no tangents, and Blender's FBX export with Tangent Space on, with +U tangents and no W; with ER Tangents ticked, all give a FLVER in the game's frame](../figures/ways_out_of_blender.svg)
+![Two routes into the importer: Blender's FBX export with Tangent Space off, with no tangents, and with Tangent Space on, with +U tangents and no W; with ER Tangents ticked, both give a FLVER in the game's frame](../figures/paper_ways_out_of_blender.svg)
 
 *Fig. 5. The ways out of Blender, and the tangents each one gives.*
 
@@ -417,7 +409,6 @@ convention. The settings for each route are in the FLVER Prep guide, [`docs/NORM
   unconfirmed for Elden Ring, because its shaders have not been examined and no in-game test isolates them.
 - The handedness of FLVER space was inferred from one model, LOD0 only.
 - Only Elden Ring was checked; Dark Souls 3, Sekiro, Armored Core 6 and Nightreign were not.
-- FbxImporter 1.3 to 1.6.1, whose Mirror check box reverses X, are not covered.
 
 ## X. Conclusion
 
@@ -431,7 +422,7 @@ channels matches the map to the tangents instead.
 
 This paper was written with Claude Opus 5.5 by Anthropic. Claude drafted the text and equations and generated the
 figures. Claude wrote the code and the analysis: the measurement scripts, ER Tangents, the figure generator and its
-tests. shintheweapon carried out the in-game tests and the FbxImporter imports, and made the visual judgements.
+tests. shintheweapon carried out the in-game tests and the test imports, and made the visual judgements.
 
 ## References
 
@@ -454,19 +445,13 @@ May 1, 2026. [Online]. Available:
 https://experienceleague.adobe.com/en/docs/substance-3d/bakers/common-questions/what-is-the-difference-between-the-opengl-and-directx-normal-format.
 Accessed: Nov. 11, 2026.
 
-[6] The12thAvenger, "FbxImporter," GitHub repository, releases v1.3 to v1.11.0. [Online]. Available:
-https://github.com/The12thAvenger/FbxImporter. Accessed: Nov. 11, 2026.
-
-[7] shintheweapon, "FbxImporter," fork, branch develop; and "Add an ER Tangents import option," pull request #10 to
-[6]. [Online]. Available: https://github.com/shintheweapon/FbxImporter/tree/develop and
+[6] shintheweapon, "FbxImporter," fork, branch develop; and "Add an ER Tangents import option," pull request #10.
+[Online]. Available: https://github.com/shintheweapon/FbxImporter/tree/develop and
 https://github.com/The12thAvenger/FbxImporter/pull/10. Accessed: Nov. 11, 2026.
 
-[8] soulsmods, "SoulsFormatsNEXT," GitHub repository. [Online]. Available: https://github.com/soulsmods/SoulsFormatsNEXT.
+[7] soulsmods, "SoulsFormatsNEXT," GitHub repository. [Online]. Available: https://github.com/soulsmods/SoulsFormatsNEXT.
 Accessed: Nov. 11, 2026.
 
-[9] Autodesk, *FBX SDK 2020.2.1*, header files `fbxsdk/scene/fbxaxissystem.h` (`FbxAxisSystem`) and
+[8] Autodesk, *FBX SDK 2020.2.1*, header files `fbxsdk/scene/fbxaxissystem.h` (`FbxAxisSystem`) and
 `fbxsdk/scene/geometry/fbxmesh.h` (`FbxMesh::GenerateTangentsDataForAllUVSets`). [Online]. Available:
 https://help.autodesk.com/view/FBX/2020/ENU/. Accessed: Nov. 11, 2026.
-
-[10] shintheweapon, "FLVER Prep," GitHub repository. [Online]. Available:
-https://github.com/shintheweapon/blender_flver_prep. Accessed: Nov. 11, 2026.

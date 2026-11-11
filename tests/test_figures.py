@@ -38,30 +38,61 @@ class TestRouteChart(unittest.TestCase):
     LINE_PX_PER_CHAR = 7.5
     PADDING = 12
 
+    CHARTS = {"guide": route_chart.GUIDE_CHART, "paper": route_chart.PAPER_CHART}
+
     def test_every_label_fits_its_box(self):
-        for box in route_chart.ROUTE_BOXES:
-            title, *lines = box.lines
-            with self.subTest(box=title):
-                widths = [len(title) * self.TITLE_PX_PER_CHAR] + [len(text) * self.LINE_PX_PER_CHAR for text in lines]
-                self.assertLessEqual(max(widths) + 2 * self.PADDING, box.width)
+        for name, chart in self.CHARTS.items():
+            for box in chart.boxes:
+                title, *lines = box.lines
+                with self.subTest(chart=name, box=title):
+                    widths = ([len(title) * self.TITLE_PX_PER_CHAR]
+                              + [len(text) * self.LINE_PX_PER_CHAR for text in lines])
+                    self.assertLessEqual(max(widths) + 2 * self.PADDING, box.width)
 
     def test_every_line_fits_its_box_height(self):
-        for box in route_chart.ROUTE_BOXES:
-            with self.subTest(box=box.lines[0]):
-                self.assertLessEqual(route_chart.text_block_height(len(box.lines)) + 2 * self.PADDING, box.height)
+        for name, chart in self.CHARTS.items():
+            for box in chart.boxes:
+                with self.subTest(chart=name, box=box.lines[0]):
+                    self.assertLessEqual(route_chart.text_block_height(len(box.lines)) + 2 * self.PADDING,
+                                         box.height)
 
     def test_boxes_do_not_overlap_and_stay_inside_the_figure(self):
-        boxes = route_chart.ROUTE_BOXES
-        for box in boxes:
-            self.assertGreaterEqual(box.x, 0)
-            self.assertGreaterEqual(box.y, 0)
-            self.assertLessEqual(box.x + box.width, route_chart.WIDTH)
-            self.assertLessEqual(box.y + box.height, route_chart.HEIGHT)
-        for i, a in enumerate(boxes):
-            for b in boxes[i + 1:]:
-                apart = (a.x + a.width <= b.x or b.x + b.width <= a.x
-                         or a.y + a.height <= b.y or b.y + b.height <= a.y)
-                self.assertTrue(apart, f"{a.lines[0]} overlaps {b.lines[0]}")
+        for name, chart in self.CHARTS.items():
+            boxes = chart.boxes
+            for box in boxes:
+                with self.subTest(chart=name, box=box.lines[0]):
+                    self.assertGreaterEqual(box.x, 0)
+                    self.assertGreaterEqual(box.y, 0)
+                    self.assertLessEqual(box.x + box.width, route_chart.WIDTH)
+                    self.assertLessEqual(box.y + box.height, chart.height)
+            for i, a in enumerate(boxes):
+                for b in boxes[i + 1:]:
+                    apart = (a.x + a.width <= b.x or b.x + b.width <= a.x
+                             or a.y + a.height <= b.y or b.y + b.height <= a.y)
+                    self.assertTrue(apart, f"{name}: {a.lines[0]} overlaps {b.lines[0]}")
+
+    def test_guide_chart_is_the_route_boxes(self):
+        self.assertIs(route_chart.GUIDE_CHART.boxes, route_chart.ROUTE_BOXES)
+        self.assertEqual(route_chart.GUIDE_CHART.height, route_chart.HEIGHT)
+
+
+class TestPaperFigures(unittest.TestCase):
+    """The paper's versions of the figures name no tool, setting or release."""
+
+    FORBIDDEN = r"FbxImporter|FLVER Prep|Transform|Mirror ticked|Mirror unticked|\b1\.(?:3|6\.1|7\.0|10\.2|11\.0)\b"
+
+    def test_paper_figures_name_no_tool_setting_or_release(self):
+        import re
+        paper = {name: content for name, content in make_figures.build_all().items() if name.startswith("paper_")}
+        self.assertEqual(len(paper), 3)
+        for name, content in paper.items():
+            with self.subTest(name=name):
+                self.assertEqual(re.findall(self.FORBIDDEN, content), [])
+
+    def test_guide_figures_keep_the_settings(self):
+        content = make_figures.build_all()["fbximporter_tangents.svg"]
+        self.assertIn("1.11.0: Transform None", content)
+        self.assertIn("In 1.3 to 1.6.1", content)
 
 
 class TestTangentFrame(unittest.TestCase):

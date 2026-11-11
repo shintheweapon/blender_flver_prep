@@ -168,5 +168,34 @@ class TestWording(unittest.TestCase):
         self.assertNotRegex(text, r"[A-Za-z,] - [A-Za-z]")
 
 
+class TestToolNeutral(unittest.TestCase):
+    """The paper names no tool, setting or release, except in the reference that cites ER Tangents' code."""
+
+    SOURCE_ENTRY = "Add an ER Tangents import option"
+
+    def text_without_source_entry(self):
+        text = read_paper()
+        entries = re.split(r"\n\n+", text.split(REFERENCES_HEADING)[1].strip())
+        source = [entry for entry in entries if self.SOURCE_ENTRY in entry]
+        self.assertEqual(len(source), 1)
+        return text.replace(source[0], "")
+
+    def test_fbximporter_is_named_only_in_its_reference(self):
+        self.assertIn("FbxImporter", read_paper())
+        self.assertNotIn("FbxImporter", self.text_without_source_entry())
+
+    def test_no_tool_settings_releases_or_guide_links(self):
+        text = self.text_without_source_entry()
+        for pattern in (r"FLVER Prep", r"Prepare and Export", r"NORMAL_MAPS\.md", r"Transform", r"Mirror ticked",
+                        r"Mirror unticked", r"\b1\.(?:3|6\.1|7\.0|10\.2|11\.0)\b"):
+            with self.subTest(pattern=pattern):
+                self.assertIsNone(re.search(pattern, text))
+
+    def test_paper_shows_the_paper_figures(self):
+        images = re.findall(r"!\[[^\]]*\]\(\.\./figures/([^)]+)\)", read_paper())
+        self.assertEqual(images, ["normal_map_layout.svg", "tangent_frame.svg", "paper_tangent_directions.svg",
+                                  "paper_dome_tilts.svg", "paper_ways_out_of_blender.svg"])
+
+
 if __name__ == "__main__":
     unittest.main()
