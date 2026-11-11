@@ -8,8 +8,9 @@ and ``tangent_geometry``, the drawing parts from ``svg_parts``.
 """
 
 from axes import BLENDER_TO_FLVER, FLVER_BELOW_VIEW, IDENTITY, ROTATE_X_MINUS_90, character_axes, on_screen
-from svg_parts import GREEN, RED, into_screen, legend, line, out_of_screen, svg, text
-from tangent_geometry import build_frame, cross, uv_derivatives
+from svg_parts import BLUE, GREEN, RED, into_screen, legend, line, out_of_screen, svg, text
+from tangent_geometry import (CASES, build_frame, cross, decode, decode_colour, dome_points, dot, encode_colour,
+                              uv_derivatives, workaround)
 
 # The worked example of the paper's Section VI
 EXAMPLE_POSITIONS = ((0.0, 0.0, 0.0), (2.0, 0.0, 0.0), (0.0, 0.0, 1.0))
@@ -165,3 +166,99 @@ def figure_uv_triangle():
                "along U, e2 along the partial derivative along V, the tangent T pointing down along +V, N x T "
                "pointing left by the left-hand rule, and B = W(N x T) with W = -1 pointing right, along +U, as "
                "in the UV panel.", body)
+
+
+# The tangent-space normals around a raised dome, as in Fig. 6, with this (x, y) length
+DOME_TILT = 0.6
+
+CHANNEL_CHANGES = (
+    ("none", "Without a mirror", "rotated by 90°", "After (20)"),
+    ("mirror_z", "With Z mirrored", "reflected about U = V", "After (21)"),
+)
+
+
+def channel_change_points(key):
+    """
+    The decoded tangent-space normals around a raised dome, from the map as
+    authored and from the map after the channel change.
+
+    Each authored normal is stored with ``encode_colour``; the changed map
+    applies ``workaround``; the game decodes each map with
+    ``decode_colour`` and ``decode`` through tangents along +U.
+
+    Parameters
+    ----------
+    key : str
+        ``"none"`` (without a mirror) or ``"mirror_z"`` (with Z mirrored).
+
+    Returns
+    -------
+    list of tuple
+        ``(direction, authored, changed)`` per dome point: the outward unit
+        direction and the two decoded ``(u, v)`` components.
+    """
+    case = next(c for c in CASES if c.key == key)
+    points = []
+    for direction in dome_points():
+        red, green = encode_colour(DOME_TILT * direction[0], DOME_TILT * direction[1])
+        authored = decode(decode_colour(red, green)[:2], case)
+        changed = decode(decode_colour(*workaround(red, green, key))[:2], case)
+        points.append((direction, authored, changed))
+    return points
+
+
+def dome(cx, cy, decoded_points):
+    """
+    A dome's outline and its decoded normals, coloured by whether each
+    points outward (raised), inward (dented) or sideways.
+
+    Parameters
+    ----------
+    cx, cy : float
+        The dome's centre.
+    decoded_points : list of tuple
+        ``(direction, decoded)`` per dome point.
+
+    Returns
+    -------
+    list of str
+    """
+    body = [f'<circle cx="{cx}" cy="{cy}" r="40" fill="none" class="o" stroke-width="0.5" stroke-dasharray="3 3"/>']
+    for direction, decoded in decoded_points:
+        along = dot(decoded, direction) / DOME_TILT
+        colour = RED if along > 0.99 else BLUE if along < -1e-6 else None
+        px, py = cx + 40 * direction[0], cy + 40 * direction[1]
+        scale = 30 / DOME_TILT
+        body.append(line(px, py, px + scale * decoded[0], py + scale * decoded[1], colour, 1.5))
+    return body
+
+
+def figure_channel_changes():
+    """
+    The decoded normals around a raised dome through tangents along +U, from
+    the map as authored and from the map after the channel change.
+
+    Returns
+    -------
+    str
+    """
+    body = []
+    for column, (key, title, authored_note, changed_note) in enumerate(CHANNEL_CHANGES):
+        cx = 190 + 300 * column
+        body.append(text(cx, 30, title, "t h", "middle"))
+        points = channel_change_points(key)
+        body += dome(cx, 110, [(d, a) for d, a, _ in points])
+        body.append(text(cx, 184, f"Map as authored: {authored_note}", anchor="middle"))
+        body += dome(cx, 270, [(d, c) for d, _, c in points])
+        body.append(text(cx, 344, f"{changed_note}: outward, as authored", anchor="middle"))
+    body += legend(60, 380, RED, "Outward (raised)", head=True)
+    body += legend(240, 380, BLUE, "Inward (dented)", head=True)
+    body += legend(420, 380, None, "Sideways", head=True)
+    body.append(text(340, 408, "Derived from the measured frames; not tested in game.", anchor="middle"))
+    return svg(680, 424, "Matching the map to tangents along +U",
+               "Two columns, without a mirror and with Z mirrored, each with two domes seen from above. Top: "
+               "the map as authored, read through tangents along +U: without a mirror every normal is rotated "
+               "by 90 degrees and points sideways; with Z mirrored every normal is reflected about the line "
+               "U = V, so the normals on that diagonal point outward and those on the other diagonal inward. "
+               "Bottom: the map after the channel change, (20) or (21): every normal points outward, as "
+               "authored. The changes are derived from the measured frames, not tested in game.", body)

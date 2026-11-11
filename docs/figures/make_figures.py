@@ -14,7 +14,7 @@ committed files equal what this script writes.
 
 import os
 
-from paper_figures import figure_axis_swap, figure_uv_triangle
+from paper_figures import figure_axis_swap, figure_channel_changes, figure_uv_triangle
 from route_chart import PAPER_CHART, figure_ways_out
 from svg_parts import BLUE, GREEN, RED, fmt, legend, line, svg, text
 from tangent_geometry import (CASES, MOTION, NORMAL, V, cross_as_drawn, decode, dome_points, dot, read_directions,
@@ -427,6 +427,7 @@ FIGURES = {
     "paper_ways_out_of_blender.svg": lambda: figure_ways_out(PAPER_CHART),
     "paper_axis_swap.svg": figure_axis_swap,
     "paper_uv_triangle.svg": figure_uv_triangle,
+    "paper_channel_changes.svg": figure_channel_changes,
 }
 
 

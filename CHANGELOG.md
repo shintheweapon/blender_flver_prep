@@ -25,6 +25,8 @@
   `docs/figures/paper_figures.py` from `docs/figures/axes.py`.
 - The paper's worked example has a figure: the triangle in UV space and in game, with its partial derivatives and
   tangent frame.
+- A figure in the paper shows the channel changes of Section VII at work on a raised dome: sideways or reflected from
+  the map as authored, outward after the change; derived, not tested in game.
 
 ## 1.0.0
 

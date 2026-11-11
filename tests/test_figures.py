@@ -88,7 +88,7 @@ class TestPaperFigures(unittest.TestCase):
     def test_paper_figures_name_no_tool_setting_or_release(self):
         import re
         paper = {name: content for name, content in make_figures.build_all().items() if name.startswith("paper_")}
-        self.assertEqual(len(paper), 6)
+        self.assertEqual(len(paper), 7)
         for name, content in paper.items():
             with self.subTest(name=name):
                 self.assertEqual(re.findall(self.FORBIDDEN, content), [])
@@ -199,6 +199,32 @@ class TestUvTriangle(unittest.TestCase):
         figure = make_figures.build_all()["paper_uv_triangle.svg"]
         self.assertIn("∂p/∂u = (4, 0, 0), ∂p/∂v = (0, 0, 4)", figure)
         self.assertIn("W = −1", figure)
+
+
+class TestChannelChanges(unittest.TestCase):
+    """The paper's channel-change figure: (20) and (21) read back as authored; the map as authored does not."""
+
+    def test_changed_map_decodes_outward(self):
+        for key in ("none", "mirror_z"):
+            for direction, _, changed in paper_figures.channel_change_points(key):
+                with self.subTest(key=key, direction=direction):
+                    self.assertTrue(close(changed, tuple(paper_figures.DOME_TILT * c for c in direction)))
+
+    def test_authored_map_decodes_as_without_the_change(self):
+        for key in ("none", "mirror_z"):
+            for direction, authored, _ in paper_figures.channel_change_points(key):
+                with self.subTest(key=key, direction=direction):
+                    tilt = tuple(paper_figures.DOME_TILT * c for c in direction)
+                    self.assertTrue(close(authored, mf.decode(tilt, CASE[key])))
+
+    def test_authored_map_is_rotated_or_reflected(self):
+        for direction, authored, _ in paper_figures.channel_change_points("none"):
+            self.assertAlmostEqual(mf.dot(authored, direction), 0.0)
+        reflected = [mf.dot(a, d) for d, a, _ in paper_figures.channel_change_points("mirror_z")]
+        self.assertTrue(any(v > 0.5 for v in reflected) and any(v < -0.5 for v in reflected))
+
+    def test_figure_is_marked_derived(self):
+        self.assertIn("not tested in game", make_figures.build_all()["paper_channel_changes.svg"])
 
 
 class TestReadDirections(unittest.TestCase):

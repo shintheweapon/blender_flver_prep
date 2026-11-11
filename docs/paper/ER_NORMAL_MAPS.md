@@ -462,24 +462,29 @@ $$
 
 *In words:* with Z mirrored, red and green swap.
 
-Blue and alpha stay as they are. Both changes are worked out from the measured frames, not tested in game. They assume
-that every island is unmirrored, or that mirrored islands read the same way.
+Blue and alpha stay as they are. Both changes are worked out from the measured frames, not tested in game
+(Fig. 9). They assume that every island is unmirrored, or that mirrored islands read the same way.
 
 | Import | New red | New green |
 |---|---|---|
 | Without a mirror | 1 − green | red |
 | With Z mirrored | green | red |
 
+![Two columns, without a mirror and with Z mirrored: the dome's normals read through tangents along +U point sideways, or are reflected about U = V, from the map as authored, and all point outward after the channel change](../figures/paper_channel_changes.svg)
+
+*Fig. 9. The decoded tangent-space normals around a raised dome through tangents along +U, from the map as authored
+and after (20) or (21). Derived, not tested in game.*
+
 ## VIII. Practical Use
 
-There are two ways out of Blender (Fig. 9): its FBX export with Tangent Space off, which writes no tangents, and with
+There are two ways out of Blender (Fig. 10): its FBX export with Tangent Space off, which writes no tangents, and with
 Tangent Space on, which writes tangents along +U with no W. Without ER Tangents, both give tangents along +U, since the
 importer generates them when the file has none. With it, both give a FLVER in the game's convention. With Tangent Space
 on and without ER Tangents, W is undefined, so mirrored UV halves may also read wrong; this has not been tested.
 
 ![Two routes into the importer: Blender's FBX export with Tangent Space off, with no tangents, and with Tangent Space on, with +U tangents and no W; with ER Tangents, both give a FLVER in the game's frame](../figures/paper_ways_out_of_blender.svg)
 
-*Fig. 9. The ways out of Blender, and the tangents each one gives.*
+*Fig. 10. The ways out of Blender, and the tangents each one gives.*
 
 ## IX. Limitations
 
