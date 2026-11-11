@@ -399,6 +399,12 @@ class TestWording(unittest.TestCase):
             with self.subTest(pattern=pattern):
                 self.assertIsNone(re.search(pattern, body))
 
+    def test_forward_names_the_facing_direction(self):
+        # "Forward", as Blender's FBX settings say; "front" stays for front faces, the Front view and "in front"
+        body = read_paper().split(REFERENCES_HEADING)[0]
+        self.assertIsNone(re.search(r"(?i)\bfront \(|\bthe front\b(?! of)|front direction", body))
+        self.assertIn("forward direction (−Y) to +Z", body)
+
     def test_standard_terms(self):
         # Vectors, scalars, components and tangent-space normals, not arrows, numbers, parts and tilts; the one
         # arrow left is the dashed arrow drawn in Fig. 2

@@ -10,6 +10,7 @@ if FIGURES_DIR not in sys.path:
     sys.path.insert(0, FIGURES_DIR)
 
 import axes  # noqa: E402
+import axis_swap_figure  # noqa: E402
 import frame_checks  # noqa: E402
 import frame_survey  # noqa: E402
 import integrability  # noqa: E402
@@ -139,12 +140,12 @@ class TestAxisSwap(unittest.TestCase):
         self.assertAlmostEqual(axes.determinant(axes.ROTATE_X_MINUS_90), 1.0)
         self.assertAlmostEqual(axes.determinant(axes.BLENDER_TO_FLVER), -1.0)
 
-    def test_swap_brings_up_to_plus_y_front_to_minus_z_and_keeps_left(self):
+    def test_swap_brings_up_to_plus_y_forward_to_minus_z_and_keeps_left(self):
         self.assertEqual(axes.apply(axes.BLENDER_TO_FLVER, (0.0, 0.0, 1.0)), (0.0, 1.0, 0.0))
         self.assertEqual(axes.apply(axes.BLENDER_TO_FLVER, (0.0, -1.0, 0.0)), (0.0, 0.0, -1.0))
         self.assertEqual(axes.apply(axes.BLENDER_TO_FLVER, (1.0, 0.0, 0.0)), (1.0, 0.0, 0.0))
 
-    def test_rotation_brings_up_to_plus_y_and_front_to_plus_z(self):
+    def test_rotation_brings_up_to_plus_y_and_forward_to_plus_z(self):
         self.assertEqual(axes.apply(axes.ROTATE_X_MINUS_90, (0.0, 0.0, 1.0)), (0.0, 1.0, 0.0))
         self.assertEqual(axes.apply(axes.ROTATE_X_MINUS_90, (0.0, -1.0, 0.0)), (0.0, 0.0, 1.0))
 
@@ -162,14 +163,73 @@ class TestAxisSwap(unittest.TestCase):
 
     def test_figure_panels(self):
         expected = [("+X", "+Z", "-Y", "right"), ("+X", "+Y", "+Z", "right"), ("+X", "+Y", "-Z", "left")]
-        got = [tuple(axes.character_axes(matrix)[key] for key in ("left", "up", "front", "handedness"))
-               for _, matrix in paper_figures.AXIS_STAGES]
+        got = [tuple(axes.character_axes(matrix)[key] for key in ("left", "up", "forward", "handedness"))
+               for _, matrix in axis_swap_figure.AXIS_STAGES]
         self.assertEqual(got, expected)
         figure = make_figures.build_all()["paper_axis_swap.svg"]
-        for left, up, front, handedness in expected:
-            with self.subTest(front=front):
+        for left, up, forward, handedness in expected:
+            with self.subTest(forward=forward):
                 self.assertIn(f"{handedness.capitalize()}-handed", figure)
-                self.assertIn(f"Front {front.replace('-', '−')}, up {up}, left side {left}", figure)
+                self.assertIn(f"Forward {forward.replace('-', '−')}, up {up}, left side {left}", figure)
+
+
+class TestAxisSwapAnimation(unittest.TestCase):
+    """The animated panel of Fig. 3: the character's coordinates through the rotation about X, then Z negated."""
+
+    @staticmethod
+    def matrices_close(a, b):
+        return all(abs(x - y) < 1e-9 for row_a, row_b in zip(a, b) for x, y in zip(row_a, row_b))
+
+    def test_stages(self):
+        fig = axis_swap_figure
+        self.assertTrue(self.matrices_close(fig.stage_matrix(0.0), axes.IDENTITY))
+        self.assertTrue(self.matrices_close(fig.stage_matrix(fig.ROTATE[1]), axes.ROTATE_X_MINUS_90))
+        self.assertTrue(self.matrices_close(fig.stage_matrix(fig.NEGATE[0]), axes.ROTATE_X_MINUS_90))
+        self.assertTrue(self.matrices_close(fig.stage_matrix(1.0), axes.BLENDER_TO_FLVER))
+
+    def test_end_pose_is_flvers(self):
+        fig = axis_swap_figure
+        points = fig.character_points(fig.stage_matrix(1.0))
+        up = tuple(h - p for h, p in zip(points["neck"], points["pelvis"]))
+        forward = tuple(n - h for n, h in zip(points["nose"], points["head"]))
+        left = tuple(a - b for a, b in zip(points["left_foot"], points["right_foot"]))
+        self.assertEqual([axes.axis_name(v) for v in (left, up, forward)],
+                         [axes.character_axes(axes.BLENDER_TO_FLVER)[k] for k in ("left", "up", "forward")])
+
+    def test_stands_first_and_lies_at_the_end(self):
+        fig = axis_swap_figure
+        start = fig.character_points(fig.stage_matrix(0.0))
+        end = fig.character_points(fig.stage_matrix(1.0))
+        # Blender Z is up: standing, the head is above the pelvis; lying, they are level
+        self.assertGreater(start["head"][2] - start["pelvis"][2], 50)
+        self.assertAlmostEqual(end["head"][2], end["pelvis"][2])
+
+    def test_rotation_keeps_lengths_and_the_negation_reverses_handedness(self):
+        fig = axis_swap_figure
+        base = fig.character_points(axes.IDENTITY)
+        length = lambda pts, a, b: sum((x - y) ** 2 for x, y in zip(pts[a], pts[b])) ** 0.5
+        for t in fig.frame_times():
+            matrix = fig.stage_matrix(t)
+            with self.subTest(t=t):
+                if t <= fig.NEGATE[0]:
+                    self.assertAlmostEqual(axes.determinant(matrix), 1.0)
+                    pts = fig.character_points(matrix)
+                    for a, b, _, _ in fig.SEGMENTS:
+                        self.assertAlmostEqual(length(pts, a, b), length(base, a, b))
+        self.assertAlmostEqual(axes.determinant(fig.stage_matrix(1.0)), -1.0)
+
+    def test_svg_keyframes_and_steps(self):
+        import re
+        figure = make_figures.build_all()["paper_axis_swap.svg"]
+        animations = re.findall(r'<animate attributeName="[^"]+" values="([^"]*)" keyTimes="([^"]*)"[^>]*dur="(\d+)s"',
+                                figure)
+        self.assertTrue(animations)
+        for values, times, duration in animations:
+            self.assertEqual(len(values.split(";")), len(times.split(";")))
+            self.assertEqual(int(duration), 30)
+        headings = [f"{i + 1}. {heading}" for i, (heading, _) in enumerate(axis_swap_figure.STEPS)]
+        positions = [figure.index(f">{h}<") for h in headings]
+        self.assertEqual(positions, sorted(positions))
 
 
 class TestUvTriangle(unittest.TestCase):

@@ -8,43 +8,20 @@ Run ``python docs/figures/make_figures.py`` from the repository folder to
 rewrite the SVG files next to this script. The geometry comes from
 ``tangent_geometry``, the shared drawing parts from ``svg_parts``, the
 route chart from ``route_chart`` and the paper's own figures from
-``paper_figures``; this module draws the tangent figures. The tests check that the
+``paper_figures`` and ``axis_swap_figure``; this module draws the tangent figures. The tests check that the
 committed files equal what this script writes.
 """
 
 import os
 
-from paper_figures import figure_axis_swap, figure_channel_changes, figure_layout_test, figure_uv_triangle
+from axis_swap_figure import figure_axis_swap
+from paper_figures import figure_channel_changes, figure_layout_test, figure_uv_triangle
 from route_chart import PAPER_CHART, figure_ways_out
-from svg_parts import BLUE, GREEN, RED, fmt, legend, line, svg, text
+from svg_parts import BLUE, GREEN, RED, fmt, legend, line, project, svg, text
 from tangent_geometry import (CASES, MOTION, NORMAL, V, cross_as_drawn, decode, dome_points, dot, read_directions,
                               to_3d, vanilla_sign)
 
 FIGURES_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# Perspective sheets: +x right, +y up, +z towards the viewer.
-DEPTH_X = -0.35
-DEPTH_Y = 0.5
-
-
-def project(origin, point):
-    """
-    Screen position of a drawn 3D point.
-
-    Parameters
-    ----------
-    origin : tuple of float
-        Screen position of the sheet's far-left corner (3D origin).
-    point : tuple of float
-        ``(x, y, z)``.
-
-    Returns
-    -------
-    tuple of float
-    """
-    x, y, z = point
-    return origin[0] + x + DEPTH_X * z, origin[1] - y + DEPTH_Y * z
-
 
 def sheet(origin, size, mirrored):
     """

@@ -15,8 +15,8 @@ ROTATE_X_MINUS_90 = ((1.0, 0.0, 0.0), (0.0, 0.0, 1.0), (0.0, -1.0, 0.0))
 NEGATE_Z = ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, -1.0))
 IDENTITY = ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
 
-# A character in Blender: its left side, up and front directions.
-CHARACTER = {"left": (1.0, 0.0, 0.0), "up": (0.0, 0.0, 1.0), "front": (0.0, -1.0, 0.0)}
+# A character in Blender: its left side, up and forward directions.
+CHARACTER = {"left": (1.0, 0.0, 0.0), "up": (0.0, 0.0, 1.0), "forward": (0.0, -1.0, 0.0)}
 
 
 def apply(matrix, v):
@@ -113,10 +113,10 @@ def axis_name(v):
 
 def character_axes(matrix):
     """
-    The axes along the character's left side, up and front after a matrix.
+    The axes along the character's left side, up and forward after a matrix.
 
     Seen from in front, the character's left side is to the right of the
-    screen, its up is up and its front points out of the screen.
+    screen, its up is up and its forward direction points out of the screen.
 
     Parameters
     ----------
@@ -126,12 +126,12 @@ def character_axes(matrix):
     Returns
     -------
     dict
-        ``left``, ``up`` and ``front``: signed axis names, and ``handedness``
+        ``left``, ``up`` and ``forward``: signed axis names, and ``handedness``
         as seen from in front.
     """
     moved = {key: apply(matrix, v) for key, v in CHARACTER.items()}
     axes = {key: axis_name(v) for key, v in moved.items()}
-    axes["handedness"] = screen_handedness(moved["left"], moved["up"], moved["front"])
+    axes["handedness"] = screen_handedness(moved["left"], moved["up"], moved["forward"])
     return axes
 
 

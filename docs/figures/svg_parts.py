@@ -146,3 +146,32 @@ def into_screen(x, y, r=7.0):
     return [f'<circle cx="{fmt(x)}" cy="{fmt(y)}" r="{fmt(r)}" fill="none" class="o" stroke-width="1.5"/>',
             line(x - d, y - d, x + d, y + d, None, 1.5, head=False),
             line(x - d, y + d, x + d, y - d, None, 1.5, head=False)]
+
+
+# Perspective sheets: +x right, +y up, +z towards the viewer.
+DEPTH_X = -0.35
+DEPTH_Y = 0.5
+
+
+def project(origin, point):
+    """
+    Screen position of a drawn 3D point.
+
+    Parameters
+    ----------
+    origin : tuple of float
+        Screen position of the sheet's far-left corner (3D origin).
+    point : tuple of float
+        ``(x, y, z)``.
+
+    Returns
+    -------
+    tuple of float
+    """
+    x, y, z = point
+    return origin[0] + x + DEPTH_X * z, origin[1] - y + DEPTH_Y * z
+
+
+def signed(name):
+    """A number or axis name with a typographic minus sign."""
+    return name.replace("-", "−")

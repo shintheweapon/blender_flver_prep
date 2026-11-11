@@ -52,6 +52,10 @@
   order with Fig. 3 placed after its first citation, defines ER Tangents before using it, refers to equations by
   number only, gives the direction of the 90° rotation (anticlockwise on the map), and writes figure captions in the
   IEEE form, without italics or a leading article.
+- Fig. 3 of the paper is animated on top: a character's coordinates go through the rotation about X and the negation
+  of Z in fixed axes drawn as Blender's Front view shows them, in the slanted projection of Fig. 2, with a short text
+  for each step; the three static panels stay below. It is drawn by `docs/figures/axis_swap_figure.py`. The paper and
+  its figures call the facing direction "forward", as Blender's FBX settings do.
 
 ## 1.0.0
 
