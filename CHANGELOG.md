@@ -27,6 +27,9 @@
   tangent frame.
 - A figure in the paper shows the channel changes of Section VII at work on a raised dome: sideways or reflected from
   the map as authored, outward after the change; derived, not tested in game.
+- The paper's layout test ran on every part normal map of the game (`docs/figures/integrability.py`, results in
+  `docs/figures/integrability_maps.json`): Section IV-A gives a table per file-name prefix and a figure, and states the
+  correlation as moderate rather than strong. The guide's summary of the test says the same.
 
 ## 1.0.0
 

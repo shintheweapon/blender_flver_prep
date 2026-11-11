@@ -11,6 +11,8 @@ if FIGURES_DIR not in sys.path:
 
 import axes  # noqa: E402
 import frame_checks  # noqa: E402
+import integrability  # noqa: E402
+import layout_results  # noqa: E402
 import make_figures  # noqa: E402
 import paper_figures  # noqa: E402
 import route_chart  # noqa: E402
@@ -88,7 +90,7 @@ class TestPaperFigures(unittest.TestCase):
     def test_paper_figures_name_no_tool_setting_or_release(self):
         import re
         paper = {name: content for name, content in make_figures.build_all().items() if name.startswith("paper_")}
-        self.assertEqual(len(paper), 7)
+        self.assertEqual(len(paper), 8)
         for name, content in paper.items():
             with self.subTest(name=name):
                 self.assertEqual(re.findall(self.FORBIDDEN, content), [])
@@ -454,11 +456,8 @@ class TestSlopeTest(unittest.TestCase):
     @staticmethod
     def correlation(red, green):
         import numpy as np
-        dr_dv = np.gradient(red, axis=0)  # rows run along +V (row 0 at the top)
-        dg_du = np.gradient(green, axis=1)  # columns run along +U
-        detail = np.abs(dr_dv) + np.abs(dg_du)
-        keep = detail > np.median(detail)  # the more detailed half of the pixels
-        return float(np.corrcoef(dr_dv[keep], dg_du[keep])[0, 1])
+        # Rows run along +V (row 0 at the top), columns along +U
+        return integrability.correlation(np.gradient(red, axis=0), np.gradient(green, axis=1))
 
     @staticmethod
     def height_field():
@@ -479,6 +478,61 @@ class TestSlopeTest(unittest.TestCase):
     def test_inverted_green_fails(self):
         red, green = self.height_field()
         self.assertLess(self.correlation(red, 1 - green), -0.9)
+
+
+class TestLayoutTest(unittest.TestCase):
+    """The layout test run on whole maps and tiles, and the committed results behind Fig. 4 and Section IV-A."""
+
+    def test_directx_map_is_directx_positive(self):
+        red, green = TestSlopeTest.height_field()
+        pairing, directx, _ = integrability.test(red, green)
+        self.assertEqual((pairing, directx > 0), (integrability.DIRECTX, True))
+        self.assertEqual(integrability.test_map(red, green)["outcome"], "directx+")
+
+    def test_swapped_map_is_swapped(self):
+        # Red stores the V component and green the U component
+        red, green = TestSlopeTest.height_field()
+        self.assertEqual(integrability.test(green, red)[0], integrability.SWAPPED)
+
+    def test_inverted_green_is_directx_negative(self):
+        red, green = TestSlopeTest.height_field()
+        self.assertEqual(integrability.test_map(red, 1 - green)["outcome"], "directx-")
+
+    def test_flat_tiles_are_skipped_and_a_flat_map_is_untestable(self):
+        import numpy as np
+        flat = np.full((512, 256), 0.5)
+        self.assertEqual(integrability.tiles(flat, flat)["skipped"], 2)
+        result = integrability.test_map(flat, flat)
+        self.assertEqual(result["outcome"], layout_results.UNTESTABLE)
+        self.assertIsNone(result["directx"])
+
+    def test_summary(self):
+        tiles = {"directx+": 1, "directx-": 0, "swapped+": 0, "swapped-": 0, "skipped": 0}
+        maps = [{"name": "WP_A_1_n.dds", "directx": 0.6, "swapped": 0.2, "outcome": "directx+", "tiles": tiles},
+                {"name": "wp_a_2_n.dds", "directx": -0.4, "swapped": -0.1, "outcome": "directx-", "tiles": tiles},
+                {"name": "WP_A_3_n.dds", "directx": None, "swapped": None, "outcome": "untestable", "tiles": tiles},
+                {"name": "FG_A_1_n.dds", "directx": 0.2, "swapped": 0.3, "outcome": "swapped+", "tiles": tiles}]
+        rows = layout_results.summary(maps)
+        self.assertEqual([row["prefix"] for row in rows], ["WP", "FG"])
+        self.assertEqual((rows[0]["tested"], rows[0]["untestable"]), (2, 1))
+        self.assertEqual(rows[0]["count"]["directx+"], 1)
+        self.assertAlmostEqual(rows[0]["directx_median"], 0.1)
+
+    def test_committed_results_have_no_paths(self):
+        for entry in layout_results.load()["maps"]:
+            with self.subTest(name=entry["name"]):
+                self.assertNotRegex(entry["name"], r"[\\/:]")
+
+    def test_figure_bars_are_the_committed_counts(self):
+        rows = layout_results.summary(layout_results.load()["maps"])
+        for (prefix, shares, tested, untestable), row in zip(paper_figures.layout_bars(rows), rows):
+            with self.subTest(prefix=prefix):
+                self.assertEqual((prefix, tested, untestable), (row["prefix"], row["tested"], row["untestable"]))
+                self.assertAlmostEqual(sum(shares), 1.0)
+                self.assertAlmostEqual(shares[0] * tested, row["count"]["directx+"])
+        figure = make_figures.build_all()["paper_layout_test.svg"]
+        for row in rows:
+            self.assertIn(f">{paper_figures.prefix_label(row['prefix'])}<", figure)
 
 
 if __name__ == "__main__":

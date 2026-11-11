@@ -4,10 +4,12 @@ swap from Blender into FLVER space, the layout test on vanilla maps, one
 triangle's UV derivatives and tangent frame, and the channel changes.
 
 ``make_figures`` registers and writes them; the geometry comes from ``axes``
-and ``tangent_geometry``, the drawing parts from ``svg_parts``.
+and ``tangent_geometry``, the layout test's results from ``layout_results``,
+the drawing parts from ``svg_parts``.
 """
 
 from axes import BLENDER_TO_FLVER, FLVER_BELOW_VIEW, IDENTITY, ROTATE_X_MINUS_90, character_axes, on_screen
+from layout_results import KINDS, load, summary
 from svg_parts import BLUE, GREEN, RED, into_screen, legend, line, out_of_screen, svg, text
 from tangent_geometry import (CASES, build_frame, cross, decode, decode_colour, dome_points, dot, encode_colour,
                               uv_derivatives, workaround)
@@ -262,3 +264,74 @@ def figure_channel_changes():
                "U = V, so the normals on that diagonal point outward and those on the other diagonal inward. "
                "Bottom: the map after the channel change, (20) or (21): every normal points outward, as "
                "authored. The changes are derived from the measured frames, not tested in game.", body)
+
+
+LAYOUT_SEGMENTS = (
+    (("directx+",), GREEN, "DirectX pairing, positive"),
+    (("directx-",), BLUE, "DirectX pairing, negative (green inverted)"),
+    (("swapped+", "swapped-"), RED, "Swapped pairing"),
+)
+
+
+def prefix_label(prefix):
+    """A file-name prefix, with its part kind where it is known."""
+    return f"{prefix} ({KINDS[prefix]})" if prefix in KINDS else prefix
+
+
+def layout_bars(rows):
+    """
+    The share of each prefix's testable maps per winning pairing.
+
+    Parameters
+    ----------
+    rows : list of dict
+        From ``layout_results.summary``.
+
+    Returns
+    -------
+    list of tuple
+        ``(prefix, [share per segment of LAYOUT_SEGMENTS], tested, untestable)``.
+    """
+    return [(row["prefix"], [sum(row["count"][o] for o in outcomes) / row["tested"]
+                             for outcomes, _, _ in LAYOUT_SEGMENTS], row["tested"], row["untestable"])
+            for row in rows]
+
+
+def figure_layout_test():
+    """
+    The layout test on the vanilla normal maps: per file-name prefix, the
+    share of testable maps won by each pairing.
+
+    Returns
+    -------
+    str
+    """
+    bars = layout_bars(summary(load()["maps"]))
+    body = [text(170, 24, "Share of testable maps", "t h"), text(560, 24, "Maps tested", "t h", "end"),
+            text(670, 24, "Untestable", "t h", "end")]
+    for index, (prefix, shares, tested, untestable) in enumerate(bars):
+        y = 44 + 26 * index
+        body.append(text(160, y + 13, prefix_label(prefix), "t", "end"))
+        x = 170.0
+        for share, (_, colour, _) in zip(shares, LAYOUT_SEGMENTS):
+            width = 300 * share
+            if width > 0:
+                body.append(f'<rect x="{x:.1f}" y="{y}" width="{width:.1f}" height="18" fill="{colour}"/>')
+            x += width
+        body.append(text(560, y + 13, str(tested), "t", "end"))
+        body.append(text(670, y + 13, str(untestable), "t", "end"))
+    y = 44 + 26 * len(bars) + 16
+    body.append(line(170, y - 8, 170, y - 2, None, 1.0, head=False))
+    body.append(line(470, y - 8, 470, y - 2, None, 1.0, head=False))
+    body.append(text(170, y + 12, "0%", anchor="middle"))
+    body.append(text(470, y + 12, "100%", anchor="middle"))
+    for index, (_, colour, label) in enumerate(LAYOUT_SEGMENTS):
+        lx = (20, 200, 490)[index]
+        body.append(f'<rect x="{lx}" y="{y + 30}" width="14" height="14" fill="{colour}"/>')
+        body.append(text(lx + 20, y + 42, label))
+    return svg(680, y + 60, "The layout test on vanilla normal maps",
+               "Horizontal bars, one per file-name prefix of the game's part normal maps, each split into the "
+               "share of its testable maps on which the DirectX pairing (red with U, green with V) wins with a "
+               "positive correlation, with a negative one (green inverted), or the swapped pairing wins. The "
+               "DirectX pairing with a positive correlation fills almost every bar. Columns give the maps "
+               "tested and the untestable maps per prefix.", body)

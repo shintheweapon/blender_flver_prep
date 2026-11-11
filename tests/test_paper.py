@@ -13,7 +13,9 @@ FIGURES_DIR = os.path.join(DOCS_DIR, "figures")
 if FIGURES_DIR not in sys.path:
     sys.path.insert(0, FIGURES_DIR)
 
+import layout_results  # noqa: E402
 import tangent_geometry as mf  # noqa: E402
+from paper_figures import prefix_label  # noqa: E402
 
 REFERENCES_HEADING = "## References"
 
@@ -167,6 +169,34 @@ class TestWorkedExample(unittest.TestCase):
                 self.assertTrue(table[quantity].startswith(value), table[quantity])
 
 
+class TestLayoutTable(unittest.TestCase):
+    """Section IV-A's table and counts are the committed results of the layout test."""
+
+    def section(self):
+        text = read_paper()
+        return text[text.index("### A. The Integrability Test"):text.index("### B. Vanilla Frames")]
+
+    def test_table_rows_are_the_summary(self):
+        rows = layout_results.summary(layout_results.load()["maps"])
+        lines = [line for line in self.section().splitlines() if line.startswith("| ") and "---" not in line][1:]
+        self.assertEqual(len(lines), len(rows))
+        for line, row in zip(lines, rows):
+            with self.subTest(prefix=row["prefix"]):
+                cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+                self.assertEqual(cells, [prefix_label(row["prefix"]), str(row["tested"]), str(row["untestable"]),
+                                         f"{100 * row['count']['directx+'] / row['tested']:.1f}%",
+                                         f"{row['directx_median']:.2f}", f"{row['swapped_median']:.2f}"])
+
+    def test_totals_are_the_summary(self):
+        maps = layout_results.load()["maps"]
+        testable = [m for m in maps if m["outcome"] != layout_results.UNTESTABLE]
+        wins = sum(m["outcome"] == "directx+" for m in testable)
+        text = self.section()
+        for value in (len(maps), len(maps) - len(testable), len(testable), wins, len(testable) - wins):
+            with self.subTest(value=value):
+                self.assertRegex(text, rf"\b{value:,}\b")
+
+
 class TestWording(unittest.TestCase):
 
     def test_no_dash_punctuation(self):
@@ -229,7 +259,7 @@ class TestToolNeutral(unittest.TestCase):
     def test_paper_shows_the_paper_figures(self):
         images = re.findall(r"!\[[^\]]*\]\(\.\./figures/([^)]+)\)", read_paper())
         self.assertEqual(images, ["paper_normal_map_layout.svg", "tangent_frame.svg", "paper_axis_swap.svg",
-                                  "paper_tangent_directions.svg", "paper_dome_tilts.svg", "paper_uv_triangle.svg",
+                                  "paper_layout_test.svg", "paper_tangent_directions.svg", "paper_dome_tilts.svg", "paper_uv_triangle.svg",
                                   "paper_channel_changes.svg", "paper_ways_out_of_blender.svg"])
 
 

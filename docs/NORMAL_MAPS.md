@@ -44,8 +44,9 @@ DirectX-layout map as intended.
 
 ## How this was established
 
-- **The layout:** a slope test on a vanilla normal map. For a real height field, the change of the U slope along V
-  equals the change of the V slope along U; only the pairing "red with U, green with V, same sign" passes it.
+- **The layout:** a slope test on the game's normal maps. For a real height field, the change of the U slope along V
+  equals the change of the V slope along U. The pairing "red with U, green with V, same sign" fits best on
+  97% of the maps tested (the paper's Section IV-A).
 - **The frame:** measured on vanilla body, face and weapon parts (for example BD_M_1730 and BD_M_2110). The stored
   tangent points along +V, and the `W` rule holds, mirrored UV islands included. On islands whose texture looks
   unmirrored in game, the stored `W` is -1.

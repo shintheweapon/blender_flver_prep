@@ -7,8 +7,8 @@
 **Abstract:** Custom meshes brought into Elden Ring can show their normal maps shaded in the wrong directions. This paper
 sets out the convention the game uses and how it was measured: a DirectX-layout map, read with green along the stored
 tangent, which points along +V, and red along the bitangent $W(\vec{N}\times\vec{T})$, which points along +U. An
-integrability test on a vanilla map (its red and green must be the derivatives of one height field) fixes the layout;
-vanilla models fix the frame; an in-game test confirms both. Tangents in the common convention, which the FBX format
+integrability test on the game's normal maps (their red and green must be the derivatives of one height field) fixes
+the layout; vanilla models fix the frame; an in-game test confirms both. Tangents in the common convention, which the FBX format
 and the FBX SDK follow, point along +U. Depending on the importer's mirror setting, the game then rotates every
 authored tangent-space normal (the normal a map stores, relative to the surface) by 90° in the tangent plane, or
 reflects it about the line $U = V$. The paper derives both effects, describes an import step, ER Tangents, that
@@ -240,9 +240,39 @@ $$
 
 *In words:* the partial derivative of red along V (down the image) matches that of green along U (across it).
 
-The two sides were correlated over the more detailed half of the pixels of a vanilla normal map, and tile by tile. Only
-the pairing "red with U, green with V, same sign", with V running down, gives a strong positive correlation. That
-pairing is the DirectX layout.
+The two sides were correlated over the more detailed half of the pixels of a map, and tile by tile, in tiles of 256 by
+256 pixels; a tile in which neither channel varies is skipped. The other pairing, red with V and green with U (the
+swapped pairing), was correlated in the same way, and the pairing with the larger correlation wins. A map is untestable
+when a channel does not vary at all or every tile is skipped.
+
+The test ran on every normal map of the game's parts, one per file name: 1,437 maps, of which
+50 are untestable. The test is the function `test_map` in `docs/figures/integrability.py`, and
+its results are in `docs/figures/integrability_maps.json`. Per file-name prefix, over the testable maps:
+
+| Prefix | Maps tested | Untestable | DirectX pairing wins, positive | Median correlation, DirectX | Median correlation, swapped |
+|---|---|---|---|---|---|
+| WP (weapons) | 535 | 2 | 98.3% | 0.54 | 0.23 |
+| BD (body) | 247 | 2 | 96.8% | 0.54 | 0.24 |
+| HD (head) | 226 | 0 | 96.0% | 0.55 | 0.26 |
+| LG (legs) | 151 | 0 | 98.7% | 0.50 | 0.21 |
+| AM (arms) | 124 | 0 | 97.6% | 0.51 | 0.21 |
+| FG | 47 | 39 | 85.1% | 0.46 | 0.27 |
+| AA | 36 | 7 | 94.4% | 0.56 | 0.33 |
+| FC | 17 | 0 | 100.0% | 0.48 | 0.26 |
+| HR | 3 | 0 | 100.0% | 0.43 | 0.21 |
+| HA | 1 | 0 | 100.0% | 0.39 | 0.20 |
+
+On 1,347 of the 1,387 testable maps (97%), the pairing "red with U, green with V, same sign",
+with V running down, wins with a positive correlation (Fig. 4). That pairing is the DirectX layout. The correlation is
+moderate, not strong: its median is 0.53, against 0.24 for the swapped pairing. On the other 40
+maps the test picks green inverted or the swapped pairing. A sample of four of them, viewed shaded with the light from
+the top, looked raised when read in the DirectX layout, so the test likely misreads those maps; the others were not
+investigated.
+
+![Horizontal bars per file-name prefix of the game's part normal maps: the DirectX pairing with a positive correlation fills almost every bar](../figures/paper_layout_test.svg)
+
+*Fig. 4. The layout test on the game's part normal maps: per file-name prefix, the share of testable maps on which
+each pairing wins.*
 
 ### B. Vanilla Frames
 
@@ -290,12 +320,12 @@ read along $\vec{T}$ and red along $W(\vec{N}\times\vec{T})$, which is (7).
 
 A vanilla body part, BD_M_1730, was given a test map whose rows alternate two encodings of the same raised shapes:
 DirectX, and DirectX with green inverted. The part's albedo tints the rows, warm on the DirectX rows and cool on the
-green-inverted ones. In game (Fig. 4), with the light from above, only the DirectX rows look raised, with their bright
+green-inverted ones. In game (Fig. 5), with the light from above, only the DirectX rows look raised, with their bright
 side towards the light; the green-inverted rows look dented. This confirms the layout and the frame together.
 
 ![In game: the cape of BD_M_1730 wearing the test map, lit from above; the warm rows look raised and the cool rows dented](images/ingame_layout_test.webp)
 
-*Fig. 4. In-game test on BD_M_1730. Warm rows: the DirectX encoding, raised. Cool rows: green inverted, dented.*
+*Fig. 5. In-game test on BD_M_1730. Warm rows: the DirectX encoding, raised. Cool rows: green inverted, dented.*
 
 ### D. Import Measurements
 
@@ -328,15 +358,15 @@ $$
 
 *In words:* without a mirror, the (x, y) components of every tangent-space normal are rotated by 90°; with Z mirrored,
 they are reflected about the line U = V. A raised dome then reads lit from the side, or raised on one diagonal and
-dented on the other (Fig. 6).
+dented on the other (Fig. 7).
 
 ![Three sheets with N up: vanilla tangents read green along +V and red along +U; tangents along +U read green along +U, with red along -V (without a mirror) or +V (with Z mirrored)](../figures/paper_tangent_directions.svg)
 
-*Fig. 5. The directions in which the game reads green and red, for vanilla tangents and for tangents along +U.*
+*Fig. 6. The directions in which the game reads green and red, for vanilla tangents and for tangents along +U.*
 
 ![Animated: the frame and the decoded tangent-space normals around a raised dome; vanilla normals point outward, without a mirror every normal rotates by 90°, with Z mirrored every normal is reflected about the U = V diagonal](../figures/paper_dome_tilts.svg)
 
-*Fig. 6. Animated: the decoded tangent-space normals around a raised dome in each case.*
+*Fig. 7. Animated: the decoded tangent-space normals around a raised dome in each case.*
 
 ## VI. ER Tangents
 
@@ -422,7 +452,7 @@ $(0, 0)$, $(0.5, 0)$, $(0, 0.25)$; normal $\vec{N} = (0, -1, 0)$ at every vertex
 
 ![The worked example's triangle twice: in UV space with U right and V down, and in game seen from below with the normal out of the screen; T points down along +V, N × T points left, and B = W(N × T) points right along +U](../figures/paper_uv_triangle.svg)
 
-*Fig. 7. The worked example's triangle in UV space and in game, seen from below with $\vec{N}$ out of the screen. The
+*Fig. 8. The worked example's triangle in UV space and in game, seen from below with $\vec{N}$ out of the screen. The
 tangent follows +V, and $W = -1$ turns $\vec{N}\times\vec{T}$ onto +U.*
 
 **Validation.** ER Tangents was checked in four ways [6]:
@@ -430,12 +460,12 @@ tangent follows +V, and $W = -1$ turns $\vec{N}\times\vec{T}$ onto +U.*
 - on vanilla parts, the recomputed tangents point almost the same way as the stored ones;
 - imports with ER Tangents follow the game's frame on both UV halves, without a mirror and with Z mirrored;
 - without ER Tangents, the importer writes exactly what the upstream release writes;
-- in game, a plane imported with ER Tangents and one imported without, side by side with the test map (Fig. 8): only
+- in game, a plane imported with ER Tangents and one imported without, side by side with the test map (Fig. 9): only
   the one with ER Tangents looks right on both halves.
 
 ![In game: two planes with the test map; left, with ER Tangents, both UV halves look alike; right, without ER Tangents, the halves disagree](images/ingame_er_tangents.webp)
 
-*Fig. 8. In-game check of ER Tangents. Left: with ER Tangents, both UV halves raised alike. Right: without ER Tangents, the halves disagree.*
+*Fig. 9. In-game check of ER Tangents. Left: with ER Tangents, both UV halves raised alike. Right: without ER Tangents, the halves disagree.*
 
 It is offered upstream as a pull request [6].
 
@@ -463,7 +493,7 @@ $$
 *In words:* with Z mirrored, red and green swap.
 
 Blue and alpha stay as they are. Both changes are worked out from the measured frames, not tested in game
-(Fig. 9). They assume that every island is unmirrored, or that mirrored islands read the same way.
+(Fig. 10). They assume that every island is unmirrored, or that mirrored islands read the same way.
 
 | Import | New red | New green |
 |---|---|---|
@@ -472,19 +502,19 @@ Blue and alpha stay as they are. Both changes are worked out from the measured f
 
 ![Two columns, without a mirror and with Z mirrored: the dome's normals read through tangents along +U point sideways, or are reflected about U = V, from the map as authored, and all point outward after the channel change](../figures/paper_channel_changes.svg)
 
-*Fig. 9. The decoded tangent-space normals around a raised dome through tangents along +U, from the map as authored
+*Fig. 10. The decoded tangent-space normals around a raised dome through tangents along +U, from the map as authored
 and after (20) or (21). Derived, not tested in game.*
 
 ## VIII. Practical Use
 
-There are two ways out of Blender (Fig. 10): its FBX export with Tangent Space off, which writes no tangents, and with
+There are two ways out of Blender (Fig. 11): its FBX export with Tangent Space off, which writes no tangents, and with
 Tangent Space on, which writes tangents along +U with no W. Without ER Tangents, both give tangents along +U, since the
 importer generates them when the file has none. With it, both give a FLVER in the game's convention. With Tangent Space
 on and without ER Tangents, W is undefined, so mirrored UV halves may also read wrong; this has not been tested.
 
 ![Two routes into the importer: Blender's FBX export with Tangent Space off, with no tangents, and with Tangent Space on, with +U tangents and no W; with ER Tangents, both give a FLVER in the game's frame](../figures/paper_ways_out_of_blender.svg)
 
-*Fig. 10. The ways out of Blender, and the tangents each one gives.*
+*Fig. 11. The ways out of Blender, and the tangents each one gives.*
 
 ## IX. Limitations
 
@@ -493,6 +523,8 @@ on and without ER Tangents, W is undefined, so mirrored UV halves may also read 
 - What blue and alpha hold was not tested; this paper follows the modding community's view that blue holds gloss.
 - The handedness of FLVER space was inferred from one model, LOD0 only, and the vanilla frame was measured on four
   vanilla parts.
+- The layout test ran on the game's part normal maps only. Its correlation is moderate, and of the 40 maps on which
+  it disagrees, four were viewed.
 - Only Elden Ring was checked; Dark Souls 3, Sekiro, Armored Core 6 and Nightreign were not.
 
 ## X. Conclusion
