@@ -30,6 +30,9 @@
 - The paper's layout test ran on every part normal map of the game (`docs/figures/integrability.py`, results in
   `docs/figures/integrability_maps.json`): Section IV-A gives a table per file-name prefix and a figure, and states the
   correlation as moderate rather than strong. The guide's summary of the test says the same.
+- Every test in the paper (III-C, IV-A to IV-D, the validation of ER Tangents) opens with its question, why it
+  matters and how the test answers it, and ends with its result and its impact on the implementation. IV-A says what
+  it cannot tell: a map with both channels inverted, and how the game reads the maps.
 
 ## 1.0.0
 

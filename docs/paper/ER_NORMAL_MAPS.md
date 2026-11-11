@@ -8,8 +8,8 @@
 sets out the convention the game uses and how it was measured: a DirectX-layout map, read with green along the stored
 tangent, which points along +V, and red along the bitangent $W(\vec{N}\times\vec{T})$, which points along +U. An
 integrability test on the game's normal maps (their red and green must be the derivatives of one height field) fixes
-the layout; vanilla models fix the frame; an in-game test confirms both. Tangents in the common convention, which the FBX format
-and the FBX SDK follow, point along +U. Depending on the importer's mirror setting, the game then rotates every
+the layout; vanilla models fix the frame; an in-game test confirms both. Tangents in the common convention, which the
+FBX format and the FBX SDK follow, point along +U. Depending on the importer's mirror setting, the game then rotates every
 authored tangent-space normal (the normal a map stores, relative to the surface) by 90° in the tangent plane, or
 reflects it about the line $U = V$. The paper derives both effects, describes an import step, ER Tangents, that
 builds the tangents in the game's convention from the mesh and its UVs, and derives channel changes that match the map
@@ -197,7 +197,12 @@ $\vec{N}\times\vec{T}$ before $W$ is applied.*
 
 ### C. The Handedness of FLVER Space
 
-FLVER files state no handedness. It was found on one vanilla model, the face part FC_F_0000:
+**Question.** Is FLVER space left-handed or right-handed? FLVER files do not say.
+
+**Why it matters.** Handedness decides which way $\vec{N}\times\vec{T}$ points as seen in game, and so which value of
+$W$ an island whose texture looks unmirrored needs.
+
+**How the test answers it.** Two properties of one vanilla model, the face part FC_F_0000, each fix the handedness:
 
 - **Anatomy:** the character stands along +Y, faces −Z, and has its left side at +X. Seen from in front, x points to
   the right, y up and z into the screen. In the FBX SDK's terms that is a left-handed coordinate system, the same as its
@@ -206,10 +211,12 @@ FLVER files state no handedness. It was found on one vanilla model, the face par
   normal on almost all LOD0 triangles. Front faces therefore run clockwise under right-handed maths, which is
   anticlockwise as seen in a left-handed space.
 
-The test has limits: one model, LOD0 only, and handedness inferred from anatomy and winding. What follows from it is
-that, as seen in game, $\vec{N}\times\vec{T}$ follows the left-hand rule. On an island whose texture looks unmirrored in
-game, $\vec{N}\times\vec{T}$ points along −U, and (6) needs $W = -1$. A Blender scene is carried into this space by
-swapping its Y and Z axes: a −90° rotation about X, which brings Blender's up (+Z) to +Y and its front (−Y) to +Z,
+**Result.** FLVER space is left-handed, so as seen in game $\vec{N}\times\vec{T}$ follows the left-hand rule. On an
+island whose texture looks unmirrored in game, $\vec{N}\times\vec{T}$ points along −U, and (6) needs $W = -1$. The
+test has limits: one model, LOD0 only, and handedness inferred from anatomy and winding.
+
+**Impact on the implementation.** Rule (9), and ER Tangents through (19), give $W = -1$ on unmirrored islands. A
+Blender scene is carried into this space by swapping its Y and Z axes: a −90° rotation about X, which brings Blender's up (+Z) to +Y and its front (−Y) to +Z,
 then Z negated, which brings the front to −Z. The swap is a reflection (determinant −1), which changes handedness, so
 the character stays the right way round, with its left side at +X.
 
@@ -221,6 +228,16 @@ is to the right. A circle with a dot points out of the screen, a circle with a c
 ## IV. Measurements
 
 ### A. The Integrability Test
+
+**Question.** Are the game's normal maps stored in the DirectX layout: red with U, green with V, and green not
+inverted?
+
+**Why it matters.** The layout decides which channel holds which component of the tangent-space normal, and so which
+channel the game must read along which vector of the frame. A wrong layout swaps red and green, or inverts green.
+
+**How the test answers it.** A map stores the derivatives of one height field, and the mixed partial derivatives of a
+height field are equal. Only the right pairing of channels with UV axes, with the right relative sign, satisfies that,
+so each map shows its own layout, without running the game.
 
 For any smooth height field, the mixed partial derivatives are equal (Schwarz's theorem):
 
@@ -262,19 +279,34 @@ its results are in `docs/figures/integrability_maps.json`. Per file-name prefix,
 | HR | 3 | 0 | 100.0% | 0.43 | 0.21 |
 | HA | 1 | 0 | 100.0% | 0.39 | 0.20 |
 
-On 1,347 of the 1,387 testable maps (97%), the pairing "red with U, green with V, same sign",
+**Result.** On 1,347 of the 1,387 testable maps (97%), the pairing "red with U, green with V, same sign",
 with V running down, wins with a positive correlation (Fig. 4). That pairing is the DirectX layout. The correlation is
 moderate, not strong: its median is 0.53, against 0.24 for the swapped pairing. On the other 40
 maps the test picks green inverted or the swapped pairing. A sample of four of them, viewed shaded with the light from
 the top, looked raised when read in the DirectX layout, so the test likely misreads those maps; the others were not
-investigated.
+investigated. The test has two limits:
+
+- a map with both red and green inverted gives the same correlations, so the test fixes the pairing and the sign of
+  green relative to red, and the in-game test (IV-C) fixes the overall sign;
+- it tests how the maps were authored, not how the game reads them.
 
 ![Horizontal bars per file-name prefix of the game's part normal maps: the DirectX pairing with a positive correlation fills almost every bar](../figures/paper_layout_test.svg)
 
 *Fig. 4. The layout test on the game's part normal maps: per file-name prefix, the share of testable maps on which
 each pairing wins.*
 
+**Impact on the implementation.** The DirectX layout is what (3) decodes and what the channel changes (20) and (21)
+start from. The test corroborates the in-game test (IV-C) across the game's maps; it does not settle the layout alone.
+
 ### B. Vanilla Frames
+
+**Question.** What tangent frame do the game's own models store: does $\vec{T}$ follow +V, and is $W$ given by (9)?
+
+**Why it matters.** The game reads every map through the stored frame, so an importer must write the frame the game's
+models carry.
+
+**How the test answers it.** The frame a mesh implies follows from its positions and UVs alone, by (15) and (16).
+Comparing it with the stored frame at every triangle corner shows which rule the stored frame follows.
 
 Four vanilla parts were checked: one weapon and three body parts. Each was read with SoulsFormats [7]: for every mesh,
 each vertex's position, normal, first tangent $(\vec{T}, W)$ and first UV, and the triangles of the LOD0 face set.
@@ -300,7 +332,7 @@ Its results, per part and per UV orientation (the sign of $d$):
 | BD_M_2110 | body | 95169 | 0.987 to 1.012 | 0.015 | 0.993 | 99.42% | 99.95% |
 | BD_M_1010 | body | 71571 | 0.987 to 1.013 | 0.015 | 0.993 | 78.32% | 99.74% |
 
-On every part:
+**Result.** On every part:
 
 - $W$ is exactly $+1$ or $-1$;
 - $\vec{T}$ has unit length to within the stored precision, is orthogonal to $\vec{N}$ to within about 1°, and lies
@@ -316,22 +348,48 @@ These measurements fix the stored frame: $\vec{T}$ along +V, and $W$ such that $
 pairs red with U and green with V, and the in-game test (IV-C) confirms the layout and the frame together. So green is
 read along $\vec{T}$ and red along $W(\vec{N}\times\vec{T})$, which is (7).
 
+**Impact on the implementation.** ER Tangents builds $\vec{T}$ along +V and $W$ by (19), which gives the same value as
+(9). The meshes on which (9) fails are where ER Tangents may differ from the game's own models.
+
 ### C. The In-Game Test
+
+**Question.** Does the game read the maps as IV-A and IV-B imply: the DirectX layout, with green along $\vec{T}$ and
+red along $W(\vec{N}\times\vec{T})$, so that raised shapes look raised?
+
+**Why it matters.** IV-A and IV-B measure files; only the game shows how it reads them. IV-A also leaves the overall
+sign open.
+
+**How the test answers it.** The same raised shapes in two encodings, side by side under one light: only the encoding
+the game reads as intended looks raised.
 
 A vanilla body part, BD_M_1730, was given a test map whose rows alternate two encodings of the same raised shapes:
 DirectX, and DirectX with green inverted. The part's albedo tints the rows, warm on the DirectX rows and cool on the
-green-inverted ones. In game (Fig. 5), with the light from above, only the DirectX rows look raised, with their bright
-side towards the light; the green-inverted rows look dented. This confirms the layout and the frame together.
+green-inverted ones.
+
+**Result.** In game (Fig. 5), with the light from above, only the DirectX rows look raised, with their bright side
+towards the light; the green-inverted rows look dented. This confirms the layout, its overall sign and the frame
+together.
 
 ![In game: the cape of BD_M_1730 wearing the test map, lit from above; the warm rows look raised and the cool rows dented](images/ingame_layout_test.webp)
 
 *Fig. 5. In-game test on BD_M_1730. Warm rows: the DirectX encoding, raised. Cool rows: green inverted, dented.*
 
+**Impact on the implementation.** It confirms (7), on which ER Tangents and the channel changes of Section VII rely.
+
 ### D. Import Measurements
 
-A test plane with one unmirrored and one mirrored UV half was imported twice, once without a mirror and once with Z
-mirrored. Without a mirror, the tangent points along +U, $W = -1$ on the unmirrored half, and red is read along −V.
+**Question.** What frame does the importer write without ER Tangents?
+
+**Why it matters.** Its difference from the vanilla frame (IV-B) is the error the paper sets out to remove.
+
+**How the test answers it.** A test plane with one unmirrored and one mirrored UV half was imported twice, once without
+a mirror and once with Z mirrored, and the frames stored in each import were read back.
+
+**Result.** Without a mirror, the tangent points along +U, $W = -1$ on the unmirrored half, and red is read along −V.
 With Z mirrored, red is read along +V.
+
+**Impact on the implementation.** These frames give (12) and (13): the rotation and the reflection that ER Tangents
+removes, and that the channel changes of Section VII undo instead.
 
 ## V. Tangents in the Common Convention
 
@@ -455,7 +513,13 @@ $(0, 0)$, $(0.5, 0)$, $(0, 0.25)$; normal $\vec{N} = (0, -1, 0)$ at every vertex
 *Fig. 8. The worked example's triangle in UV space and in game, seen from below with $\vec{N}$ out of the screen. The
 tangent follows +V, and $W = -1$ turns $\vec{N}\times\vec{T}$ onto +U.*
 
-**Validation.** ER Tangents was checked in four ways [6]:
+**Validation.** ER Tangents was checked as follows.
+
+**Question.** Does an import with ER Tangents carry the game's frame?
+
+**Why it matters.** ER Tangents is the fix this paper proposes; until it is checked, it is only derived.
+
+**How the test answers it.** Four checks [6], from the files to the game:
 
 - on vanilla parts, the recomputed tangents point almost the same way as the stored ones;
 - imports with ER Tangents follow the game's frame on both UV halves, without a mirror and with Z mirrored;
@@ -466,6 +530,12 @@ tangent follows +V, and $W = -1$ turns $\vec{N}\times\vec{T}$ onto +U.*
 ![In game: two planes with the test map; left, with ER Tangents, both UV halves look alike; right, without ER Tangents, the halves disagree](images/ingame_er_tangents.webp)
 
 *Fig. 9. In-game check of ER Tangents. Left: with ER Tangents, both UV halves raised alike. Right: without ER Tangents, the halves disagree.*
+
+**Result.** All four agree: with ER Tangents, imports carry the vanilla frame on both UV halves, with and without a
+mirror, and look right in game; without it, the importer writes what it wrote before.
+
+**Impact on the implementation.** The import step can be used with either mirror setting, and imports without it are
+unchanged.
 
 It is offered upstream as a pull request [6].
 

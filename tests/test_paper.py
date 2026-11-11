@@ -169,6 +169,28 @@ class TestWorkedExample(unittest.TestCase):
                 self.assertTrue(table[quantity].startswith(value), table[quantity])
 
 
+class TestTestSections(unittest.TestCase):
+    """Every test the paper reports opens with its question and ends with its impact on the implementation."""
+
+    LEAD_INS = ("**Question.**", "**Why it matters.**", "**How the test answers it.**", "**Result.**",
+                "**Impact on the implementation.**")
+    SECTIONS = (("### C. The Handedness of FLVER Space", "## IV. Measurements"),
+                ("### A. The Integrability Test", "### B. Vanilla Frames"),
+                ("### B. Vanilla Frames", "### C. The In-Game Test"),
+                ("### C. The In-Game Test", "### D. Import Measurements"),
+                ("### D. Import Measurements", "## V. "),
+                ("**Validation.**", "**Relation to MikkTSpace.**"))
+
+    def test_each_test_has_the_lead_ins_in_order(self):
+        text = read_paper()
+        for start, end in self.SECTIONS:
+            section = text[text.index(start):text.index(end, text.index(start))]
+            with self.subTest(section=start):
+                starts = [line for line in section.splitlines() if line.startswith("**") and ".**" in line]
+                found = [lead for line in starts for lead in self.LEAD_INS if line.startswith(lead)]
+                self.assertEqual(found, list(self.LEAD_INS))
+
+
 class TestLayoutTable(unittest.TestCase):
     """Section IV-A's table and counts are the committed results of the layout test."""
 

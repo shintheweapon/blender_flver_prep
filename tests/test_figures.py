@@ -498,6 +498,14 @@ class TestLayoutTest(unittest.TestCase):
         red, green = TestSlopeTest.height_field()
         self.assertEqual(integrability.test_map(red, 1 - green)["outcome"], "directx-")
 
+    def test_both_channels_inverted_look_the_same_to_the_test(self):
+        # The test fixes the pairing and green's sign relative to red, not the overall sign
+        red, green = TestSlopeTest.height_field()
+        original = integrability.test_map(red, green)
+        inverted = integrability.test_map(1 - red, 1 - green)
+        self.assertEqual(inverted["outcome"], original["outcome"])
+        self.assertAlmostEqual(inverted["directx"], original["directx"])
+
     def test_flat_tiles_are_skipped_and_a_flat_map_is_untestable(self):
         import numpy as np
         flat = np.full((512, 256), 0.5)
