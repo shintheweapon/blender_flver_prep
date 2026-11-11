@@ -10,6 +10,10 @@
 - The page and the README name FbxImporter's mirror setting per release: Transform in 1.11.0, a Mirror check box in
   1.7.0 to 1.10.2 (it mirrored X in 1.3 to 1.6.1).
 - ER Tangents starts ticked for Elden Ring FLVERs only; the page says so and links the upstream pull request.
+- A paper, `docs/paper/ER_NORMAL_MAPS.md`, sets out the convention, how it was measured, the maths with every formula
+  explained in words, handedness, the common tangent convention and the game's, ER Tangents and matching the map
+  instead, with references; the guide links to it, and its section "What FbxImporter writes" is now "Tangents in the
+  common convention".
 
 ## 1.0.0
 
