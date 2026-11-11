@@ -80,7 +80,8 @@ class TestRouteChart(unittest.TestCase):
 class TestPaperFigures(unittest.TestCase):
     """The paper's versions of the figures name no tool, setting or release, and use standard terms."""
 
-    FORBIDDEN = r"FbxImporter|FLVER Prep|Transform|Mirror ticked|Mirror unticked|\b1\.(?:3|6\.1|7\.0|10\.2|11\.0)\b"
+    FORBIDDEN = (r"FbxImporter|FLVER Prep|Transform|Mirror ticked|Mirror unticked|\b1\.(?:3|6\.1|7\.0|10\.2|11\.0)\b"
+                 r"|\b(?:[Uu]n)?ticked\b")
 
     def test_paper_figures_name_no_tool_setting_or_release(self):
         import re

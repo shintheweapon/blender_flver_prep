@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="680" height="212" viewBox="0 0 680 212" role="img">
 <title>Ways out of Blender</title>
-<desc>Two routes from Blender into the importer: Blender's FBX export with Tangent Space off, with no tangents, and with Tangent Space on, with tangents along +U and no W. With ER Tangents ticked, the importer writes a FLVER whose tangents follow the game's frame, whichever route the file took.</desc>
+<desc>Two routes from Blender into the importer: Blender's FBX export with Tangent Space off, with no tangents, and with Tangent Space on, with tangents along +U and no W. With ER Tangents, the importer writes a FLVER whose tangents follow the game's frame, whichever route the file took.</desc>
 <style>
 .t{fill:#1f2328;font:14px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
 .h{font-weight:600}
@@ -29,7 +29,7 @@
 <text class="s" x="150" y="175" text-anchor="middle">+U tangents with no W</text>
 <rect class="p" x="320" y="74" width="170" height="64" rx="6" stroke-width="0.5"/>
 <text class="t h" x="405" y="101" text-anchor="middle">Importer</text>
-<text class="s" x="405" y="119" text-anchor="middle">ER Tangents ticked</text>
+<text class="s" x="405" y="119" text-anchor="middle">with ER Tangents</text>
 <rect class="p" x="520" y="74" width="150" height="64" rx="6" stroke-width="0.5"/>
 <text class="t h" x="595" y="101" text-anchor="middle">FLVER</text>
 <text class="s" x="595" y="119" text-anchor="middle">the game's frame</text>

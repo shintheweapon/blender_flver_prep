@@ -1,6 +1,6 @@
 """
 The "Ways out of Blender" chart: the routes from Blender into the importer,
-which with ER Tangents ticked all give a FLVER in the game's tangent frame.
+which with ER Tangents all give a FLVER in the game's tangent frame.
 The guide's chart (``GUIDE_CHART``) has three routes and names the tools; the
 paper's (``PAPER_CHART``) has Blender's two FBX export routes and names none.
 
@@ -108,12 +108,12 @@ PAPER_CHART = Chart(
     (
         Box(40, 20, 220, 78, ("FBX export", "Tangent Space off", "no tangents")),
         Box(40, 114, 220, 78, ("FBX export", "Tangent Space on", "+U tangents with no W")),
-        Box(320, 74, 170, 64, ("Importer", "ER Tangents ticked")),
+        Box(320, 74, 170, 64, ("Importer", "with ER Tangents")),
         Box(520, 74, 150, 64, ("FLVER", "the game's frame")),
     ),
     212,
     "Two routes from Blender into the importer: Blender's FBX export with Tangent Space off, with no "
-    "tangents, and with Tangent Space on, with tangents along +U and no W. With ER Tangents ticked, the "
+    "tangents, and with Tangent Space on, with tangents along +U and no W. With ER Tangents, the "
     "importer writes a FLVER whose tangents follow the game's frame, whichever route the file took.")
 
 

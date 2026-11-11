@@ -2,7 +2,7 @@
 
 [`ER_NORMAL_MAPS.md`](ER_NORMAL_MAPS.md) sets out how Elden Ring reads normal maps and tangents, how that was measured,
 and the maths behind it: the tangent-bitangent-normal frame, handedness, tangents in the common convention, the ER
-Tangents import option, and matching the map to the tangents instead. Every formula is stated in words as well.
+Tangents import step, and matching the map to the tangents instead. Every formula is stated in words as well.
 
 It follows the IEEE style (abstract, numbered sections and equations, numbered references) as a house style; it is not
 submitted anywhere. For the settings to use, see the practical guide, [`../NORMAL_MAPS.md`](../NORMAL_MAPS.md).

@@ -221,7 +221,8 @@ class TestToolNeutral(unittest.TestCase):
     def test_no_tool_settings_releases_or_guide_links(self):
         text = self.text_without_source_entry()
         for pattern in (r"FLVER Prep", r"Prepare and Export", r"NORMAL_MAPS\.md", r"Transform", r"Mirror ticked",
-                        r"Mirror unticked", r"\b1\.(?:3|6\.1|7\.0|10\.2|11\.0)\b"):
+                        r"Mirror unticked", r"\b1\.(?:3|6\.1|7\.0|10\.2|11\.0)\b", r"(?i)\b(?:un)?ticked\b",
+                        r"(?i)\bimport option\b"):
             with self.subTest(pattern=pattern):
                 self.assertIsNone(re.search(pattern, text))
 

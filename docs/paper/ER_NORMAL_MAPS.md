@@ -11,7 +11,7 @@ integrability test on a vanilla map (its red and green must be the derivatives o
 vanilla models fix the frame; an in-game test confirms both. Tangents in the common convention, which the FBX format
 and the FBX SDK follow, point along +U. Depending on the importer's mirror setting, the game then rotates every
 authored tangent-space normal (the normal a map stores, relative to the surface) by 90° in the tangent plane, or
-reflects it about the line $U = V$. The paper derives both effects, describes an import option, ER Tangents, that
+reflects it about the line $U = V$. The paper derives both effects, describes an import step, ER Tangents, that
 builds the tangents in the game's convention from the mesh and its UVs, and derives channel changes that match the map
 to the tangents instead. Every formula is stated in words as well.
 
@@ -45,7 +45,7 @@ The game's own models use a different one, so the two disagree. This paper:
 
 - measures the convention of the game's own models (Sections III and IV);
 - derives what tangents in the common convention do to it (Section V);
-- describes an import option, ER Tangents, that builds tangents in the game's convention (Section VI);
+- describes an import step, ER Tangents, that builds tangents in the game's convention (Section VI);
 - derives how to match the map to the tangents instead (Section VII).
 
 ## II. Background
@@ -330,10 +330,10 @@ dented on the other (Fig. 5).
 
 ## VI. ER Tangents
 
-ER Tangents is an import option [6] that builds tangents in the game's convention. When it is ticked, the importer
-builds the tangents from the mesh after the importer's axis change, in place of the file's. It is adapted from
-Lengyel's method [2], which computes per-triangle tangents, averages them per vertex, orthogonalises them against the
-normal (Gram-Schmidt) and stores the handedness as ±1. Here the tangent follows +V instead of +U, and each triangle
+ER Tangents is an import step [6] that builds tangents in the game's convention. With it, the importer builds the
+tangents from the mesh after the importer's axis change, in place of the file's. It is adapted from Lengyel's method
+[2], which computes per-triangle tangents, averages them per vertex, orthogonalises them against the normal
+(Gram-Schmidt) and stores the handedness as ±1. Here the tangent follows +V instead of +U, and each triangle
 contributes normalised directions weighted by its area. The steps run as follows.
 
 **Per triangle.** Degenerate triangles, with a repeated vertex, are skipped. For vertices
@@ -413,16 +413,16 @@ $(0, 0)$, $(0.5, 0)$, $(0, 0.25)$; normal $\vec{N} = (0, -1, 0)$ at every vertex
 **Validation.** ER Tangents was checked in four ways [6]:
 
 - on vanilla parts, the recomputed tangents point almost the same way as the stored ones;
-- imports through it follow the game's frame on both UV halves, without a mirror and with Z mirrored;
-- unticked, the importer writes exactly what the upstream release writes;
-- in game, a ticked and an unticked plane side by side with the test map (Fig. 6): only the ticked one looks right on
-  both halves.
+- imports with ER Tangents follow the game's frame on both UV halves, without a mirror and with Z mirrored;
+- without ER Tangents, the importer writes exactly what the upstream release writes;
+- in game, a plane imported with ER Tangents and one imported without, side by side with the test map (Fig. 6): only
+  the one with ER Tangents looks right on both halves.
 
-![In game: two planes with the test map; left, ER Tangents ticked, both UV halves look alike; right, unticked, the halves disagree](images/ingame_er_tangents.webp)
+![In game: two planes with the test map; left, with ER Tangents, both UV halves look alike; right, without ER Tangents, the halves disagree](images/ingame_er_tangents.webp)
 
-*Fig. 6. In-game check of ER Tangents. Left: ticked, both UV halves raised alike. Right: unticked, the halves disagree.*
+*Fig. 6. In-game check of ER Tangents. Left: with ER Tangents, both UV halves raised alike. Right: without ER Tangents, the halves disagree.*
 
-It starts ticked for Elden Ring FLVERs only, and is offered upstream as a pull request [6].
+It is offered upstream as a pull request [6].
 
 **Relation to MikkTSpace.** MikkTSpace [3], [4] is the tangent method Blender uses: its `Mesh.calc_tangents` runs it
 [4], and Blender's FBX exporter calls `calc_tangents` when Tangent Space is on. These tangents follow +U and the
@@ -462,7 +462,7 @@ Tangent Space on, which writes tangents along +U with no W. Without ER Tangents,
 importer generates them when the file has none. With it, both give a FLVER in the game's convention. With Tangent Space
 on and without ER Tangents, W is undefined, so mirrored UV halves may also read wrong; this has not been tested.
 
-![Two routes into the importer: Blender's FBX export with Tangent Space off, with no tangents, and with Tangent Space on, with +U tangents and no W; with ER Tangents ticked, both give a FLVER in the game's frame](../figures/paper_ways_out_of_blender.svg)
+![Two routes into the importer: Blender's FBX export with Tangent Space off, with no tangents, and with Tangent Space on, with +U tangents and no W; with ER Tangents, both give a FLVER in the game's frame](../figures/paper_ways_out_of_blender.svg)
 
 *Fig. 7. The ways out of Blender, and the tangents each one gives.*
 
@@ -480,7 +480,7 @@ on and without ER Tangents, W is undefined, so mirrored UV halves may also read 
 Elden Ring reads a DirectX-layout map with green along a tangent that follows +V, and red along $W(\vec{N}\times\vec{T})$,
 which follows +U. Tangents in the common convention follow +U, so the (x, y) components of every tangent-space normal
 are rotated by 90° or reflected about the line U = V, depending on the mirror setting. Building the tangents from the
-mesh and its UVs in the game's convention gives the intended shading for every route out of Blender. Where that option
+mesh and its UVs in the game's convention gives the intended shading for every route out of Blender. Where that step
 is not available, swapping or inverting channels matches the map to the tangents instead.
 
 ## Acknowledgement
