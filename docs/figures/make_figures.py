@@ -161,8 +161,8 @@ def figure_tangent_frame():
 
 TITLES = (
     ("Vanilla tangents", "as the game's own", "models store them"),
-    ("FbxImporter", "1.11.0: Transform None", "1.7.0 to 1.10.2: Mirror unticked"),
-    ("FbxImporter", "1.11.0: Transform Mirror Z", "1.7.0 to 1.10.2: Mirror ticked"),
+    ("Tangents along +U", "1.11.0: Transform None", "1.7.0 to 1.10.2: Mirror unticked"),
+    ("Tangents along +U", "1.11.0: Transform Mirror Z", "1.7.0 to 1.10.2: Mirror ticked"),
 )
 
 NOTE = ("In 1.3 to 1.6.1, Mirror unticked reads as the middle column;",
@@ -210,10 +210,10 @@ def figure_fbximporter_tangents():
     body.append(text(340, 334, NOTE[1], anchor="middle"))
     return svg(680, 350, "The directions the game reads green and red",
                "Three sheets lying flat with N up, +U to the right and +V towards the viewer. Vanilla "
-               "tangents: green is read along +V and red along +U. FbxImporter 1.11.0 Transform None (1.7.0 "
-               "to 1.10.2 Mirror unticked): green along +U and red along -V, a quarter turn. FbxImporter "
-               "1.11.0 Transform Mirror Z (1.7.0 to 1.10.2 Mirror ticked): green along +U and red along +V, "
-               "red and green swapped.", body)
+               "tangents: green is read along +V and red along +U. Tangents along +U with FbxImporter 1.11.0 "
+               "Transform None (1.7.0 to 1.10.2 Mirror unticked): green along +U and red along -V, a quarter "
+               "turn. Tangents along +U with FbxImporter 1.11.0 Transform Mirror Z (1.7.0 to 1.10.2 Mirror "
+               "ticked): green along +U and red along +V, red and green swapped.", body)
 
 
 
@@ -292,9 +292,10 @@ def figure_dome_tilts():
     return svg(680, 424, "The tilts the game decodes around a raised dome",
                "Animated. Three panels, each with the frame (green T, red W(N x T)) and the surface tilts the "
                "game decodes around a raised dome. Vanilla tangents: the tilts point outward and the dome "
-               "reads raised. FbxImporter 1.11.0 Transform None (1.7.0 to 1.10.2 Mirror unticked): the frame "
-               "and every tilt turn a quarter, so the tilts run round the dome. FbxImporter 1.11.0 Transform "
-               "Mirror Z (1.7.0 to 1.10.2 Mirror ticked): the frame and every tilt flip across the U = V "
+               "reads raised. Tangents along +U with FbxImporter 1.11.0 Transform None (1.7.0 to 1.10.2 Mirror "
+               "unticked): the frame and every tilt turn a quarter, so the tilts run round the dome. Tangents "
+               "along +U with FbxImporter 1.11.0 Transform Mirror Z (1.7.0 to 1.10.2 Mirror ticked): the frame "
+               "and every tilt flip across the U = V "
                "diagonal, so the tilts on the diagonal stay outward (raised) and the others turn inward "
                "(dented).", body)
 

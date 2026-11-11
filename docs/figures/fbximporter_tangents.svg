@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="680" height="350" viewBox="0 0 680 350" role="img">
 <title>The directions the game reads green and red</title>
-<desc>Three sheets lying flat with N up, +U to the right and +V towards the viewer. Vanilla tangents: green is read along +V and red along +U. FbxImporter 1.11.0 Transform None (1.7.0 to 1.10.2 Mirror unticked): green along +U and red along -V, a quarter turn. FbxImporter 1.11.0 Transform Mirror Z (1.7.0 to 1.10.2 Mirror ticked): green along +U and red along +V, red and green swapped.</desc>
+<desc>Three sheets lying flat with N up, +U to the right and +V towards the viewer. Vanilla tangents: green is read along +V and red along +U. Tangents along +U with FbxImporter 1.11.0 Transform None (1.7.0 to 1.10.2 Mirror unticked): green along +U and red along -V, a quarter turn. Tangents along +U with FbxImporter 1.11.0 Transform Mirror Z (1.7.0 to 1.10.2 Mirror ticked): green along +U and red along +V, red and green swapped.</desc>
 <style>
 .t{fill:#1f2328;font:14px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
 .h{font-weight:600}
@@ -44,7 +44,7 @@
 <line x1="359" y1="130" x2="409" y2="130" stroke="#639922" stroke-width="2" marker-end="url(#ag)"/>
 <line x1="359" y1="130" x2="382.1" y2="97" stroke="#E24B4A" stroke-width="2" marker-end="url(#ar)"/>
 <circle cx="359" cy="130" r="3" class="of"/>
-<text class="t h" x="359" y="220" text-anchor="middle">FbxImporter</text>
+<text class="t h" x="359" y="220" text-anchor="middle">Tangents along +U</text>
 <text class="s" x="359" y="240" text-anchor="middle">1.11.0: Transform None</text>
 <text class="s" x="359" y="256" text-anchor="middle">1.7.0 to 1.10.2: Mirror unticked</text>
 <polygon class="p" points="540,100 660,100 618,160 498,160" stroke-width="0.5"/>
@@ -58,7 +58,7 @@
 <line x1="579" y1="130" x2="629" y2="130" stroke="#639922" stroke-width="2" marker-end="url(#ag)"/>
 <line x1="579" y1="130" x2="555.9" y2="163" stroke="#E24B4A" stroke-width="2" marker-end="url(#ar)"/>
 <circle cx="579" cy="130" r="3" class="of"/>
-<text class="t h" x="579" y="220" text-anchor="middle">FbxImporter</text>
+<text class="t h" x="579" y="220" text-anchor="middle">Tangents along +U</text>
 <text class="s" x="579" y="240" text-anchor="middle">1.11.0: Transform Mirror Z</text>
 <text class="s" x="579" y="256" text-anchor="middle">1.7.0 to 1.10.2: Mirror ticked</text>
 <line x1="60" y1="290" x2="84" y2="290" stroke="#639922" stroke-width="2"/>

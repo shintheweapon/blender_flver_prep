@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="680" height="424" viewBox="0 0 680 424" role="img">
 <title>The tilts the game decodes around a raised dome</title>
-<desc>Animated. Three panels, each with the frame (green T, red W(N x T)) and the surface tilts the game decodes around a raised dome. Vanilla tangents: the tilts point outward and the dome reads raised. FbxImporter 1.11.0 Transform None (1.7.0 to 1.10.2 Mirror unticked): the frame and every tilt turn a quarter, so the tilts run round the dome. FbxImporter 1.11.0 Transform Mirror Z (1.7.0 to 1.10.2 Mirror ticked): the frame and every tilt flip across the U = V diagonal, so the tilts on the diagonal stay outward (raised) and the others turn inward (dented).</desc>
+<desc>Animated. Three panels, each with the frame (green T, red W(N x T)) and the surface tilts the game decodes around a raised dome. Vanilla tangents: the tilts point outward and the dome reads raised. Tangents along +U with FbxImporter 1.11.0 Transform None (1.7.0 to 1.10.2 Mirror unticked): the frame and every tilt turn a quarter, so the tilts run round the dome. Tangents along +U with FbxImporter 1.11.0 Transform Mirror Z (1.7.0 to 1.10.2 Mirror ticked): the frame and every tilt flip across the U = V diagonal, so the tilts on the diagonal stay outward (raised) and the others turn inward (dented).</desc>
 <style>
 .t{fill:#1f2328;font:14px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
 .h{font-weight:600}
@@ -54,7 +54,7 @@
 <g transform="translate(321.7,131.7)"><g class="spin"><line x1="0" y1="0" x2="-12.7" y2="-12.7" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
 <g transform="translate(350,120)"><g class="spin"><line x1="0" y1="0" x2="0" y2="-18" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
 <g transform="translate(378.3,131.7)"><g class="spin"><line x1="0" y1="0" x2="12.7" y2="-12.7" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
-<text class="t h" x="350" y="248" text-anchor="middle">FbxImporter</text>
+<text class="t h" x="350" y="248" text-anchor="middle">Tangents along +U</text>
 <text class="s" x="350" y="268" text-anchor="middle">1.11.0: Transform None</text>
 <text class="s" x="350" y="284" text-anchor="middle">1.7.0 to 1.10.2: Mirror unticked</text>
 <text class="s" x="350" y="306" text-anchor="middle">Tilts turn a quarter: twisted</text>
@@ -69,7 +69,7 @@
 <g transform="translate(541.7,131.7)"><g class="flip"><line x1="0" y1="0" x2="-12.7" y2="-12.7" stroke="#E24B4A" stroke-width="1.5" marker-end="url(#ar)"/></g></g>
 <g transform="translate(570,120)"><g class="flip"><line x1="0" y1="0" x2="0" y2="-18" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
 <g transform="translate(598.3,131.7)"><g class="flip"><line x1="0" y1="0" x2="12.7" y2="-12.7" stroke="#378ADD" stroke-width="1.5" marker-end="url(#ab)"/></g></g>
-<text class="t h" x="570" y="248" text-anchor="middle">FbxImporter</text>
+<text class="t h" x="570" y="248" text-anchor="middle">Tangents along +U</text>
 <text class="s" x="570" y="268" text-anchor="middle">1.11.0: Transform Mirror Z</text>
 <text class="s" x="570" y="284" text-anchor="middle">1.7.0 to 1.10.2: Mirror ticked</text>
 <text class="s" x="570" y="306" text-anchor="middle">Tilts flip on the diagonal</text>

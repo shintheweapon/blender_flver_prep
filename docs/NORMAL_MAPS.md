@@ -68,9 +68,9 @@ setting that decides what happens next has a different name in different release
 In FbxImporter 1.3 to 1.6.1, Mirror unticked reads as Transform None; Mirror ticked mirrored X instead, which is not
 covered here.
 
-![Three sheets with N up: vanilla tangents read green along +V and red along +U; FbxImporter's tangents read green along +U, with red along -V (Transform None) or +V (Transform Mirror Z)](figures/fbximporter_tangents.svg)
+![Three sheets with N up: vanilla tangents read green along +V and red along +U; tangents along +U read green along +U, with red along -V (Transform None) or +V (Transform Mirror Z)](figures/fbximporter_tangents.svg)
 
-*The directions in which the game reads green and red, for vanilla tangents and for FbxImporter's.*
+*The directions in which the game reads green and red, for vanilla tangents and for tangents along +U.*
 
 The game rebuilds each pixel's tilt as "red along `W (N × T)` plus green along `T`". So an authored tilt (a, b), its
 +U and +V parts, reads as (b, -a) with Transform None (Mirror unticked) and as (b, a) with Transform Mirror Z (Mirror
