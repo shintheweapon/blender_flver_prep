@@ -79,13 +79,7 @@ ticked): every tilt is turned a quarter, or flipped across the U = V diagonal.
 
 ## Ways out of Blender
 
-```mermaid
-flowchart LR
-    A["FLVER Prep export<br/>no tangents"] --> F["FbxImporter<br/>ER Tangents ticked"]
-    B["Blender FBX export<br/>Tangent Space off: no tangents"] --> F
-    C["Blender FBX export<br/>Tangent Space on: +U, no W"] --> F
-    F --> G["FLVER<br/>the game's frame"]
-```
+![Three routes into FbxImporter: FLVER Prep's export and Blender's FBX export with Tangent Space off, both with no tangents, and Blender's FBX export with Tangent Space on, with +U tangents and no W; with ER Tangents ticked, all give a FLVER in the game's frame](figures/ways_out_of_blender.svg)
 
 | Route | Tangents in the FBX file | What FbxImporter writes |
 |---|---|---|

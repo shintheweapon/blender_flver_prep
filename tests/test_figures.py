@@ -10,6 +10,7 @@ if FIGURES_DIR not in sys.path:
     sys.path.insert(0, FIGURES_DIR)
 
 import make_figures  # noqa: E402
+import route_chart  # noqa: E402
 import tangent_geometry as mf  # noqa: E402
 
 CASE = {case.key: case for case in mf.CASES}
@@ -28,6 +29,39 @@ class TestCommittedFigures(unittest.TestCase):
                 with open(os.path.join(FIGURES_DIR, name), encoding="utf-8") as file:
                     self.assertEqual(file.read(), content,
                                      "run python docs/figures/make_figures.py to rewrite it")
+
+
+class TestRouteChart(unittest.TestCase):
+
+    # Generous estimates of rendered text width, so that a label passing here has room to spare in any common font
+    TITLE_PX_PER_CHAR = 8.5
+    LINE_PX_PER_CHAR = 7.5
+    PADDING = 12
+
+    def test_every_label_fits_its_box(self):
+        for box in route_chart.ROUTE_BOXES:
+            title, *lines = box.lines
+            with self.subTest(box=title):
+                widths = [len(title) * self.TITLE_PX_PER_CHAR] + [len(text) * self.LINE_PX_PER_CHAR for text in lines]
+                self.assertLessEqual(max(widths) + 2 * self.PADDING, box.width)
+
+    def test_every_line_fits_its_box_height(self):
+        for box in route_chart.ROUTE_BOXES:
+            with self.subTest(box=box.lines[0]):
+                self.assertLessEqual(route_chart.text_block_height(len(box.lines)) + 2 * self.PADDING, box.height)
+
+    def test_boxes_do_not_overlap_and_stay_inside_the_figure(self):
+        boxes = route_chart.ROUTE_BOXES
+        for box in boxes:
+            self.assertGreaterEqual(box.x, 0)
+            self.assertGreaterEqual(box.y, 0)
+            self.assertLessEqual(box.x + box.width, route_chart.WIDTH)
+            self.assertLessEqual(box.y + box.height, route_chart.HEIGHT)
+        for i, a in enumerate(boxes):
+            for b in boxes[i + 1:]:
+                apart = (a.x + a.width <= b.x or b.x + b.width <= a.x
+                         or a.y + a.height <= b.y or b.y + b.height <= a.y)
+                self.assertTrue(apart, f"{a.lines[0]} overlaps {b.lines[0]}")
 
 
 class TestTangentFrame(unittest.TestCase):
