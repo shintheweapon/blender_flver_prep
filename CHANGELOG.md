@@ -27,13 +27,13 @@
   tangent frame.
 - A figure in the paper shows the channel changes of Section VII at work on a raised dome: sideways or reflected from
   the map as authored, outward after the change; derived, not tested in game.
-- The paper's layout test ran on every part normal map of the game (`docs/figures/integrability.py`, results in
+- The paper's layout test ran on the 1,437 part normal maps of the game (`docs/figures/integrability.py`, results in
   `docs/figures/integrability_maps.json`): Section IV-A gives a table per file-name prefix and a figure, and states the
   correlation as moderate rather than strong. The guide's summary of the test says the same.
 - Every test in the paper (III-C, IV-A to IV-D, the validation of ER Tangents) opens with its question, why it
   matters and how the test answers it, and ends with its result and its impact on the implementation. IV-A says what
   it cannot tell: a map with both channels inverted, and how the game reads the maps.
-- The paper's check of the vanilla tangent frame ran on every part model of the game (`docs/figures/frame_survey.py`,
+- The paper's check of the vanilla tangent frame ran on the 1,515 part models of the game (`docs/figures/frame_survey.py`,
   results in `docs/figures/frame_survey.json`): Section IV-B gives a table per file-name prefix, and reports that
   meshes with a cloth material keep `W` at -1 on mirrored islands, unlike every other mesh and unlike ER Tangents;
   the cause and the effect in game were not tested. The guide's summary of the frame says the same.
@@ -48,6 +48,10 @@
   (`docs/figures/flverdump/`, built against SoulsFormatsNEXT) and the survey driver (`docs/figures/survey_parts.py`)
   now in the repository. The references are numbered in order of first citation, and the paper names
   SoulsFormatsNEXT, the library it was read with.
+- The paper states its scope as counts (1,437 normal maps, 1,515 part models, as installed), cites every figure in
+  order with Fig. 3 placed after its first citation, defines ER Tangents before using it, refers to equations by
+  number only, gives the direction of the 90° rotation (anticlockwise on the map), and writes figure captions in the
+  IEEE form, without italics or a leading article.
 
 ## 1.0.0
 

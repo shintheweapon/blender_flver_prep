@@ -174,7 +174,7 @@ def figure_uv_triangle():
 DOME_TILT = 0.6
 
 CHANNEL_CHANGES = (
-    ("none", "Without a mirror", "rotated by 90°", "After (20)"),
+    ("none", "Without a mirror", "rotated 90° anticlockwise", "After (20)"),
     ("mirror_z", "With Z mirrored", "reflected about U = V", "After (21)"),
 )
 
@@ -260,8 +260,9 @@ def figure_channel_changes():
     return svg(680, 424, "Matching the map to tangents along +U",
                "Two columns, without a mirror and with Z mirrored, each with two domes seen from above. Top: "
                "the map as authored, read through tangents along +U: without a mirror every normal is rotated "
-               "by 90 degrees and points sideways; with Z mirrored every normal is reflected about the line "
-               "U = V, so the normals on that diagonal point outward and those on the other diagonal inward. "
+               "by 90 degrees anticlockwise and points sideways; with Z mirrored every normal is reflected about "
+               "the line U = V, so the normals on that diagonal point outward and those on the other diagonal "
+               "inward. "
                "Bottom: the map after the channel change, (20) or (21): every normal points outward, as "
                "authored. The changes are derived from the measured frames, not tested in game.", body)
 

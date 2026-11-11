@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="680" height="424" viewBox="0 0 680 424" role="img">
 <title>Matching the map to tangents along +U</title>
-<desc>Two columns, without a mirror and with Z mirrored, each with two domes seen from above. Top: the map as authored, read through tangents along +U: without a mirror every normal is rotated by 90 degrees and points sideways; with Z mirrored every normal is reflected about the line U = V, so the normals on that diagonal point outward and those on the other diagonal inward. Bottom: the map after the channel change, (20) or (21): every normal points outward, as authored. The changes are derived from the measured frames, not tested in game.</desc>
+<desc>Two columns, without a mirror and with Z mirrored, each with two domes seen from above. Top: the map as authored, read through tangents along +U: without a mirror every normal is rotated by 90 degrees anticlockwise and points sideways; with Z mirrored every normal is reflected about the line U = V, so the normals on that diagonal point outward and those on the other diagonal inward. Bottom: the map after the channel change, (20) or (21): every normal points outward, as authored. The changes are derived from the measured frames, not tested in game.</desc>
 <style>
 .t{fill:#1f2328;font:14px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
 .h{font-weight:600}
@@ -29,7 +29,7 @@
 <line x1="161.7" y1="81.7" x2="140.5" y2="102.9" class="o" stroke-width="1.5" marker-end="url(#ao)"/>
 <line x1="190" y1="70" x2="160" y2="70" class="o" stroke-width="1.5" marker-end="url(#ao)"/>
 <line x1="218.3" y1="81.7" x2="197.1" y2="60.5" class="o" stroke-width="1.5" marker-end="url(#ao)"/>
-<text class="s" x="190" y="184" text-anchor="middle">Map as authored: rotated by 90°</text>
+<text class="s" x="190" y="184" text-anchor="middle">Map as authored: rotated 90° anticlockwise</text>
 <circle cx="190" cy="270" r="40" fill="none" class="o" stroke-width="0.5" stroke-dasharray="3 3"/>
 <line x1="230" y1="270" x2="260" y2="270" stroke="#E24B4A" stroke-width="1.5" marker-end="url(#ar)"/>
 <line x1="218.3" y1="298.3" x2="239.5" y2="319.5" stroke="#E24B4A" stroke-width="1.5" marker-end="url(#ar)"/>

@@ -16,7 +16,7 @@ drawn by [`../figures/paper_figures.py`](../figures/paper_figures.py). The SVG f
 to the test surfaces, in [`images/`](images/). The formulas are functions in
 [`../figures/tangent_geometry.py`](../figures/tangent_geometry.py) and, for the axis swap and views,
 [`../figures/axes.py`](../figures/axes.py); the check of the vanilla tangent frame is
-[`../figures/frame_checks.py`](../figures/frame_checks.py), run on every part model by
+[`../figures/frame_checks.py`](../figures/frame_checks.py), run on the 1,515 part models by
 [`../figures/frame_survey.py`](../figures/frame_survey.py) (results in `../figures/frame_survey.json`). The layout
 test is
 [`../figures/integrability.py`](../figures/integrability.py); its results on the game's part normal maps are in

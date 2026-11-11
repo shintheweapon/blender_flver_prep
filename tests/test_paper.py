@@ -121,8 +121,38 @@ class TestFigures(unittest.TestCase):
                 self.assertTrue(os.path.isfile(os.path.normpath(os.path.join(PAPER_DIR, path))))
 
     def test_figures_are_numbered_one_by_one(self):
-        numbers = [int(n) for n in re.findall(r"^\*Fig\. (\d+)\.", read_paper(), flags=re.MULTILINE)]
+        numbers = [int(n) for n in re.findall(r"^Fig\. (\d+)\.", read_paper(), flags=re.MULTILINE)]
         self.assertEqual(numbers, list(range(1, len(numbers) + 1)))
+
+    def captions(self):
+        """Each figure caption as one line: from "Fig. N." to the end of its paragraph."""
+        text = read_paper()
+        return [" ".join(m.group(0).split()) for m in re.finditer(r"^\*?Fig\. \d+\..*?(?=\n\n|\Z)", text,
+                                                                  flags=re.MULTILINE | re.DOTALL)]
+
+    def test_captions_follow_ieee(self):
+        # IEEE: "Fig. N." then sentence-case text, first word capitalised, no leading article, ending with a full stop
+        captions = self.captions()
+        self.assertTrue(captions)
+        for caption in captions:
+            with self.subTest(caption=caption[:40]):
+                self.assertRegex(caption, r"^Fig\. \d+\. [A-Z]")
+                self.assertNotRegex(caption, r"^Fig\. \d+\. (?:A|An|The) ")
+                self.assertFalse(caption.endswith("*"))
+                self.assertTrue(caption.endswith("."))
+                self.assertNotEqual(caption, caption.upper())
+
+    def test_figures_are_cited_in_order(self):
+        body = read_paper().split(REFERENCES_HEADING)[0]
+        prose = "\n".join(line for line in body.splitlines()
+                           if not re.match(r"^(?:Fig\. \d+\.|!\[|<p align)", line))
+        first = []
+        for group in re.findall(r"\bFigs?\. ((?:\d+(?:, | and )?)+)", prose):
+            for n in re.findall(r"\d+", group):
+                if int(n) not in first:
+                    first.append(int(n))
+        captions = len(self.captions())
+        self.assertEqual(first, list(range(1, captions + 1)))
 
     def test_screenshots(self):
         # The two in-game screenshots, cropped and small, each with alt text
@@ -299,7 +329,8 @@ class TestFrameTable(unittest.TestCase):
                 self.assertIn(phrase, text)
 
     def test_part_count_is_the_survey(self):
-        self.assertIn(f"{len(frame_survey.load()):,} parts with triangles", self.section())
+        self.assertIn(f"{len(frame_survey.load()):,} part models were checked", self.section())
+        self.assertIn(f"On all {len(frame_survey.load()):,} parts", self.section())
 
 
 ROMAN = ("I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII")
@@ -360,6 +391,13 @@ class TestWording(unittest.TestCase):
         for line in prose:
             with self.subTest(line=line[:40]):
                 self.assertNotRegex(line, r"^\s*(?:- )?\(\d+\) (?!=)")
+
+    def test_scope_is_stated_with_counts(self):
+        # The runs cover the files installed for the paper, not every file the game may ever have
+        body = read_paper().split(REFERENCES_HEADING)[0]
+        for pattern in (r"(?i)\bevery (?:normal map|part model)", r"(?i)\brule \(\d+\)"):
+            with self.subTest(pattern=pattern):
+                self.assertIsNone(re.search(pattern, body))
 
     def test_standard_terms(self):
         # Vectors, scalars, components and tangent-space normals, not arrows, numbers, parts and tilts; the one

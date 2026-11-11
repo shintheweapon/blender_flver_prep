@@ -4,16 +4,16 @@
 
 *AI disclosure: see the Acknowledgement.*
 
-**Abstract:** Custom meshes brought into Elden Ring can show their normal maps shaded in the wrong directions. This paper
-sets out the convention the game uses and how it was measured: a DirectX-layout map, read with green along the stored
-tangent, which points along +V, and red along the bitangent $W(\vec{N}\times\vec{T})$, which points along +U. An
-integrability test on the game's normal maps (their red and green must be the derivatives of one height field) fixes
-the layout; vanilla models fix the frame; an in-game test confirms both. Tangents in the common convention, which the
-FBX format and the FBX SDK follow, point along +U. Depending on the importer's mirror setting, the game then rotates every
-authored tangent-space normal (the normal a map stores, relative to the surface) by 90° in the tangent plane, or
-reflects it about the line $U = V$. The paper derives both effects, describes an import step, ER Tangents, that
-builds the tangents in the game's convention from the mesh and its UVs, and derives channel changes that match the map
-to the tangents instead. Every formula is stated in words as well.
+**Abstract:** Custom meshes brought into Elden Ring can show their normal maps shaded in the wrong directions. This
+paper sets out the convention the game uses and how it was measured: a DirectX-layout map, read with green along the
+stored tangent, which points along +V, and red along the bitangent $W(\vec{N}\times\vec{T})$, which points along +U. An
+integrability test on the game's normal maps (their red and green must be the derivatives of one height field) fixes the
+layout; vanilla models fix the frame; an in-game test confirms both. Tangents in the common convention, which the FBX
+format and the FBX SDK follow, point along +U. Depending on the importer's mirror setting, the game then rotates every
+authored tangent-space normal (the normal a map stores, relative to the surface) by 90° anticlockwise on the map (from
++U towards −V), or reflects it about the line $U = V$. The paper derives both effects, describes an import step, ER
+Tangents, that builds the tangents in the game's convention from the mesh and its UVs, and derives channel changes that
+match the map to the tangents instead. Every formula is stated in words as well.
 
 **Index Terms:** normal mapping, tangent space, handedness, Elden Ring, FLVER, FBX import.
 
@@ -101,7 +101,7 @@ view's rotation in Blender 4.5. So Blender's 3D space is right-handed with Z up.
 Which way an axis points on screen depends on the view, so this paper names the view each time: the image, with row 0
 at the top; Blender's Front view; and a model in game, seen from in front. In a view with x to the right and y up, a
 right-handed coordinate system has z pointing out of the screen, towards the viewer, and a left-handed one has z
-pointing into the screen (Fig. 3).
+pointing into the screen.
 
 ## III. Elden Ring's Convention
 
@@ -142,7 +142,7 @@ square root normalises the vector. So on a raised bump, red is high on its +U si
 
 ![A texture with U running right and V running down from row 0 at the top; red stores the x component (towards +U), green the y component (towards +V)](../figures/paper_normal_map_layout.svg)
 
-*Fig. 1. The layout of a normal map. On a raised bump, red is high on its +U side and green on its +V side.*
+Fig. 1. Layout of a normal map. On a raised bump, red is high on its +U side and green on its +V side.
 
 ### B. The Vanilla Tangent Frame
 
@@ -187,13 +187,14 @@ $$
 W = -\operatorname{sign}\!\left(\vec{N}\cdot\left(\frac{\partial\vec{p}}{\partial u}\times\frac{\partial\vec{p}}{\partial v}\right)\right) \tag{9}
 $$
 
-*In words:* W is −1 when the dot product of the normal with the cross product of the partial derivatives along +U and
-+V is positive, and +1 when it is negative. A mirrored UV island reverses that cross product, and so has the opposite W.
+*In words:* W is −1 when the dot product of the normal with the cross product of the partial derivatives along +U and +V
+is positive, and +1 when it is negative. A mirrored UV island reverses that cross product, and so has the opposite W
+(Fig. 2).
 
 ![Two UV islands lying flat with N up and T along +V towards the viewer; on the unmirrored island W = -1 reverses N × T onto +U, on the mirrored island W = +1](../figures/tangent_frame.svg)
 
-*Fig. 2. The tangent frame on an unmirrored and a mirrored island, seen in perspective. The dashed arrow is
-$\vec{N}\times\vec{T}$ before $W$ is applied.*
+Fig. 2. Tangent frame on an unmirrored and a mirrored island, seen in perspective. The dashed arrow is
+$\vec{N}\times\vec{T}$ before $W$ is applied.
 
 ### C. The Handedness of FLVER Space
 
@@ -215,15 +216,16 @@ $W$ an island whose texture looks unmirrored needs.
 island whose texture looks unmirrored in game, $\vec{N}\times\vec{T}$ points along −U, and (6) needs $W = -1$. The
 test has limits: one model, LOD0 only, and handedness inferred from anatomy and winding.
 
-**Impact on the implementation.** Rule (9), and ER Tangents through (19), give $W = -1$ on unmirrored islands. A
-Blender scene is carried into this space by swapping its Y and Z axes: a −90° rotation about X, which brings Blender's up (+Z) to +Y and its front (−Y) to +Z,
-then Z negated, which brings the front to −Z. The swap is a reflection (determinant −1), which changes handedness, so
-the character stays the right way round, with its left side at +X.
+**Impact on the implementation.** Equation (9), and the import step of Section VI, ER Tangents, through (19), give
+$W = -1$ on unmirrored islands. A Blender scene is carried into this space by swapping its Y and Z axes (Fig. 3): a −90°
+rotation about X, which brings Blender's up (+Z) to +Y and its front (−Y) to +Z, then Z negated, which brings the front
+to −Z. The swap is a reflection (determinant −1), which changes handedness, so the character stays the right way round,
+with its left side at +X.
 
 ![Three panels of a character's axes seen from in front: in Blender X right, Z up and Y into the screen, right-handed; after the rotation about X, Y up and Z out of the screen, right-handed; after Z is negated, Z into the screen, left-handed](../figures/paper_axis_swap.svg)
 
-*Fig. 3. The axis swap from Blender into FLVER space, each panel seen from in front of the character, whose left side
-is to the right. A circle with a dot points out of the screen, a circle with a cross into it.*
+Fig. 3. Axis swap from Blender into FLVER space, each panel seen from in front of the character, whose left side
+is to the right. A circle with a dot points out of the screen, a circle with a cross into it.
 
 ## IV. Measurements
 
@@ -262,9 +264,9 @@ The two sides were correlated over the more detailed half of the pixels of a map
 swapped pairing), was correlated in the same way, and the pairing with the larger correlation wins. A map is untestable
 when a channel does not vary at all or every tile is skipped.
 
-The test ran on every normal map of the game's parts, one per file name: 1,437 maps, of which
-50 are untestable. The test's script and its per-map results are published with this paper [5]; reproducing them
-needs the game's own files, which are not distributed. Per file-name prefix, over the testable maps (Table I):
+The test ran on 1,437 normal maps, one per file name, from the game's part files as installed for this paper; 50 of them
+are untestable. The test's script and its per-map results are published with this paper [5]; reproducing them needs the
+game's own files, which are not distributed. Per file-name prefix, over the testable maps (Table I):
 
 <p align="center">TABLE I<br>LAYOUT TEST ON THE GAME'S PART NORMAL MAPS, PER FILE-NAME PREFIX</p>
 
@@ -294,8 +296,8 @@ investigated. The test has two limits:
 
 ![Horizontal bars per file-name prefix of the game's part normal maps: the DirectX pairing with a positive correlation fills almost every bar](../figures/paper_layout_test.svg)
 
-*Fig. 4. The layout test on the game's part normal maps: per file-name prefix, the share of testable maps on which
-each pairing wins.*
+Fig. 4. Layout test on the game's part normal maps: per file-name prefix, the share of testable maps on which
+each pairing wins.
 
 **Impact on the implementation.** The DirectX layout is what (3) decodes and what the channel changes (20) and (21)
 start from. The test corroborates the in-game test (IV-C) across the game's maps; it does not settle the layout alone.
@@ -310,10 +312,10 @@ models carry.
 **How the test answers it.** The frame a mesh implies follows from its positions and UVs alone, by (15) and (16).
 Comparing it with the stored frame at every triangle corner shows which rule the stored frame follows.
 
-Every part model of the game was checked: 1,515 parts with triangles, tangents and UVs. Each was read with
-SoulsFormatsNEXT [1], the community continuation of TKGP's SoulsFormats: for every mesh, each vertex's position, normal,
-first tangent $(\vec{T}, W)$ and first UV, and the triangles of the LOD0 face set.
-The check then runs per triangle:
+1,515 part models were checked: all those with triangles, tangents and UVs among the game's part files as installed for
+this paper. Each was read with SoulsFormatsNEXT [1], the community continuation of TKGP's SoulsFormats: for every mesh,
+each vertex's position, normal, first tangent $(\vec{T}, W)$ and first UV, and the triangles of the LOD0 face set. The
+check then runs per triangle:
 
 - Equations (15) and (16) give $\partial\vec{p}/\partial u$ and $\partial\vec{p}/\partial v$; degenerate triangles and
   those with no area in UV space are skipped;
@@ -325,10 +327,9 @@ The check then runs per triangle:
       1 when the tangent lies along +V;
     - whether $W$ equals (9).
 
-The check, its survey of every mesh and the per-mesh results are published with this paper [5], and the check is
-tested with the paper's other formulas. Per
-file-name prefix, with (9) per UV orientation (the sign of $d$) and pooled over all corners; the other columns give the
-range, the largest value and the smallest value over the prefix's parts (Table II):
+The check, its survey of every mesh and the per-mesh results are published with this paper [5], and the check is tested
+with the paper's other formulas. Per file-name prefix, with (9) per UV orientation (the sign of $d$) and pooled over all
+corners; the other columns give the range, the largest value and the smallest value over the prefix's parts (Table II):
 
 <p align="center">TABLE II<br>STORED TANGENT FRAMES OF THE GAME'S PART MODELS, PER FILE-NAME PREFIX</p>
 
@@ -343,15 +344,15 @@ range, the largest value and the smallest value over the prefix's parts (Table I
 | HR | 36 | 5,812,887 | 0.987 to 1.014 | 0.016 | 0.921 | 99.40% | 99.61% |
 | FC | 15 | 1,106,208 | 0.987 to 1.013 | 0.016 | 0.994 | 99.83% | 99.84% |
 
-**Result.** On every part, $W$ is exactly $+1$ or $-1$, and $\vec{T}$ has unit length to within the stored
-precision (0.986 to 1.014). $\vec{T}$ is orthogonal to $\vec{N}$ to within about 2°, and it follows
-the in-plane +V direction: the median cosine is at least 0.99 on 76% of parts, and at least 0.95 on all but
-2 (the lowest, 0.92, on HR_A_0115). Both UV orientations occur on 1,422 parts.
+**Result.** On all 1,515 parts, $W$ is exactly $+1$ or $-1$, and $\vec{T}$ has unit length to within the stored
+precision (0.986 to 1.014). $\vec{T}$ is orthogonal to $\vec{N}$ to within about 2°, and it follows the in-plane +V
+direction: the median cosine is at least 0.99 on 76% of parts, and at least 0.95 on all but 2 (the lowest, 0.92, on
+HR_A_0115). Both UV orientations occur on 1,422 parts.
 
 Equation (9) holds on both UV orientations, except on one kind of mesh: those whose material name contains "cloth"
 (Table III).
 
-<p align="center">TABLE III<br>RULE (9) ON CLOTH AND OTHER MESHES</p>
+<p align="center">TABLE III<br>WHERE (9) HOLDS: CLOTH AND OTHER MESHES</p>
 
 | Meshes | Meshes checked | Parts | (9) holds, $d > 0$ | (9) holds, $d < 0$ |
 |---|---|---|---|---|
@@ -416,7 +417,7 @@ together.
 
 ![In game: the cape of BD_M_1730 wearing the test map, lit from above; the warm rows look raised and the cool rows dented](images/ingame_layout_test.webp)
 
-*Fig. 5. In-game test on BD_M_1730. Warm rows: the DirectX encoding, raised. Cool rows: green inverted, dented.*
+Fig. 5. In-game test on BD_M_1730. Warm rows: the DirectX encoding, raised. Cool rows: green inverted, dented.
 
 **Impact on the implementation.** It confirms (7), on which ER Tangents and the channel changes of Section VII rely.
 
@@ -447,7 +448,7 @@ $$
 $$
 
 *In words:* $\hat{u}$ and $\hat{v}$ are the unit vectors along +U and +V in the tangent plane. With tangents along +U,
-green is read along +U, and red along −V (without a mirror) or +V (with Z mirrored).
+green is read along +U, and red along −V (without a mirror) or +V (with Z mirrored) (Fig. 6).
 
 An authored tangent-space normal with (x, y) components $(a, b)$, $a$ towards +U and $b$ towards +V, is meant as the
 direction $a\,\hat{u} + b\,\hat{v}$ in the tangent plane. By (7) the game reads it as $a\,\vec{B}' + b\,\vec{T}'$, which
@@ -458,17 +459,17 @@ $$
 \begin{pmatrix} b \\ a \end{pmatrix} = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}\begin{pmatrix} a \\ b \end{pmatrix} \ \text{(with Z mirrored)} \tag{13}
 $$
 
-*In words:* without a mirror, the (x, y) components of every tangent-space normal are rotated by 90°; with Z mirrored,
-they are reflected about the line U = V. A raised dome then reads lit from the side, or raised on one diagonal and
-dented on the other (Fig. 7).
+*In words:* without a mirror, the (x, y) components of every tangent-space normal are rotated by 90° anticlockwise on
+the map (from +U towards −V); with Z mirrored, they are reflected about the line U = V. A raised dome then reads lit
+from the side, or raised on one diagonal and dented on the other (Fig. 7).
 
 ![Three sheets with N up: vanilla tangents read green along +V and red along +U; tangents along +U read green along +U, with red along -V (without a mirror) or +V (with Z mirrored)](../figures/paper_tangent_directions.svg)
 
-*Fig. 6. The directions in which the game reads green and red, for vanilla tangents and for tangents along +U.*
+Fig. 6. Directions in which the game reads green and red, for vanilla tangents and for tangents along +U.
 
-![Animated: the frame and the decoded tangent-space normals around a raised dome; vanilla normals point outward, without a mirror every normal rotates by 90°, with Z mirrored every normal is reflected about the U = V diagonal](../figures/paper_dome_tilts.svg)
+![Animated: the frame and the decoded tangent-space normals around a raised dome; vanilla normals point outward, without a mirror every normal rotates by 90° anticlockwise, with Z mirrored every normal is reflected about the U = V diagonal](../figures/paper_dome_tilts.svg)
 
-*Fig. 7. Animated: the decoded tangent-space normals around a raised dome in each case.*
+Fig. 7. Animated: the decoded tangent-space normals around a raised dome in each case.
 
 ## VI. ER Tangents
 
@@ -539,7 +540,7 @@ both numerators in (16). The directions and $\lVert\vec{e}_1\times\vec{e}_2\rVer
 same for either winding order.
 
 **Worked example.** One triangle: $\vec{p}_0 = (0, 0, 0)$, $\vec{p}_1 = (2, 0, 0)$, $\vec{p}_2 = (0, 0, 1)$; UVs
-$(0, 0)$, $(0.5, 0)$, $(0, 0.25)$; normal $\vec{N} = (0, -1, 0)$ at every vertex (Table V).
+$(0, 0)$, $(0.5, 0)$, $(0, 0.25)$; normal $\vec{N} = (0, -1, 0)$ at every vertex (Table V, Fig. 8).
 
 <p align="center">TABLE V<br>WORKED EXAMPLE FOR ONE TRIANGLE</p>
 
@@ -556,8 +557,8 @@ $(0, 0)$, $(0.5, 0)$, $(0, 0.25)$; normal $\vec{N} = (0, -1, 0)$ at every vertex
 
 ![The worked example's triangle twice: in UV space with U right and V down, and in game seen from below with the normal out of the screen; T points down along +V, N × T points left, and B = W(N × T) points right along +U](../figures/paper_uv_triangle.svg)
 
-*Fig. 8. The worked example's triangle in UV space and in game, seen from below with $\vec{N}$ out of the screen. The
-tangent follows +V, and $W = -1$ turns $\vec{N}\times\vec{T}$ onto +U.*
+Fig. 8. Worked example's triangle in UV space and in game, seen from below with $\vec{N}$ out of the screen. The
+tangent follows +V, and $W = -1$ turns $\vec{N}\times\vec{T}$ onto +U.
 
 **Validation.** ER Tangents was checked as follows.
 
@@ -575,15 +576,13 @@ tangent follows +V, and $W = -1$ turns $\vec{N}\times\vec{T}$ onto +U.*
 
 ![In game: two planes with the test map; left, with ER Tangents, both UV halves look alike; right, without ER Tangents, the halves disagree](images/ingame_er_tangents.webp)
 
-*Fig. 9. In-game check of ER Tangents. Left: with ER Tangents, both UV halves raised alike. Right: without ER Tangents, the halves disagree.*
+Fig. 9. In-game check of ER Tangents. Left: with ER Tangents, both UV halves raised alike. Right: without ER Tangents, the halves disagree.
 
 **Result.** All four agree: with ER Tangents, imports carry the vanilla frame on both UV halves, with and without a
 mirror, and look right in game; without it, the importer writes what it wrote before.
 
 **Impact on the implementation.** The import step can be used with either mirror setting, and imports without it are
 unchanged.
-
-It is offered upstream as a pull request [6].
 
 **Relation to MikkTSpace.** MikkTSpace [8], [9] is the tangent method Blender uses: its `Mesh.calc_tangents` runs it
 [9], and Blender's FBX exporter calls `calc_tangents` when Tangent Space is on. These tangents follow +U and the
@@ -621,8 +620,8 @@ both.
 
 ![Two columns, without a mirror and with Z mirrored: the dome's normals read through tangents along +U point sideways, or are reflected about U = V, from the map as authored, and all point outward after the channel change](../figures/paper_channel_changes.svg)
 
-*Fig. 10. The decoded tangent-space normals around a raised dome through tangents along +U, from the map as authored
-and after (20) or (21). Derived, not tested in game.*
+Fig. 10. Decoded tangent-space normals around a raised dome through tangents along +U, from the map as authored
+and after (20) or (21). Derived, not tested in game.
 
 ## VIII. Practical Use
 
@@ -633,7 +632,7 @@ on and without ER Tangents, W is undefined, so mirrored UV halves may also read 
 
 ![Two routes into the importer: Blender's FBX export with Tangent Space off, with no tangents, and with Tangent Space on, with +U tangents and no W; with ER Tangents, both give a FLVER in the game's frame](../figures/paper_ways_out_of_blender.svg)
 
-*Fig. 11. The ways out of Blender, and the tangents each one gives.*
+Fig. 11. Ways out of Blender, and the tangents each one gives.
 
 ## IX. Limitations
 
@@ -649,11 +648,12 @@ on and without ER Tangents, W is undefined, so mirrored UV halves may also read 
 
 ## X. Conclusion
 
-Elden Ring reads a DirectX-layout map with green along a tangent that follows +V, and red along $W(\vec{N}\times\vec{T})$,
-which follows +U. Tangents in the common convention follow +U, so the (x, y) components of every tangent-space normal
-are rotated by 90° or reflected about the line U = V, depending on the mirror setting. Building the tangents from the
-mesh and its UVs in the game's convention gives the intended shading for every route out of Blender. Where that step
-is not available, swapping or inverting channels matches the map to the tangents instead.
+Elden Ring reads a DirectX-layout map with green along a tangent that follows +V, and red along
+$W(\vec{N}\times\vec{T})$, which follows +U. Tangents in the common convention follow +U, so the (x, y) components of
+every tangent-space normal are rotated by 90° anticlockwise on the map (from +U towards −V) or reflected about the line
+U = V, depending on the mirror setting. Building the tangents from the mesh and its UVs in the game's convention gives
+the intended shading for every route out of Blender. Where that step is not available, swapping or inverting channels
+matches the map to the tangents instead.
 
 ## Acknowledgement
 

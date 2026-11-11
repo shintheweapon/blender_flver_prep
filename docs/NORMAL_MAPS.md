@@ -47,7 +47,7 @@ DirectX-layout map as intended.
 - **The layout:** a slope test on the game's normal maps. For a real height field, the change of the U slope along V
   equals the change of the V slope along U. The pairing "red with U, green with V, same sign" fits best on
   97% of the maps tested (the paper's Section IV-A).
-- **The frame:** measured on every vanilla part model. The stored tangent points along +V, and the `W` rule holds,
+- **The frame:** measured on the 1,515 vanilla part models installed here. The stored tangent points along +V, and the `W` rule holds,
   mirrored UV islands included, except on meshes with a cloth material, which keep `W` at -1 there. On islands whose
   texture looks unmirrored in game, the stored `W` is -1.
 - **In game:** a vanilla body part with a test map whose rows alternate two encodings of the same raised shapes,

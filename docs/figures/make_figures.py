@@ -186,13 +186,13 @@ PAPER_LABELS = Labels(
     green="Green: y component, towards +V",
     stores="Red stores the tangent-space normal's x component (towards +U), green its y component (towards +V)",
     dome_title="The tangent-space normals the game decodes around a raised dome",
-    outcomes=("Dome reads raised", "Rotated 90°: twisted", "Reflected about U = V"),
+    outcomes=("Dome reads raised", "Rotated 90° anticlockwise", "Reflected about U = V"),
     decoded="Decoded normal (x, y)",
-    turn="a 90° rotation",
+    turn="a 90° anticlockwise rotation",
     dome_desc=("Animated. Three panels, each with the frame (green T, red W(N x T)) and the tangent-space normals "
                "the game decodes around a raised dome. Vanilla tangents: the normals point outward and the dome "
-               "reads raised. {no_mirror}: the frame and every normal rotate by 90°, so the normals run round the "
-               "dome. {z_mirror}: the frame and every normal are reflected about the U = V diagonal, so the normals "
+               "reads raised. {no_mirror}: the frame and every normal rotate by 90° anticlockwise, so the normals run "
+               "round the dome. {z_mirror}: the frame and every normal are reflected about the U = V diagonal, so the normals "
                "on the diagonal stay outward (raised) and the others turn inward (dented)."),
     blue_note="As held by modders; not tested here",
     blue="Blue is held to store gloss and alpha other data; this was not tested.",
