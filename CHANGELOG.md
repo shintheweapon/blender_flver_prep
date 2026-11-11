@@ -20,6 +20,9 @@
   vanilla frame was measured, with the check as a tested function (`docs/figures/frame_checks.py`), and includes
   screenshots of the two in-game tests. It describes ER Tangents as an import step, with or without it, rather than as
   a check box.
+- The paper states how handedness shows on screen (with x to the right and y up, z out of the screen is
+  right-handed) and has a figure of the axis swap from Blender into FLVER space, drawn by
+  `docs/figures/paper_figures.py` from `docs/figures/axes.py`.
 
 ## 1.0.0
 

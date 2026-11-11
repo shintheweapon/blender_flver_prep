@@ -6,13 +6,15 @@ paper's labels.
 
 Run ``python docs/figures/make_figures.py`` from the repository folder to
 rewrite the SVG files next to this script. The geometry comes from
-``tangent_geometry``, the shared drawing parts from ``svg_parts`` and the
-route chart from ``route_chart``; this module draws the tangent figures. The tests check that the
+``tangent_geometry``, the shared drawing parts from ``svg_parts``, the
+route chart from ``route_chart`` and the paper's own figures from
+``paper_figures``; this module draws the tangent figures. The tests check that the
 committed files equal what this script writes.
 """
 
 import os
 
+from paper_figures import figure_axis_swap
 from route_chart import PAPER_CHART, figure_ways_out
 from svg_parts import BLUE, GREEN, RED, fmt, legend, line, svg, text
 from tangent_geometry import (CASES, MOTION, NORMAL, V, cross_as_drawn, decode, dome_points, dot, read_directions,
@@ -423,6 +425,7 @@ FIGURES = {
     "paper_tangent_directions.svg": lambda: figure_fbximporter_tangents(PAPER_LABELS),
     "paper_dome_tilts.svg": lambda: figure_dome_tilts(PAPER_LABELS),
     "paper_ways_out_of_blender.svg": lambda: figure_ways_out(PAPER_CHART),
+    "paper_axis_swap.svg": figure_axis_swap,
 }
 
 

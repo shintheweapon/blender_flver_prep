@@ -228,8 +228,9 @@ class TestToolNeutral(unittest.TestCase):
 
     def test_paper_shows_the_paper_figures(self):
         images = re.findall(r"!\[[^\]]*\]\(\.\./figures/([^)]+)\)", read_paper())
-        self.assertEqual(images, ["paper_normal_map_layout.svg", "tangent_frame.svg", "paper_tangent_directions.svg",
-                                  "paper_dome_tilts.svg", "paper_ways_out_of_blender.svg"])
+        self.assertEqual(images, ["paper_normal_map_layout.svg", "tangent_frame.svg", "paper_axis_swap.svg",
+                                  "paper_tangent_directions.svg", "paper_dome_tilts.svg",
+                                  "paper_ways_out_of_blender.svg"])
 
 
 if __name__ == "__main__":

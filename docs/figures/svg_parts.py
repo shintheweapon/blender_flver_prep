@@ -118,3 +118,31 @@ def legend(x, y, colour, label, head=False):
     list of str
     """
     return [line(x, y, x + 24, y, colour, 2.0, head=head), text(x + 30, y + 4, label)]
+
+
+def out_of_screen(x, y, r=7.0):
+    """
+    The symbol for a direction out of the screen, towards the viewer: a
+    circle with a dot.
+
+    Returns
+    -------
+    list of str
+    """
+    return [f'<circle cx="{fmt(x)}" cy="{fmt(y)}" r="{fmt(r)}" fill="none" class="o" stroke-width="1.5"/>',
+            f'<circle cx="{fmt(x)}" cy="{fmt(y)}" r="{fmt(r / 3)}" class="of"/>']
+
+
+def into_screen(x, y, r=7.0):
+    """
+    The symbol for a direction into the screen, away from the viewer: a
+    circle with a cross.
+
+    Returns
+    -------
+    list of str
+    """
+    d = r * 0.7
+    return [f'<circle cx="{fmt(x)}" cy="{fmt(y)}" r="{fmt(r)}" fill="none" class="o" stroke-width="1.5"/>',
+            line(x - d, y - d, x + d, y + d, None, 1.5, head=False),
+            line(x - d, y + d, x + d, y - d, None, 1.5, head=False)]

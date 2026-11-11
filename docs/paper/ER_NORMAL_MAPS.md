@@ -98,6 +98,11 @@ those for DirectX and Lightwave are left-handed [8]. The SDK describes its 3ds M
 into the screen. Blender's Front view shows the same: +X to the right, +Z up and +Y into the screen, read from the
 view's rotation in Blender 4.5. So Blender's 3D space is right-handed with Z up.
 
+Which way an axis points on screen depends on the view, so this paper names the view each time: the image, with row 0
+at the top; Blender's Front view; and a model in game, seen from in front. In a view with x to the right and y up, a
+right-handed coordinate system has z pointing out of the screen, towards the viewer, and a left-handed one has z
+pointing into the screen (Fig. 3).
+
 ## III. Elden Ring's Convention
 
 ### A. Layout
@@ -208,6 +213,11 @@ swapping its Y and Z axes: a −90° rotation about X, which brings Blender's up
 then Z negated, which brings the front to −Z. The swap is a reflection (determinant −1), which changes handedness, so
 the character stays the right way round, with its left side at +X.
 
+![Three panels of a character's axes seen from in front: in Blender X right, Z up and Y into the screen, right-handed; after the rotation about X, Y up and Z out of the screen, right-handed; after Z is negated, Z into the screen, left-handed](../figures/paper_axis_swap.svg)
+
+*Fig. 3. The axis swap from Blender into FLVER space, each panel seen from in front of the character, whose left side
+is to the right. A circle with a dot points out of the screen, a circle with a cross into it.*
+
 ## IV. Measurements
 
 ### A. The Integrability Test
@@ -280,12 +290,12 @@ read along $\vec{T}$ and red along $W(\vec{N}\times\vec{T})$, which is (7).
 
 A vanilla body part, BD_M_1730, was given a test map whose rows alternate two encodings of the same raised shapes:
 DirectX, and DirectX with green inverted. The part's albedo tints the rows, warm on the DirectX rows and cool on the
-green-inverted ones. In game (Fig. 3), with the light from above, only the DirectX rows look raised, with their bright
+green-inverted ones. In game (Fig. 4), with the light from above, only the DirectX rows look raised, with their bright
 side towards the light; the green-inverted rows look dented. This confirms the layout and the frame together.
 
 ![In game: the cape of BD_M_1730 wearing the test map, lit from above; the warm rows look raised and the cool rows dented](images/ingame_layout_test.webp)
 
-*Fig. 3. In-game test on BD_M_1730. Warm rows: the DirectX encoding, raised. Cool rows: green inverted, dented.*
+*Fig. 4. In-game test on BD_M_1730. Warm rows: the DirectX encoding, raised. Cool rows: green inverted, dented.*
 
 ### D. Import Measurements
 
@@ -318,15 +328,15 @@ $$
 
 *In words:* without a mirror, the (x, y) components of every tangent-space normal are rotated by 90°; with Z mirrored,
 they are reflected about the line U = V. A raised dome then reads lit from the side, or raised on one diagonal and
-dented on the other (Fig. 5).
+dented on the other (Fig. 6).
 
 ![Three sheets with N up: vanilla tangents read green along +V and red along +U; tangents along +U read green along +U, with red along -V (without a mirror) or +V (with Z mirrored)](../figures/paper_tangent_directions.svg)
 
-*Fig. 4. The directions in which the game reads green and red, for vanilla tangents and for tangents along +U.*
+*Fig. 5. The directions in which the game reads green and red, for vanilla tangents and for tangents along +U.*
 
 ![Animated: the frame and the decoded tangent-space normals around a raised dome; vanilla normals point outward, without a mirror every normal rotates by 90°, with Z mirrored every normal is reflected about the U = V diagonal](../figures/paper_dome_tilts.svg)
 
-*Fig. 5. Animated: the decoded tangent-space normals around a raised dome in each case.*
+*Fig. 6. Animated: the decoded tangent-space normals around a raised dome in each case.*
 
 ## VI. ER Tangents
 
@@ -415,12 +425,12 @@ $(0, 0)$, $(0.5, 0)$, $(0, 0.25)$; normal $\vec{N} = (0, -1, 0)$ at every vertex
 - on vanilla parts, the recomputed tangents point almost the same way as the stored ones;
 - imports with ER Tangents follow the game's frame on both UV halves, without a mirror and with Z mirrored;
 - without ER Tangents, the importer writes exactly what the upstream release writes;
-- in game, a plane imported with ER Tangents and one imported without, side by side with the test map (Fig. 6): only
+- in game, a plane imported with ER Tangents and one imported without, side by side with the test map (Fig. 7): only
   the one with ER Tangents looks right on both halves.
 
 ![In game: two planes with the test map; left, with ER Tangents, both UV halves look alike; right, without ER Tangents, the halves disagree](images/ingame_er_tangents.webp)
 
-*Fig. 6. In-game check of ER Tangents. Left: with ER Tangents, both UV halves raised alike. Right: without ER Tangents, the halves disagree.*
+*Fig. 7. In-game check of ER Tangents. Left: with ER Tangents, both UV halves raised alike. Right: without ER Tangents, the halves disagree.*
 
 It is offered upstream as a pull request [6].
 
@@ -457,14 +467,14 @@ that every island is unmirrored, or that mirrored islands read the same way.
 
 ## VIII. Practical Use
 
-There are two ways out of Blender (Fig. 7): its FBX export with Tangent Space off, which writes no tangents, and with
+There are two ways out of Blender (Fig. 8): its FBX export with Tangent Space off, which writes no tangents, and with
 Tangent Space on, which writes tangents along +U with no W. Without ER Tangents, both give tangents along +U, since the
 importer generates them when the file has none. With it, both give a FLVER in the game's convention. With Tangent Space
 on and without ER Tangents, W is undefined, so mirrored UV halves may also read wrong; this has not been tested.
 
 ![Two routes into the importer: Blender's FBX export with Tangent Space off, with no tangents, and with Tangent Space on, with +U tangents and no W; with ER Tangents, both give a FLVER in the game's frame](../figures/paper_ways_out_of_blender.svg)
 
-*Fig. 7. The ways out of Blender, and the tangents each one gives.*
+*Fig. 8. The ways out of Blender, and the tangents each one gives.*
 
 ## IX. Limitations
 

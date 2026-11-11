@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="280" viewBox="0 0 680 280" role="img">
+<title>The axis swap from Blender into FLVER space</title>
+<desc>Three panels show a character's axes seen from in front, with its left side to the right of the screen. In Blender, X points right, Z up and Y into the screen: right-handed, with the front along -Y. After a -90 degree rotation about X, Y points up and Z out of the screen: still right-handed, with the front along +Z. After Z is negated, Z points into the screen: left-handed, as in FLVER, with the front along -Z and the left side still along +X.</desc>
+<style>
+.t{fill:#1f2328;font:14px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
+.h{font-weight:600}
+.s{fill:#59636e;font:12px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
+.o{stroke:#59636e}
+.of{fill:#59636e}
+.p{fill:#f6f8fa;stroke:#8c959f}
+.g{stroke:#8c959f}
+@media (prefers-color-scheme: dark){
+.t{fill:#e6edf3}
+.s{fill:#9198a1}
+.o{stroke:#9198a1}
+.of{fill:#9198a1}
+.p{fill:#151b23;stroke:#656c76}
+.g{stroke:#656c76}
+}
+</style>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#E24B4A"/></marker><marker id="ag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#639922"/></marker><marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#378ADD"/></marker><marker id="ao" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="of" d="M1 1L9 5L1 9z"/></marker></defs>
+<line x1="99" y1="130" x2="170" y2="130" class="o" stroke-width="2" marker-end="url(#ao)"/>
+<text class="t" x="176" y="134" text-anchor="start">+X</text>
+<line x1="90" y1="121" x2="90" y2="50" class="o" stroke-width="2" marker-end="url(#ao)"/>
+<text class="t" x="90" y="42" text-anchor="middle">+Z</text>
+<circle cx="90" cy="130" r="7" fill="none" class="o" stroke-width="1.5"/>
+<line x1="85.1" y1="125.1" x2="94.9" y2="134.9" class="o" stroke-width="1.5"/>
+<line x1="85.1" y1="134.9" x2="94.9" y2="125.1" class="o" stroke-width="1.5"/>
+<text class="t" x="78" y="150" text-anchor="end">+Y</text>
+<text class="t h" x="120" y="186" text-anchor="middle">Blender</text>
+<text class="s" x="120" y="206" text-anchor="middle">Right-handed</text>
+<text class="s" x="120" y="222" text-anchor="middle">Front −Y, up +Z, left side +X</text>
+<line x1="319" y1="130" x2="390" y2="130" class="o" stroke-width="2" marker-end="url(#ao)"/>
+<text class="t" x="396" y="134" text-anchor="start">+X</text>
+<line x1="310" y1="121" x2="310" y2="50" class="o" stroke-width="2" marker-end="url(#ao)"/>
+<text class="t" x="310" y="42" text-anchor="middle">+Y</text>
+<circle cx="310" cy="130" r="7" fill="none" class="o" stroke-width="1.5"/>
+<circle cx="310" cy="130" r="2.3" class="of"/>
+<text class="t" x="298" y="150" text-anchor="end">+Z</text>
+<text class="t h" x="340" y="186" text-anchor="middle">Rotated −90° about X</text>
+<text class="s" x="340" y="206" text-anchor="middle">Right-handed</text>
+<text class="s" x="340" y="222" text-anchor="middle">Front +Z, up +Y, left side +X</text>
+<line x1="539" y1="130" x2="610" y2="130" class="o" stroke-width="2" marker-end="url(#ao)"/>
+<text class="t" x="616" y="134" text-anchor="start">+X</text>
+<line x1="530" y1="121" x2="530" y2="50" class="o" stroke-width="2" marker-end="url(#ao)"/>
+<text class="t" x="530" y="42" text-anchor="middle">+Y</text>
+<circle cx="530" cy="130" r="7" fill="none" class="o" stroke-width="1.5"/>
+<line x1="525.1" y1="125.1" x2="534.9" y2="134.9" class="o" stroke-width="1.5"/>
+<line x1="525.1" y1="134.9" x2="534.9" y2="125.1" class="o" stroke-width="1.5"/>
+<text class="t" x="518" y="150" text-anchor="end">+Z</text>
+<text class="t h" x="560" y="186" text-anchor="middle">Then Z negated: FLVER</text>
+<text class="s" x="560" y="206" text-anchor="middle">Left-handed</text>
+<text class="s" x="560" y="222" text-anchor="middle">Front −Z, up +Y, left side +X</text>
+<circle cx="60" cy="256" r="7" fill="none" class="o" stroke-width="1.5"/>
+<circle cx="60" cy="256" r="2.3" class="of"/>
+<text class="s" x="74" y="260" text-anchor="start">Out of the screen</text>
+<circle cx="220" cy="256" r="7" fill="none" class="o" stroke-width="1.5"/>
+<line x1="215.1" y1="251.1" x2="224.9" y2="260.9" class="o" stroke-width="1.5"/>
+<line x1="215.1" y1="260.9" x2="224.9" y2="251.1" class="o" stroke-width="1.5"/>
+<text class="s" x="234" y="260" text-anchor="start">Into the screen</text>
+<text class="s" x="380" y="260" text-anchor="start">Each panel: the character seen from in front.</text>
+</svg>

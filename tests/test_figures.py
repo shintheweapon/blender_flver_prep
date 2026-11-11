@@ -9,8 +9,10 @@ FIGURES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 if FIGURES_DIR not in sys.path:
     sys.path.insert(0, FIGURES_DIR)
 
+import axes  # noqa: E402
 import frame_checks  # noqa: E402
 import make_figures  # noqa: E402
+import paper_figures  # noqa: E402
 import route_chart  # noqa: E402
 import tangent_geometry as mf  # noqa: E402
 
@@ -86,7 +88,7 @@ class TestPaperFigures(unittest.TestCase):
     def test_paper_figures_name_no_tool_setting_or_release(self):
         import re
         paper = {name: content for name, content in make_figures.build_all().items() if name.startswith("paper_")}
-        self.assertEqual(len(paper), 4)
+        self.assertEqual(len(paper), 5)
         for name, content in paper.items():
             with self.subTest(name=name):
                 self.assertEqual(re.findall(self.FORBIDDEN, content), [])
@@ -124,6 +126,46 @@ class TestTangentFrame(unittest.TestCase):
                 n_x_t = mf.cross_as_drawn(mf.NORMAL, mf.to_3d(mf.V, mirrored))
                 w = mf.vanilla_sign(mirrored)
                 self.assertTrue(close(tuple(w * c for c in n_x_t), mf.to_3d(mf.U, mirrored)))
+
+
+class TestAxisSwap(unittest.TestCase):
+    """The swap from Blender into FLVER space (paper Section III-C) and the handedness of views (Section II-C)."""
+
+    def test_rotation_keeps_handedness_and_the_swap_reverses_it(self):
+        self.assertAlmostEqual(axes.determinant(axes.ROTATE_X_MINUS_90), 1.0)
+        self.assertAlmostEqual(axes.determinant(axes.BLENDER_TO_FLVER), -1.0)
+
+    def test_swap_brings_up_to_plus_y_front_to_minus_z_and_keeps_left(self):
+        self.assertEqual(axes.apply(axes.BLENDER_TO_FLVER, (0.0, 0.0, 1.0)), (0.0, 1.0, 0.0))
+        self.assertEqual(axes.apply(axes.BLENDER_TO_FLVER, (0.0, -1.0, 0.0)), (0.0, 0.0, -1.0))
+        self.assertEqual(axes.apply(axes.BLENDER_TO_FLVER, (1.0, 0.0, 0.0)), (1.0, 0.0, 0.0))
+
+    def test_rotation_brings_up_to_plus_y_and_front_to_plus_z(self):
+        self.assertEqual(axes.apply(axes.ROTATE_X_MINUS_90, (0.0, 0.0, 1.0)), (0.0, 1.0, 0.0))
+        self.assertEqual(axes.apply(axes.ROTATE_X_MINUS_90, (0.0, -1.0, 0.0)), (0.0, 0.0, 1.0))
+
+    def test_screen_rule(self):
+        # x right and y up: z out of the screen is right-handed, z into it left-handed
+        self.assertEqual(axes.screen_handedness((1, 0, 0), (0, 1, 0), (0, 0, 1)), "right")
+        self.assertEqual(axes.screen_handedness((1, 0, 0), (0, 1, 0), (0, 0, -1)), "left")
+        self.assertEqual(axes.screen_handedness(*axes.BLENDER_FRONT_VIEW), "right")
+        self.assertEqual(axes.screen_handedness(*axes.FLVER_FRONT_VIEW), "left")
+
+    def test_axis_name(self):
+        self.assertEqual(axes.axis_name((0.0, 0.0, -1.0)), "-Z")
+        with self.assertRaises(ValueError):
+            axes.axis_name((1.0, 1.0, 0.0))
+
+    def test_figure_panels(self):
+        expected = [("+X", "+Z", "-Y", "right"), ("+X", "+Y", "+Z", "right"), ("+X", "+Y", "-Z", "left")]
+        got = [tuple(axes.character_axes(matrix)[key] for key in ("left", "up", "front", "handedness"))
+               for _, matrix in paper_figures.AXIS_STAGES]
+        self.assertEqual(got, expected)
+        figure = make_figures.build_all()["paper_axis_swap.svg"]
+        for left, up, front, handedness in expected:
+            with self.subTest(front=front):
+                self.assertIn(f"{handedness.capitalize()}-handed", figure)
+                self.assertIn(f"Front {front.replace('-', '−')}, up {up}, left side {left}", figure)
 
 
 class TestReadDirections(unittest.TestCase):
