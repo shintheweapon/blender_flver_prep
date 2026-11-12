@@ -13,3 +13,6 @@ docs/figures/flverdump/obj/
 # The video's audio, exports, frames and renders
 docs/video/audio/
 docs/video/out/
+
+# The paper exported to Word, and its images
+docs/paper/out/

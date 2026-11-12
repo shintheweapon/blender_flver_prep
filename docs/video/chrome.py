@@ -39,6 +39,10 @@ class Chrome:
     ----------
     width, height : int
         The page size in pixels.
+    color_scheme : str
+        ``"dark"`` or ``"light"``: the ``prefers-color-scheme`` the page sees,
+        whatever the system's setting. The video's pages are dark; an export
+        to a document asks for light.
 
     Raises
     ------
@@ -46,7 +50,7 @@ class Chrome:
         When Chrome does not open its debugging port.
     """
 
-    def __init__(self, width, height):
+    def __init__(self, width, height, color_scheme="dark"):
         with socket.socket() as probe:
             probe.bind(("127.0.0.1", 0))
             port = probe.getsockname()[1]
@@ -72,8 +76,8 @@ class Chrome:
         self.call("Page.enable")
         self.call("Emulation.setDeviceMetricsOverride", width=width, height=height, deviceScaleFactor=1,
                   mobile=False)
-        # the pages are dark, so the figures must use their dark colours, whatever the system's setting
-        self.call("Emulation.setEmulatedMedia", features=[{"name": "prefers-color-scheme", "value": "dark"}])
+        # the figures follow prefers-color-scheme, so it is set here rather than left to the system
+        self.call("Emulation.setEmulatedMedia", features=[{"name": "prefers-color-scheme", "value": color_scheme}])
 
     def call(self, method, **params):
         """

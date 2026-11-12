@@ -93,6 +93,10 @@
   so the figures always use their dark colours; subtitles are 20% larger on an opaque box; scene headings are larger;
   and `--until SECONDS` renders only the start of the video. Where the narration speaks of "the three panels below",
   the video shows Fig. 3(b)'s panels under the animation, as in the paper.
+- `docs/paper/export_docx.py` exports the paper to a Word file for Google Docs: all equations as native Word
+  equations, table captions above their tables, still figures as PNGs in light mode and Figs. 3(a) and 7 as
+  animated GIFs (`docs/paper/README.md` says how to open it as a Google Doc). The video's Chrome helper takes a
+  `color_scheme` for this.
 
 ## 1.0.0
 
