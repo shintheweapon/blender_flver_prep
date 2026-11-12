@@ -1,5 +1,7 @@
 # Normal Maps and Tangent Frames in Elden Ring: Measurement, Analysis and Matching Tangents on Import
 
+English | [简体中文](ER_NORMAL_MAPS.zh-CN.md)
+
 **shintheweapon and Claude (Anthropic, Claude Opus 5.5)**
 
 *AI disclosure: see the Acknowledgement.*
