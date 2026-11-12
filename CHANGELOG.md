@@ -79,6 +79,10 @@
   outcomes, and says the in-game plane "looks alike" on both halves. It also names each IV-D half by its state after
   the import, writes out why `d` < 0 on unmirrored islands with the game's winding, and names the dome's diagonals
   (raised on U = V, dented on U = -V).
+- The guide's claim that ER Tangents works for every Transform setting and every route now shows its basis: it says
+  the frame follows the mesh after the Transform, names the settings the fork's unit tests cover (None, Mirror Z,
+  Blender/3ds Max, Maya; not Mirror X, Mirror Y or Custom) and the imports that were checked (None and Mirror Z, a
+  file without tangents), and its in-game check says the ticked plane "looks alike" on both halves.
 
 ## 1.0.0
 

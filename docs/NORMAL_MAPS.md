@@ -102,14 +102,17 @@ the other games. It is source only; there is no release build. The same change i
 
 When ticked, the importer ignores the file's tangents and builds them from the mesh after the Transform: for each
 vertex it adds up the +V and +U directions of the triangles around it, weighted by area, makes the +V sum
-perpendicular to the normal, and takes `W` from the +U side. This works for every Transform setting and every route
-above.
+perpendicular to the normal, and takes `W` from the +U side. The frame follows the mesh as it is after the Transform,
+and the file's tangents are used only at vertices with no usable UV area, so every Transform setting and every route
+above give the game's frame. The fork's unit tests check it under Transform None, Mirror Z (the same matrix as
+Houdini), Blender/3ds Max and Maya; Mirror X, Mirror Y and Custom have no test. Real imports were checked under
+Transform None and Mirror Z, with a file that carries no tangents.
 
 It was checked in four ways:
 - it reproduces the tangents stored in vanilla parts;
 - imports through it follow the game's frame on normal and mirrored UV halves, under Transform None and Mirror Z;
 - unticked, it writes exactly what the upstream FbxImporter writes;
-- in game, a ticked and an unticked plane side by side with the test map: only the ticked one looks right on both
+- in game, a ticked and an unticked plane side by side with the test map: only the ticked one looks alike on both
   halves.
 
 **Cloth materials.** The fork also has a **Cloth W (cloth materials only)** check box under ER Tangents. Almost all of
