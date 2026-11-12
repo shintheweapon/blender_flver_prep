@@ -44,3 +44,15 @@ are not distributed here.
 4. **IV-B, the frame survey:** `python docs/figures/survey_parts.py <path to flverdump.exe> <unpack folder>` dumps and
    surveys every `.flver` (one per file name) and rewrites `frame_survey.json`. It keeps its progress in the unpack
    folder, so a stopped run resumes.
+
+## Exporting to Word or Google Docs
+
+`python docs/paper/export_docx.py` writes `docs/paper/out/ER_NORMAL_MAPS.docx` (git-ignored), with every equation as a
+native Word equation, the tables with their captions above them, and the figures as images: still figures as PNGs in
+light mode, Figs. 3(a) and 7 as animated GIFs, and the in-game screenshots as PNGs. It needs pandoc, ffmpeg, Google
+Chrome and the Python package `websocket-client`, and reports what the file holds.
+
+To get a Google Doc, upload the `.docx` to Google Drive and choose **Open with > Google Docs**; Google Docs turns the
+Word equations into its own. If the two GIFs do not animate there, insert `paper_axis_swap_animated.gif` (Fig. 3(a))
+and `paper_dome_tilts.gif` (Fig. 7) from `docs/paper/out/` in place of the stills (**Insert > Image > Upload from
+computer**).

@@ -83,6 +83,22 @@
   the frame follows the mesh after the Transform, names the settings the fork's unit tests cover (None, Mirror Z,
   Blender/3ds Max, Maya; not Mirror X, Mirror Y or Custom) and the imports that were checked (None and Mirror Z, a
   file without tangents), and its in-game check says the ticked plane "looks alike" on both halves.
+- A video of the paper is being prepared in `docs/video/`: the English narration (`docs/video/script.en.md`, 16
+  scenes of numbered segments, about 17 minutes, ending on the paper's references) and `docs/video/script.py`, which
+  reads it and exports one text file per segment for a speech tool. Audio and renders are git-ignored.
+- The video's renderer, `docs/video/make_video.py`: it times the narration from the audio files (or from the word
+  count before they exist), captures the paper's figures, equations, tables, screenshots and references with
+  headless Chrome, and joins them with ffmpeg into an MP4 with burned-in subtitles and an SRT file. The video ends on
+  the paper's references, held for 10 seconds without narration. The video is dark, with Chrome set to dark mode
+  so the figures always use their dark colours; subtitles are 20% larger on an opaque box; scene headings are larger;
+  and `--until SECONDS` renders only the start of the video. Where the narration speaks of "the three panels below",
+  the video shows Fig. 3(b)'s panels under the animation, as in the paper.
+- `docs/paper/export_docx.py` exports the paper to a Word file for Google Docs: all equations as native Word
+  equations, table captions above their tables, still figures as PNGs in light mode and Figs. 3(a) and 7 as
+  animated GIFs (`docs/paper/README.md` says how to open it as a Google Doc). The video's Chrome helper takes a
+  `color_scheme` for this. The tables carry their own grid lines, which pandoc's Word output leaves out, on every
+  cell too, so the line under the header row shows in Google Docs; they are centred with centred captions, have a
+  bold header row, and each stays on one page.
 
 ## 1.0.0
 
