@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="392" viewBox="0 0 680 392" role="img">
+<title>The tangent-space normals the game decodes around a raised dome</title>
+<desc>Animated. Three panels, each with the frame (green T, red W(N x T)) and the tangent-space normals the game decodes around a raised dome. Vanilla tangents: the normals point outward and the dome reads raised. Tangents along +U, imported without a mirror: the frame and every normal rotate by 90° anticlockwise, so the normals run round the dome. Tangents along +U, imported with Z mirrored: the frame and every normal are reflected about the U = V diagonal, so the normals on that diagonal stay outward (raised), those on the other diagonal turn inward (dented) and those on the U and V axes turn sideways.</desc>
+<style>
+.t{fill:#1f2328;font:14px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
+.h{font-weight:600}
+.s{fill:#59636e;font:12px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
+.o{stroke:#59636e}
+.of{fill:#59636e}
+.p{fill:#f6f8fa;stroke:#8c959f}
+.g{stroke:#8c959f}
+@media (prefers-color-scheme: dark){
+.t{fill:#e6edf3}
+.s{fill:#9198a1}
+.o{stroke:#9198a1}
+.of{fill:#9198a1}
+.p{fill:#151b23;stroke:#656c76}
+.g{stroke:#656c76}
+}
+</style>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#E24B4A"/></marker><marker id="ag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#639922"/></marker><marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#378ADD"/></marker><marker id="ao" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="of" d="M1 1L9 5L1 9z"/></marker></defs>
+<style>
+.spin{transform:rotate(-90deg)}
+.flip{transform:rotate(45deg) scale(1,-1) rotate(-45deg)}
+@media (prefers-reduced-motion: no-preference){
+.spin{animation:spin 5s linear infinite}
+.flip{animation:flip 5s linear infinite}
+}
+@keyframes spin{0%,20%{transform:rotate(0deg)}45%,80%{transform:rotate(-90deg)}100%{transform:rotate(0deg)}}
+@keyframes flip{0%,20%{transform:rotate(45deg) scale(1,1) rotate(-45deg)}45%,80%{transform:rotate(45deg) scale(1,-1) rotate(-45deg)}100%{transform:rotate(45deg) scale(1,1) rotate(-45deg)}}
+</style>
+<g transform="translate(130,40)"><line x1="0" y1="0" x2="0" y2="26" stroke="#639922" stroke-width="2" marker-end="url(#ag)"/><line x1="0" y1="0" x2="26" y2="0" stroke="#E24B4A" stroke-width="2" marker-end="url(#ar)"/></g>
+<text class="s" x="96" y="44" text-anchor="end">Frame</text>
+<circle cx="130" cy="160" r="40" fill="none" class="o" stroke-width="0.5" stroke-dasharray="3 3"/>
+<g transform="translate(170,160)"><line x1="0" y1="0" x2="18" y2="0" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g>
+<g transform="translate(158.3,188.3)"><line x1="0" y1="0" x2="12.7" y2="12.7" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g>
+<g transform="translate(130,200)"><line x1="0" y1="0" x2="0" y2="18" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g>
+<g transform="translate(101.7,188.3)"><line x1="0" y1="0" x2="-12.7" y2="12.7" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g>
+<g transform="translate(90,160)"><line x1="0" y1="0" x2="-18" y2="0" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g>
+<g transform="translate(101.7,131.7)"><line x1="0" y1="0" x2="-12.7" y2="-12.7" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g>
+<g transform="translate(130,120)"><line x1="0" y1="0" x2="0" y2="-18" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g>
+<g transform="translate(158.3,131.7)"><line x1="0" y1="0" x2="12.7" y2="-12.7" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g>
+<text class="t h" x="130" y="248" text-anchor="middle">Vanilla tangents</text>
+<text class="s" x="130" y="268" text-anchor="middle">as the game's own</text>
+<text class="s" x="130" y="284" text-anchor="middle">models store them</text>
+<text class="s" x="130" y="306" text-anchor="middle">Dome reads raised</text>
+<g transform="translate(350,40)"><g class="spin"><line x1="0" y1="0" x2="0" y2="26" stroke="#639922" stroke-width="2" marker-end="url(#ag)"/><line x1="0" y1="0" x2="26" y2="0" stroke="#E24B4A" stroke-width="2" marker-end="url(#ar)"/></g></g>
+<circle cx="350" cy="160" r="40" fill="none" class="o" stroke-width="0.5" stroke-dasharray="3 3"/>
+<g transform="translate(390,160)"><g class="spin"><line x1="0" y1="0" x2="18" y2="0" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
+<g transform="translate(378.3,188.3)"><g class="spin"><line x1="0" y1="0" x2="12.7" y2="12.7" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
+<g transform="translate(350,200)"><g class="spin"><line x1="0" y1="0" x2="0" y2="18" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
+<g transform="translate(321.7,188.3)"><g class="spin"><line x1="0" y1="0" x2="-12.7" y2="12.7" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
+<g transform="translate(310,160)"><g class="spin"><line x1="0" y1="0" x2="-18" y2="0" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
+<g transform="translate(321.7,131.7)"><g class="spin"><line x1="0" y1="0" x2="-12.7" y2="-12.7" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
+<g transform="translate(350,120)"><g class="spin"><line x1="0" y1="0" x2="0" y2="-18" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
+<g transform="translate(378.3,131.7)"><g class="spin"><line x1="0" y1="0" x2="12.7" y2="-12.7" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
+<text class="t h" x="350" y="248" text-anchor="middle">Tangents along +U</text>
+<text class="s" x="350" y="268" text-anchor="middle">imported</text>
+<text class="s" x="350" y="284" text-anchor="middle">without a mirror</text>
+<text class="s" x="350" y="306" text-anchor="middle">Rotated 90° anticlockwise</text>
+<g transform="translate(570,40)"><g class="flip"><line x1="0" y1="0" x2="0" y2="26" stroke="#639922" stroke-width="2" marker-end="url(#ag)"/><line x1="0" y1="0" x2="26" y2="0" stroke="#E24B4A" stroke-width="2" marker-end="url(#ar)"/></g></g>
+<circle cx="570" cy="160" r="40" fill="none" class="o" stroke-width="0.5" stroke-dasharray="3 3"/>
+<line x1="525" y1="115" x2="615" y2="205" class="o" stroke-width="0.5" stroke-dasharray="2 4"/>
+<g transform="translate(610,160)"><g class="flip"><line x1="0" y1="0" x2="18" y2="0" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
+<g transform="translate(598.3,188.3)"><g class="flip"><line x1="0" y1="0" x2="12.7" y2="12.7" stroke="#E24B4A" stroke-width="1.5" marker-end="url(#ar)"/></g></g>
+<g transform="translate(570,200)"><g class="flip"><line x1="0" y1="0" x2="0" y2="18" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
+<g transform="translate(541.7,188.3)"><g class="flip"><line x1="0" y1="0" x2="-12.7" y2="12.7" stroke="#378ADD" stroke-width="1.5" marker-end="url(#ab)"/></g></g>
+<g transform="translate(530,160)"><g class="flip"><line x1="0" y1="0" x2="-18" y2="0" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
+<g transform="translate(541.7,131.7)"><g class="flip"><line x1="0" y1="0" x2="-12.7" y2="-12.7" stroke="#E24B4A" stroke-width="1.5" marker-end="url(#ar)"/></g></g>
+<g transform="translate(570,120)"><g class="flip"><line x1="0" y1="0" x2="0" y2="-18" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
+<g transform="translate(598.3,131.7)"><g class="flip"><line x1="0" y1="0" x2="12.7" y2="-12.7" stroke="#378ADD" stroke-width="1.5" marker-end="url(#ab)"/></g></g>
+<text class="t h" x="570" y="248" text-anchor="middle">Tangents along +U</text>
+<text class="s" x="570" y="268" text-anchor="middle">imported</text>
+<text class="s" x="570" y="284" text-anchor="middle">with Z mirrored</text>
+<text class="s" x="570" y="306" text-anchor="middle">Reflected about U = V</text>
+<line x1="40" y1="338" x2="64" y2="338" stroke="#639922" stroke-width="2"/>
+<text class="s" x="70" y="342" text-anchor="start">T: the game reads green along it</text>
+<line x1="300" y1="338" x2="324" y2="338" stroke="#E24B4A" stroke-width="2"/>
+<text class="s" x="330" y="342" text-anchor="start">W(N × T): the game reads red along it</text>
+<line x1="40" y1="364" x2="64" y2="364" class="o" stroke-width="2" marker-end="url(#ao)"/>
+<text class="s" x="70" y="368" text-anchor="start">Decoded normal (x, y)</text>
+<line x1="300" y1="364" x2="324" y2="364" stroke="#E24B4A" stroke-width="2" marker-end="url(#ar)"/>
+<text class="s" x="330" y="368" text-anchor="start">On the diagonal: stays out (raised)</text>
+<line x1="540" y1="364" x2="564" y2="364" stroke="#378ADD" stroke-width="2" marker-end="url(#ab)"/>
+<text class="s" x="570" y="368" text-anchor="start">Turns in (dented)</text>
+</svg>

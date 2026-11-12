@@ -68,7 +68,8 @@ a check box. Use each in one place only.
 The options are off by default. Blender remembers them between sessions with its preferences. The report after
 Prepare Copy says which Transform setting to use in FbxImporter.
 
-FbxImporter 1.10 and earlier have a Mirror check box instead: leave it off for None, tick it for Mirror Z.
+FbxImporter 1.7.0 to 1.10.2 have a Mirror check box instead: leave it off for None, tick it for Mirror Z. In 1.3 to
+1.6.1 the box mirrors X, which FLVER Prep's output is not made for.
 The **Blender/3ds Max** Transform setting is not for FLVER Prep's output, which is already Y up.
 
 ### Names

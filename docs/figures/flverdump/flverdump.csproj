@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Dumps FLVER meshes as JSON for docs/figures/survey_parts.py. Build with
+       dotnet build -c Release -p:SoulsFormatsProject=<path to SoulsFormatsNEXT>/SoulsFormats/SoulsFormats.csproj
+       SoulsFormatsNEXT (https://github.com/soulsmods/SoulsFormatsNEXT) is GPL-3 and is not included here. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(SoulsFormatsProject)' != ''">
+    <ProjectReference Include="$(SoulsFormatsProject)" />
+  </ItemGroup>
+  <Target Name="RequireSoulsFormats" BeforeTargets="ResolveProjectReferences;Build">
+    <Error Condition="'$(SoulsFormatsProject)' == ''"
+           Text="Set SoulsFormatsProject to SoulsFormatsNEXT's SoulsFormats.csproj, e.g. -p:SoulsFormatsProject=&lt;path&gt;/SoulsFormats/SoulsFormats.csproj" />
+  </Target>
+</Project>

@@ -5,3 +5,7 @@ build.local.txt
 # Python
 __pycache__/
 *.pyc
+
+# The FLVER dumper's build output
+docs/figures/flverdump/bin/
+docs/figures/flverdump/obj/
