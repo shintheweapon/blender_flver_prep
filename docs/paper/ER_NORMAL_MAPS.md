@@ -112,7 +112,8 @@ pointing into the screen.
 
 Elden Ring's normal maps use the DirectX layout (Fig. 1). Red holds the tangent-space normal's x component, towards +U,
 and green its y component, towards +V, with +V running down the image. The UVs a FLVER stores run the same way, with
-V = 0 at the top row, as the in-game test (IV-C) confirms. Blue and alpha hold no part of the normal in
+V = 0 at the top row: were V to run up, green read along $\vec{T}$, which follows +V (III-B), would be inverted, and
+the DirectX rows of the in-game test (IV-C) would look dented. Blue and alpha hold no part of the normal in
 the reading used here: it has long been held in the FromSoftware modding community that blue stores gloss and alpha
 other data. This paper did not test what blue or alpha hold. With the red and green values $R$ and $G$ between 0 and
 1:
@@ -273,10 +274,10 @@ The two sides were computed by central differences and compared by their Pearson
 half of a map's pixels: those where the sum of the absolute values of the four partial derivatives of red and green is
 above its median. The other pairing, red with V and green with U (the swapped pairing), compares $\partial R/\partial u$
 with $\partial G/\partial v$ in the same way. The pairing whose correlation is larger in absolute value wins, and the
-sign of that correlation tells whether green is inverted relative to red. A map's outcome comes from the whole map. The
-same test also runs tile by tile, in tiles of 256 by 256 pixels, skipping a tile in which the standard deviation of
-both channels is below 0.03 on the scale of (3). A map is untestable when a channel does not vary at all or every tile
-is skipped.
+sign of that correlation tells whether green is inverted relative to red. A map's outcome comes from the whole map.
+Tiles of 256 by 256 pixels serve only to tell whether a map has detail to test: a tile is skipped when the standard
+deviation of both channels is below 0.03, with channel values from 0 to 1. A map is untestable when a channel does not
+vary at all or every tile is skipped.
 
 The test ran on 1,437 normal maps, one per file name, from the game's part files as installed for this paper; 50 of them
 are untestable. The test's script and its per-map results are published with this paper [5]; reproducing them needs the
@@ -310,8 +311,8 @@ investigated. The test has two limits:
 
 ![Horizontal bars per file-name prefix of the game's part normal maps: the DirectX pairing with a positive correlation fills almost every bar](../figures/paper_layout_test.svg)
 
-Fig. 4. Layout test on the game's part normal maps: per file-name prefix, the share of testable maps on which
-each pairing wins.
+Fig. 4. Layout test on the game's part normal maps: per file-name prefix, the share of testable maps with each
+outcome: the DirectX pairing with a positive or a negative correlation, or the swapped pairing.
 
 **Impact on the implementation.** The DirectX layout is what (3) decodes and what the channel changes (20) and (21)
 start from. The test corroborates the in-game test (IV-C) across the game's maps; it does not settle the layout alone.
@@ -344,8 +345,10 @@ check then runs per triangle:
 
 The check, its survey of every mesh and the per-mesh results are published with this paper [5], and the check is tested
 with the paper's other formulas. The UV orientation of a triangle is the sign of $d$, the determinant of its UV
-differences, (15) in Section VI. With the game's winding (III-C), $d > 0$ on mirrored islands and $d < 0$ on unmirrored
-ones. Per file-name prefix, with (9) per UV orientation and pooled over all corners; the other columns give the range, the largest value and the smallest value over the prefix's parts (Table II):
+differences, (15) in Section VI. For any triangle with edges $\vec{e}_1$ and $\vec{e}_2$,
+$\vec{e}_1\times\vec{e}_2 = d\,(\partial\vec{p}/\partial u\times\partial\vec{p}/\partial v)$ by (14) and (15), so the
+sign of $d$ tells mirrored from unmirrored only together with the winding. With the game's winding (III-C),
+$d > 0$ on mirrored islands and $d < 0$ on unmirrored ones. Per file-name prefix, with (9) per UV orientation and pooled over all corners; the other columns give the range, the largest value and the smallest value over the prefix's parts (Table II):
 
 <p align="center">TABLE II<br>STORED TANGENT FRAMES OF THE GAME'S PART MODELS, PER FILE-NAME PREFIX</p>
 
@@ -464,8 +467,9 @@ ones.
 
 ## V. Tangents in the Common Convention
 
-The tangents an FBX file carries, and those the FBX SDK generates for a file without them [2], point along +U, as
-measured in Section IV-D. The importer keeps them as they are. Write $\hat{u}$ and $\hat{v}$ for the unit vectors along
+The tangents the FBX SDK generates for a file without them [2] point along +U, as measured in Section IV-D. Tangents
+an FBX file carries follow the common convention, such as Blender's (Section VI), and were not measured here. The
+importer keeps them as they are. Write $\hat{u}$ and $\hat{v}$ for the unit vectors along
 +U and +V in the tangent plane, and $\vec{T}'$, $W'$ and $\vec{B}'$ for the tangent, the bitangent sign and the
 bitangent of the frame the importer writes. With the frames measured in IV-D, they are
 
@@ -477,8 +481,10 @@ $$
 *In words:* with tangents along +U, green is read along +U, and red along −V (without a mirror) or +V (with Z mirrored) (Fig. 6).
 
 The mirror turns red from −V to +V. Negating z reflects the normal, the tangent and the partial derivatives alike, and
-a reflection reverses every cross product, so $\vec{N}\times\hat{u}$ reverses relative to +V. $W'$ was generated before
-the mirror and stays as it was.
+a reflection reverses every cross product, so $\vec{N}\times\hat{u}$ reverses relative to +V, which is reflected with
+it. The reflection also swaps every island between mirrored and unmirrored, while each vertex keeps the $W'$ generated
+before the mirror. That is what IV-D finds: the half with $W = -1$ is the unmirrored one without a mirror, and the
+mirrored one with Z mirrored.
 
 An authored tangent-space normal with (x, y) components $(a, b)$, $a$ towards +U and $b$ towards +V, is meant as the
 direction $a\,\hat{u} + b\,\hat{v}$ in the tangent plane. By (7) the game reads it as $a\,\vec{B}' + b\,\vec{T}'$, which
@@ -491,7 +497,7 @@ $$
 
 *In words:* without a mirror, the (x, y) components of every tangent-space normal are rotated by 90° anticlockwise on
 the map (from +U towards −V); with Z mirrored, they are reflected about the line U = V. A raised dome then reads lit
-from the side, or raised on one diagonal and dented on the other (Fig. 7).
+from the side, or raised on one diagonal, dented on the other and lit from the side along U and V (Fig. 7).
 
 ![Three sheets with N up: vanilla tangents read green along +V and red along +U; tangents along +U read green along +U, with red along -V (without a mirror) or +V (with Z mirrored)](../figures/paper_tangent_directions.svg)
 
@@ -605,7 +611,7 @@ tangent follows +V, and $W = -1$ turns $\vec{N}\times\vec{T}$ onto +U.
 - imports with ER Tangents follow the game's frame on both UV halves, without a mirror and with Z mirrored;
 - without ER Tangents, the importer writes exactly what the upstream release writes;
 - in game, a plane imported with ER Tangents and one imported without, side by side with the test map (Fig. 9): only
-  the one with ER Tangents looks right on both halves.
+  the one with ER Tangents looks alike on both halves.
 
 ![In game: two planes with the test map; left, with ER Tangents, both UV halves look alike; right, without ER Tangents, the halves disagree](images/ingame_er_tangents.webp)
 
@@ -613,7 +619,7 @@ Fig. 9. In-game check of ER Tangents. Left: with ER Tangents, both UV halves loo
 
 **Result.** All four agree. In the files, imports with ER Tangents carry the vanilla frame on both UV halves, without a
 mirror and with Z mirrored, and imports without it are what the importer wrote before. In game, the plane with ER
-Tangents looks right on both halves; which mirror setting its import used was not recorded. Without ER Tangents, both
+Tangents looks alike on both halves; which mirror setting its import used was not recorded. Without ER Tangents, both
 halves are read with the same rotation or reflection on the map (IV-D), but the mirrored half shows the map mirrored, so
 the two halves look different. That explanation is derived from (13), not tested on its own.
 
@@ -646,8 +652,9 @@ $$
 *In words:* with Z mirrored, red and green swap.
 
 Blue and alpha stay as they are. Both changes are worked out from the measured frames, not tested in game
-(Fig. 10). They apply to mirrored islands too, since in each import both UV halves are read alike (IV-D). Table VI lists
-both.
+(Fig. 10). Where the FBX SDK generates the tangents, as in IV-D, they apply to mirrored islands too, since in each
+import both UV halves are read alike. With Tangent Space on, W is undefined (Section VIII), and mirrored islands are
+not covered. Table VI lists both.
 
 <p align="center">TABLE VI<br>CHANNEL CHANGES THAT MATCH THE MAP TO TANGENTS ALONG +U</p>
 

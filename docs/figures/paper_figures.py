@@ -283,5 +283,5 @@ def figure_layout_test():
                "Horizontal bars, one per file-name prefix of the game's part normal maps, each split into the "
                "share of its testable maps on which the DirectX pairing (red with U, green with V) wins with a "
                "positive correlation, with a negative one (green inverted), or the swapped pairing wins. The "
-               "DirectX pairing with a positive correlation fills almost every bar. Columns give the maps "
-               "tested and the untestable maps per prefix.", body)
+               "DirectX pairing with a positive correlation fills almost every bar. Columns give the "
+               "testable maps and the untestable maps per prefix.", body)

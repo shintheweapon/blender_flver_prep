@@ -70,6 +70,13 @@
   maps"; III-C says the anatomy fixes the handedness and the winding agrees; the in-game layout test is said to fix
   the sign of green, with IV-A giving the pairing; LOD0, matxml, UV island, the fallback's `W`, `û`, `v̂` and the
   importer's frame are defined before use; the Limitations add the unrecorded game version and the one test plane.
+- The description of the dome figure (the guide's, and Fig. 7 in the paper) now says what the reflection about U = V
+  does: normals on that diagonal stay outward, those on the other diagonal turn inward, and those along U and V turn
+  sideways; the paper's sentence citing Fig. 7 says the same. The paper also states the identity behind the sign of
+  `d`, explains why `W` per half swaps with the Z mirror, gives the reason the stored UVs have V = 0 at the top,
+  limits Section V's measured claim to the FBX SDK's tangents and Section VII's mirrored islands to that route, says
+  the IV-A tiles only decide whether a map is testable (threshold on values from 0 to 1), names Fig. 4's three
+  outcomes, and says the in-game plane "looks alike" on both halves.
 
 ## 1.0.0
 

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="680" height="424" viewBox="0 0 680 424" role="img">
 <title>The tilts the game decodes around a raised dome</title>
-<desc>Animated. Three panels, each with the frame (green T, red W(N x T)) and the surface tilts the game decodes around a raised dome. Vanilla tangents: the tilts point outward and the dome reads raised. Tangents along +U with FbxImporter 1.11.0 Transform None (1.7.0 to 1.10.2 Mirror unticked): the frame and every tilt turn a quarter, so the tilts run round the dome. Tangents along +U with FbxImporter 1.11.0 Transform Mirror Z (1.7.0 to 1.10.2 Mirror ticked): the frame and every tilt flip across the U = V diagonal, so the tilts on the diagonal stay outward (raised) and the others turn inward (dented).</desc>
+<desc>Animated. Three panels, each with the frame (green T, red W(N x T)) and the surface tilts the game decodes around a raised dome. Vanilla tangents: the tilts point outward and the dome reads raised. Tangents along +U with FbxImporter 1.11.0 Transform None (1.7.0 to 1.10.2 Mirror unticked): the frame and every tilt turn a quarter, so the tilts run round the dome. Tangents along +U with FbxImporter 1.11.0 Transform Mirror Z (1.7.0 to 1.10.2 Mirror ticked): the frame and every tilt flip across the U = V diagonal, so the tilts on that diagonal stay outward (raised), those on the other diagonal turn inward (dented) and those along U and V turn sideways.</desc>
 <style>
 .t{fill:#1f2328;font:14px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
 .h{font-weight:600}

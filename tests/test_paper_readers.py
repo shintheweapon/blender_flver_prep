@@ -1,6 +1,6 @@
 # Tests for the clarifications to docs/paper/ER_NORMAL_MAPS.md made after a cold reading: what the paper says about the
-# sign of d, the worked example's winding and the split of the layout test's exceptions matches the committed results
-# and the formulas
+# sign of d, the edge identity, the worked example's winding, the split of the layout test's exceptions, Fig. 4's
+# caption and the description of Fig. 7 match the committed results, the formulas and the figure labels
 
 import unittest
 
@@ -8,6 +8,7 @@ from test_paper import read_paper  # also puts docs/figures on sys.path
 
 import frame_survey  # noqa: E402
 import layout_results  # noqa: E402
+import make_figures  # noqa: E402
 import tangent_geometry as mf  # noqa: E402
 
 
@@ -105,6 +106,55 @@ class TestLayoutExceptions(unittest.TestCase):
         text = read_paper()
         section = text[text.index("### A. The Integrability Test"):text.index("### B. Vanilla Frames")]
         self.assertIn(f"green inverted ({inverted} maps) or the swapped pairing ({swapped} maps)", section)
+
+
+class TestDomeReflection(unittest.TestCase):
+    """Fig. 7 and its guide twin describe the reflection about U = V as the geometry gives it."""
+
+    def test_both_descriptions_name_the_other_diagonal_and_the_sideways_normals(self):
+        for labels in (make_figures.GUIDE_LABELS, make_figures.PAPER_LABELS):
+            with self.subTest(labels=labels.dome_title):
+                self.assertIn("other diagonal turn inward", labels.dome_desc)
+                self.assertIn("turn sideways", labels.dome_desc)
+
+    def test_the_paper_text_citing_fig_7_says_so(self):
+        text = " ".join(read_paper().split())
+        self.assertIn("dented on the other and lit from the side along U and V (Fig. 7)", text)
+
+
+class TestEdgeIdentity(unittest.TestCase):
+    """The identity that ties the sign of d to the winding holds, and the paper states it."""
+
+    TRIANGLES = (
+        (((0, 0, 0), (2, 0, 0), (0, 0, 1)), ((0, 0), (0.5, 0), (0, 0.25))),
+        (((0.1, -0.4, 0.3), (1.2, 0.5, -0.2), (-0.3, 0.9, 0.8)), ((0.2, 0.7), (0.9, 0.1), (0.4, 0.95))),
+        (((1, 1, 1), (1, 2, 1), (2, 1, 3)), ((0.5, 0.5), (0.25, 0.5), (0.5, 0.0))),
+    )
+
+    def test_edges_cross_to_d_times_the_partial_derivatives(self):
+        for positions, uvs in self.TRIANGLES:
+            d, du, dv = mf.uv_derivatives(positions, uvs)
+            p0, p1, p2 = positions
+            edges = cross(tuple(b - a for a, b in zip(p0, p1)), tuple(b - a for a, b in zip(p0, p2)))
+            for got, want in zip(edges, cross(du, dv)):
+                self.assertAlmostEqual(got, d * want)
+
+    def test_the_paper_states_it(self):
+        text = read_paper()
+        section = text[text.index("### B. Vanilla Frames"):text.index("### C. The In-Game Test")]
+        self.assertIn(r"$\vec{e}_1\times\vec{e}_2 = d\,(\partial\vec{p}/\partial u\times\partial\vec{p}/\partial v)$",
+                      " ".join(section.split()))
+
+
+class TestLayoutFigureCaption(unittest.TestCase):
+    """Fig. 4's caption names the three outcomes the figure draws."""
+
+    def test_caption_names_every_outcome(self):
+        text = " ".join(read_paper().split())
+        caption = text[text.index("Fig. 4. "):text.index("**Impact on the implementation.**", text.index("Fig. 4. "))]
+        for outcome in ("DirectX pairing with a positive or a negative correlation", "the swapped pairing"):
+            with self.subTest(outcome=outcome):
+                self.assertIn(outcome, caption)
 
 
 if __name__ == "__main__":
