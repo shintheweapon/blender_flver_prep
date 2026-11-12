@@ -192,6 +192,64 @@ def render_figures(text, out_dir):
     return widths
 
 
+BORDER_EDGES = ("top", "left", "bottom", "right", "insideH", "insideV")
+TABLE_BORDERS = ("<w:tblBorders>" + "".join(f'<w:{edge} w:val="single" w:sz="4" w:space="0" w:color="auto"/>'
+                                            for edge in BORDER_EDGES) + "</w:tblBorders>")
+TABLE_PROPERTIES = re.compile(r"<w:tblPr>(.*?)</w:tblPr>", re.S)
+
+
+def add_table_borders(document_xml):
+    """
+    Give every table a grid: single 0.5 pt borders on all six edges, written into
+    the table itself.
+
+    pandoc's tables name a style it doesn't define, so they have no lines; a
+    border set on the table carries over to Google Docs. A table that already
+    has borders is left as it is.
+
+    Parameters
+    ----------
+    document_xml : str
+        ``word/document.xml``.
+
+    Returns
+    -------
+    str
+    """
+    def bordered(match):
+        properties = match.group(1)
+        if "<w:tblBorders" in properties:
+            return match.group(0)
+        style = re.match(r"\s*<w:tblStyle[^>]*/>", properties)
+        cut = style.end() if style else 0
+        return f"<w:tblPr>{properties[:cut]}{TABLE_BORDERS}{properties[cut:]}</w:tblPr>"
+
+    return TABLE_PROPERTIES.sub(bordered, document_xml)
+
+
+def rewrite_document(path, change):
+    """
+    Apply ``change`` to ``word/document.xml`` inside a Word file, keeping every
+    other part as it is and in the same order.
+
+    Parameters
+    ----------
+    path : str
+    change : callable
+        Takes and returns the document XML as text.
+    """
+    with zipfile.ZipFile(path) as package:
+        parts = [(info, package.read(info.filename)) for info in package.infolist()]
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as package:
+        for info, data in parts:
+            if info.filename == "word/document.xml":
+                data = change(data.decode("utf-8")).encode("utf-8")
+            package.writestr(info, data)
+    with open(path, "wb") as file:
+        file.write(buffer.getvalue())
+
+
 def check_docx(path):
     """
     What the Word file holds, to compare with the paper.
@@ -203,8 +261,9 @@ def check_docx(path):
     Returns
     -------
     dict
-        ``equations``, ``tables``, ``images``, ``gifs``, ``tex_left`` (TeX
-        commands left in the text), ``author`` (the file's author field).
+        ``equations``, ``tables``, ``bordered_tables``, ``images``, ``gifs``,
+        ``tex_left`` (TeX commands left in the text), ``author`` (the file's
+        author field).
     """
     with zipfile.ZipFile(path) as package:
         document = package.read("word/document.xml").decode("utf-8")
@@ -215,6 +274,7 @@ def check_docx(path):
     return {
         "equations": len(re.findall(r"<m:oMath[ >]", document)),
         "tables": document.count("<w:tbl>"),
+        "bordered_tables": len(re.findall(r"<w:tblPr>(?:(?!</w:tblPr>).)*<w:tblBorders>", document, flags=re.S)),
         "images": len(media),
         "gifs": sum(n.lower().endswith(".gif") for n in media),
         "tex_left": len(re.findall(re.escape(B) + r"(?:vec|frac|partial|times|hat)\b", text_only)),
@@ -245,6 +305,7 @@ def main(out_dir=OUT_DIR):
     warnings = [line for line in run.stderr.decode("utf-8", "replace").splitlines() if line.startswith("[WARNING]")]
     for line in warnings:
         print(line)
+    rewrite_document(out_path, add_table_borders)
     report = check_docx(out_path)
     print(", ".join(f"{key} {value!r}" for key, value in report.items()), f"; written to {os.path.relpath(out_path)}")
     return out_path

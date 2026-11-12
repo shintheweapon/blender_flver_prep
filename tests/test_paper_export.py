@@ -61,5 +61,31 @@ class TestPrepareMarkdown(unittest.TestCase):
                          (680.0, 370.0))
 
 
+class TestTableBorders(unittest.TestCase):
+    """Every table gets a grid written into it, once."""
+
+    SAMPLE = ('<w:body><w:p><w:t>before</w:t></w:p>'
+              '<w:tbl><w:tblPr><w:tblStyle w:val="Table" /><w:tblW w:type="pct" w:w="5000" /></w:tblPr></w:tbl>'
+              '<w:tbl><w:tblPr><w:tblStyle w:val="Table" /><w:tblLook w:val="0020" /></w:tblPr></w:tbl></w:body>')
+
+    def test_each_table_gets_six_edges_right_after_its_style(self):
+        result = export_docx.add_table_borders(self.SAMPLE)
+        properties = re.findall(r"<w:tblPr>(.*?)</w:tblPr>", result)
+        self.assertEqual(len(properties), 2)
+        for block in properties:
+            self.assertTrue(block.startswith('<w:tblStyle w:val="Table" /><w:tblBorders>'))
+            for edge in export_docx.BORDER_EDGES:
+                self.assertIn(f'<w:{edge} w:val="single" w:sz="4"', block)
+
+    def test_running_twice_adds_nothing_more(self):
+        once = export_docx.add_table_borders(self.SAMPLE)
+        self.assertEqual(export_docx.add_table_borders(once), once)
+        self.assertEqual(once.count("<w:tblBorders>"), 2)
+
+    def test_text_outside_tables_is_unchanged(self):
+        result = export_docx.add_table_borders(self.SAMPLE)
+        self.assertTrue(result.startswith("<w:body><w:p><w:t>before</w:t></w:p>"))
+
+
 if __name__ == "__main__":
     unittest.main()
