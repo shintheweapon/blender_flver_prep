@@ -41,7 +41,9 @@ the wrong basis: raised details look dented, or lit from the side.
 
 Meshes made in Blender reach Elden Ring through an importer that converts FBX files to the game's model format, FLVER
 [1]. The importer keeps the tangents of the FBX file, or generates them with the FBX SDK [2], in the common convention.
-The game's own models use a different one, so the two disagree. This paper:
+The game's own models use a different one, so the two disagree. The importer can also mirror the model along Z as it
+converts it, negating the z components of positions, normals and tangents; this paper calls the two cases "without a
+mirror" and "with Z mirrored". This paper:
 
 - measures the convention of the game's own models (Sections III and IV);
 - derives what tangents in the common convention do to it (Section V);
@@ -332,8 +334,9 @@ check then runs per triangle:
     - whether $W$ equals (9).
 
 The check, its survey of every mesh and the per-mesh results are published with this paper [5], and the check is tested
-with the paper's other formulas. Per file-name prefix, with (9) per UV orientation (the sign of $d$) and pooled over all
-corners; the other columns give the range, the largest value and the smallest value over the prefix's parts (Table II):
+with the paper's other formulas. The UV orientation of a triangle is the sign of $d$, the determinant of its UV
+differences, (15) in Section VI. With the game's winding (III-C), $d > 0$ on mirrored islands and $d < 0$ on unmirrored
+ones. Per file-name prefix, with (9) per UV orientation and pooled over all corners; the other columns give the range, the largest value and the smallest value over the prefix's parts (Table II):
 
 <p align="center">TABLE II<br>STORED TANGENT FRAMES OF THE GAME'S PART MODELS, PER FILE-NAME PREFIX</p>
 
@@ -432,13 +435,21 @@ Fig. 5. In-game test on BD_M_1730. Warm rows: the DirectX encoding, raised. Cool
 **Why it matters.** Its difference from the vanilla frame (IV-B) is the error the paper sets out to remove.
 
 **How the test answers it.** A test plane with one unmirrored and one mirrored UV half was imported twice, once without
-a mirror and once with Z mirrored, and the frames stored in each import were read back.
+a mirror and once with Z mirrored, and the frames stored in each import were read back. The plane's file carries no
+tangents, so the importer generates them with the FBX SDK.
 
-**Result.** Without a mirror, the tangent points along +U, $W = -1$ on the unmirrored half, and red is read along −V.
-With Z mirrored, red is read along +V.
+**Result.** In both imports the tangent points along +U on both halves, and $W$ is $-1$ on one half and $+1$ on the
+other.
+
+- Without a mirror, $W = -1$ on the unmirrored half, and red is read along −V on both halves.
+- With Z mirrored, $W = +1$ on the unmirrored half, and red is read along +V on both halves.
+
+So in each import both halves are read alike. The test has limits: one test plane, with tangents generated rather than
+carried by the file.
 
 **Impact on the implementation.** These frames give (12) and (13): the rotation and the reflection that ER Tangents
-removes, and that the channel changes of Section VII undo instead.
+removes, and that the channel changes of Section VII undo instead. Both hold on mirrored islands as well as unmirrored
+ones.
 
 ## V. Tangents in the Common Convention
 
@@ -453,6 +464,10 @@ $$
 
 *In words:* $\hat{u}$ and $\hat{v}$ are the unit vectors along +U and +V in the tangent plane. With tangents along +U,
 green is read along +U, and red along −V (without a mirror) or +V (with Z mirrored) (Fig. 6).
+
+The mirror turns red from −V to +V. Negating z reflects the normal, the tangent and the partial derivatives alike, and
+a reflection reverses every cross product, so $\vec{N}\times\hat{u}$ reverses relative to +V. $W'$ was generated before
+the mirror and stays as it was.
 
 An authored tangent-space normal with (x, y) components $(a, b)$, $a$ towards +U and $b$ towards +V, is meant as the
 direction $a\,\hat{u} + b\,\hat{v}$ in the tangent plane. By (7) the game reads it as $a\,\vec{B}' + b\,\vec{T}'$, which
@@ -544,7 +559,9 @@ both numerators in (16). The directions and $\lVert\vec{e}_1\times\vec{e}_2\rVer
 same for either winding order.
 
 **Worked example.** One triangle: $\vec{p}_0 = (0, 0, 0)$, $\vec{p}_1 = (2, 0, 0)$, $\vec{p}_2 = (0, 0, 1)$; UVs
-$(0, 0)$, $(0.5, 0)$, $(0, 0.25)$; normal $\vec{N} = (0, -1, 0)$ at every vertex (Table V, Fig. 8).
+$(0, 0)$, $(0.5, 0)$, $(0, 0.25)$; normal $\vec{N} = (0, -1, 0)$ at every vertex (Table V, Fig. 8). The triangle
+winds the other way from the game's (III-C): $\vec{e}_1\times\vec{e}_2$ points along $\vec{N}$. So $d > 0$ here on an
+unmirrored island; (9) and (19) give the same $W$ for either winding.
 
 <p align="center">TABLE V<br>WORKED EXAMPLE FOR ONE TRIANGLE</p>
 
@@ -580,10 +597,13 @@ tangent follows +V, and $W = -1$ turns $\vec{N}\times\vec{T}$ onto +U.
 
 ![In game: two planes with the test map; left, with ER Tangents, both UV halves look alike; right, without ER Tangents, the halves disagree](images/ingame_er_tangents.webp)
 
-Fig. 9. In-game check of ER Tangents. Left: with ER Tangents, both UV halves raised alike. Right: without ER Tangents, the halves disagree.
+Fig. 9. In-game check of ER Tangents. Left: with ER Tangents, both UV halves look alike. Right: without ER Tangents, the halves disagree.
 
-**Result.** All four agree: with ER Tangents, imports carry the vanilla frame on both UV halves, with and without a
-mirror, and look right in game; without it, the importer writes what it wrote before.
+**Result.** All four agree. In the files, imports with ER Tangents carry the vanilla frame on both UV halves, without a
+mirror and with Z mirrored, and imports without it are what the importer wrote before. In game, the plane with ER
+Tangents looks right on both halves; which mirror setting its import used was not recorded. Without ER Tangents, both
+halves are read with the same rotation or reflection on the map (IV-D), but the mirrored half shows the map mirrored, so
+the two halves look different. That explanation is derived from (13), not tested on its own.
 
 **Impact on the implementation.** The import step can be used with either mirror setting, and imports without it are
 unchanged.
@@ -591,7 +611,8 @@ unchanged.
 **Relation to MikkTSpace.** MikkTSpace [8], [9] is the tangent method Blender uses: its `Mesh.calc_tangents` runs it
 [9], and Blender's FBX exporter calls `calc_tangents` when Tangent Space is on. These tangents follow +U and the
 exporter writes no W, so they follow the common convention, like the FBX SDK's. ER Tangents builds its own tangents
-from the mesh, so every route out of Blender gives the same result.
+from the mesh and ignores the file's, so both routes out of Blender give the same frames, apart from fallback vertices,
+which keep the file's tangent.
 
 ## VII. Matching the Map Instead of the Tangents
 
@@ -612,7 +633,7 @@ $$
 *In words:* with Z mirrored, red and green swap.
 
 Blue and alpha stay as they are. Both changes are worked out from the measured frames, not tested in game
-(Fig. 10). They assume that every island is unmirrored, or that mirrored islands read the same way. Table VI lists
+(Fig. 10). They apply to mirrored islands too, since in each import both UV halves are read alike (IV-D). Table VI lists
 both.
 
 <p align="center">TABLE VI<br>CHANNEL CHANGES THAT MATCH THE MAP TO TANGENTS ALONG +U</p>
@@ -656,7 +677,8 @@ Elden Ring reads a DirectX-layout map with green along a tangent that follows +V
 $W(\vec{N}\times\vec{T})$, which follows +U. Tangents in the common convention follow +U, so the (x, y) components of
 every tangent-space normal are rotated by 90° anticlockwise on the map (from +U towards −V) or reflected about the line
 U = V, depending on the mirror setting. Building the tangents from the mesh and its UVs in the game's convention gives
-the intended shading for every route out of Blender. Where that step is not available, swapping or inverting channels
+the game's frame for both routes out of Blender, and the intended shading on the plane checked in game. Where that step
+is not available, swapping or inverting channels
 matches the map to the tangents instead.
 
 ## Acknowledgement

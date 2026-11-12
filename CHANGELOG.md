@@ -59,6 +59,12 @@
   its figures call the facing direction "forward", as Blender's FBX settings do.
 - The paper's references write dates day first, in UK order (for example "Accessed: 11 Nov. 2026").
 - The guide mentions the fork's Cloth W check box for cloth materials.
+- After a reading by readers new to it, the paper defines the importer's mirror setting and the sign of `d` (with the
+  game's winding, `d` > 0 on mirrored islands; the worked example winds the other way), and reports both halves of
+  the test plane in IV-D: in each import they are read alike, so the rotation, the reflection and the channel changes
+  hold on mirrored islands too. Section V derives why the mirror turns red from -V to +V. The in-game claims match
+  what was tested: one plane with ER Tangents, mirror setting not recorded. `tests/test_paper_readers.py` checks the
+  new statements against the survey and the formulas.
 
 ## 1.0.0
 
