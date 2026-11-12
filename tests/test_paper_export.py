@@ -61,30 +61,58 @@ class TestPrepareMarkdown(unittest.TestCase):
                          (680.0, 370.0))
 
 
-class TestTableBorders(unittest.TestCase):
-    """Every table gets a grid written into it, once."""
+CELL = '<w:tc><w:p><w:pPr><w:pStyle w:val="Compact" /></w:pPr><w:r><w:t>{}</w:t></w:r></w:p></w:tc>'
+
+
+class TestFormatTables(unittest.TestCase):
+    """Every table gets its grid, centring, rows that stay together and a bold header, once."""
 
     SAMPLE = ('<w:body><w:p><w:t>before</w:t></w:p>'
-              '<w:tbl><w:tblPr><w:tblStyle w:val="Table" /><w:tblW w:type="pct" w:w="5000" /></w:tblPr></w:tbl>'
-              '<w:tbl><w:tblPr><w:tblStyle w:val="Table" /><w:tblLook w:val="0020" /></w:tblPr></w:tbl></w:body>')
+              '<w:p><w:pPr><w:pStyle w:val="TableCaption" /></w:pPr><w:r><w:t>TABLE I. X</w:t></w:r></w:p>'
+              '<w:tbl><w:tblPr><w:tblStyle w:val="Table" /><w:tblW w:type="pct" w:w="5000" />'
+              '<w:tblLook w:firstRow="1" w:val="0020" /><w:tblCaption w:val="TABLE I. X" /></w:tblPr>'
+              '<w:tblGrid><w:gridCol w:w="100" /></w:tblGrid>'
+              + "".join("<w:tr>" + CELL.format(t) + CELL.format(t) + "</w:tr>" for t in ("Head", "a", "b"))
+              + '</w:tbl></w:body>')
 
-    def test_each_table_gets_six_edges_right_after_its_style(self):
-        result = export_docx.add_table_borders(self.SAMPLE)
-        properties = re.findall(r"<w:tblPr>(.*?)</w:tblPr>", result)
-        self.assertEqual(len(properties), 2)
-        for block in properties:
-            self.assertTrue(block.startswith('<w:tblStyle w:val="Table" /><w:tblBorders>'))
-            for edge in export_docx.BORDER_EDGES:
-                self.assertIn(f'<w:{edge} w:val="single" w:sz="4"', block)
+    @classmethod
+    def setUpClass(cls):
+        cls.result = export_docx.format_tables(cls.SAMPLE)
+        cls.rows = re.findall(r"<w:tr>(.*?)</w:tr>", cls.result)
 
-    def test_running_twice_adds_nothing_more(self):
-        once = export_docx.add_table_borders(self.SAMPLE)
-        self.assertEqual(export_docx.add_table_borders(once), once)
-        self.assertEqual(once.count("<w:tblBorders>"), 2)
+    def test_table_properties_are_in_schema_order(self):
+        block = re.search(r"<w:tblPr>(.*?)</w:tblPr>", self.result).group(1)
+        names = [name for name, _ in export_docx.child_elements(block)]
+        self.assertEqual(names, ["tblStyle", "tblW", "jc", "tblBorders", "tblLook", "tblCaption"])
+        self.assertIn('<w:tblW w:type="auto" w:w="0"/>', block)
+        self.assertIn('<w:jc w:val="center"/>', block)
+        self.assertIn('w:firstRow="0"', block)
+        for edge in export_docx.BORDER_EDGES:
+            self.assertIn(f'<w:{edge} w:val="single" w:sz="4"', block)
+
+    def test_every_cell_has_its_own_four_borders_first(self):
+        cells = re.findall(r"<w:tc>(.*?)</w:tc>", self.result)
+        self.assertEqual(len(cells), 6)
+        for cell in cells:
+            self.assertTrue(cell.startswith("<w:tcPr><w:tcBorders>"))
+            for edge in export_docx.BORDER_EDGES[:4]:
+                self.assertIn(f"<w:{edge} ", cell)
+
+    def test_rows_stay_together(self):
+        self.assertTrue(all(row.startswith("<w:trPr><w:cantSplit/></w:trPr>") for row in self.rows))
+        self.assertTrue(all("<w:keepNext/>" in row for row in self.rows[:-1]))
+        self.assertNotIn("<w:keepNext/>", self.rows[-1])
+
+    def test_the_header_is_bold_and_the_caption_centred(self):
+        self.assertEqual(self.rows[0].count("<w:rPr><w:b/></w:rPr>"), 2)
+        self.assertNotIn("<w:b/>", self.rows[1])
+        self.assertIn('<w:pStyle w:val="TableCaption" /><w:jc w:val="center"/>', self.result)
+
+    def test_running_twice_changes_nothing(self):
+        self.assertEqual(export_docx.format_tables(self.result), self.result)
 
     def test_text_outside_tables_is_unchanged(self):
-        result = export_docx.add_table_borders(self.SAMPLE)
-        self.assertTrue(result.startswith("<w:body><w:p><w:t>before</w:t></w:p>"))
+        self.assertTrue(self.result.startswith("<w:body><w:p><w:t>before</w:t></w:p>"))
 
 
 if __name__ == "__main__":

@@ -96,7 +96,9 @@
 - `docs/paper/export_docx.py` exports the paper to a Word file for Google Docs: all equations as native Word
   equations, table captions above their tables, still figures as PNGs in light mode and Figs. 3(a) and 7 as
   animated GIFs (`docs/paper/README.md` says how to open it as a Google Doc). The video's Chrome helper takes a
-  `color_scheme` for this. The tables carry their own grid lines, which pandoc's Word output leaves out.
+  `color_scheme` for this. The tables carry their own grid lines, which pandoc's Word output leaves out, on every
+  cell too, so the line under the header row shows in Google Docs; they are centred with centred captions, have a
+  bold header row, and each stays on one page.
 
 ## 1.0.0
 
