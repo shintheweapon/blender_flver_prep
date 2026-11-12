@@ -132,6 +132,14 @@ class TestChineseStyle(unittest.TestCase):
             with self.subTest(variant=variant):
                 self.assertNotIn(variant, self.body)
 
+    def test_games_are_named_in_chinese(self):
+        # the English name only once, in brackets at first use
+        self.assertEqual(self.body.count("Elden Ring"), 1)
+        self.assertIn("艾尔登法环（Elden Ring）", self.body)
+        for name in ("黑暗之魂 3（Dark Souls 3）", "只狼（Sekiro）", "装甲核心 6（Armored Core 6）", "艾尔登法环 黑夜君临（Nightreign）"):
+            with self.subTest(name=name):
+                self.assertIn(name, self.body)
+
     def test_untested_claims_stay_marked(self):
         for phrase in ("未测试", "未确认", "可能误判", "未作记录", "未在游戏内测试"):
             with self.subTest(phrase=phrase):

@@ -4,8 +4,10 @@ The Simplified Chinese terms used in the Chinese paper ([ER_NORMAL_MAPS.zh-CN.md
 (`docs/figures/zh_text.py`) and, later, the Chinese video and Word export. Each term is used in this form everywhere;
 the paper gives the English term in brackets at its first use.
 
-Names stay in Latin letters: Elden Ring, FLVER, FBX, FBX SDK, DirectX, OpenGL, Blender, MikkTSpace, SoulsFormatsNEXT,
-ER Tangents, and Blender's setting name Tangent Space. Symbols stay as in the English paper: N, T, B, W, U, V, d, R, G.
+Games take their Chinese names, with the English name in brackets at first use: 艾尔登法环 (Elden Ring), 黑暗之魂 3
+(Dark Souls 3), 只狼 (Sekiro), 装甲核心 6 (Armored Core 6) and 艾尔登法环 黑夜君临 (Nightreign). Other names stay in Latin
+letters: FLVER, FBX, FBX SDK, DirectX, OpenGL, Blender, MikkTSpace, SoulsFormatsNEXT, ER Tangents, and Blender's
+setting name Tangent Space. Symbols stay as in the English paper: N, T, B, W, U, V, d, R, G.
 
 | English | 中文 | Note |
 |---|---|---|
