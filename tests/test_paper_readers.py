@@ -1,11 +1,13 @@
 # Tests for the clarifications to docs/paper/ER_NORMAL_MAPS.md made after a cold reading: what the paper says about the
-# sign of d and the worked example's winding matches the committed survey and the formulas
+# sign of d, the worked example's winding and the split of the layout test's exceptions matches the committed results
+# and the formulas
 
 import unittest
 
 from test_paper import read_paper  # also puts docs/figures on sys.path
 
 import frame_survey  # noqa: E402
+import layout_results  # noqa: E402
 import tangent_geometry as mf  # noqa: E402
 
 
@@ -91,6 +93,18 @@ class TestWorkedExampleWinding(unittest.TestCase):
         example = text[text.index("**Worked example.**"):text.index("TABLE V")]
         self.assertIn("winds the other way from the game's", example)
         self.assertIn("$d > 0$ here on an\nunmirrored island", example)
+
+
+class TestLayoutExceptions(unittest.TestCase):
+    """Section IV-A splits the maps that disagree as the committed results do."""
+
+    def test_split_of_the_exceptions_is_the_results(self):
+        maps = layout_results.load()["maps"]
+        inverted = sum(m["outcome"] == "directx-" for m in maps)
+        swapped = sum(m["outcome"] in ("swapped+", "swapped-") for m in maps)
+        text = read_paper()
+        section = text[text.index("### A. The Integrability Test"):text.index("### B. Vanilla Frames")]
+        self.assertIn(f"green inverted ({inverted} maps) or the swapped pairing ({swapped} maps)", section)
 
 
 if __name__ == "__main__":

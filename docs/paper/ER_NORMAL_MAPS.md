@@ -8,7 +8,8 @@
 paper sets out the convention the game uses and how it was measured: a DirectX-layout map, read with green along the
 stored tangent, which points along +V, and red along the bitangent $W(\vec{N}\times\vec{T})$, which points along +U. An
 integrability test on the game's normal maps (their red and green must be the derivatives of one height field) fixes the
-layout; vanilla models fix the frame; an in-game test confirms both. Tangents in the common convention, which the FBX
+pairing of channels with UV axes; vanilla models fix the frame; an in-game test fixes the overall sign and confirms
+both. Tangents in the common convention, which the FBX
 format and the FBX SDK follow, point along +U. Depending on the importer's mirror setting, the game then rotates every
 authored tangent-space normal (the normal a map stores, relative to the surface) by 90° anticlockwise on the map (from
 +U towards −V), or reflects it about the line $U = V$. The paper derives both effects, describes an import step, ER
@@ -56,7 +57,7 @@ mirror" and "with Z mirrored". This paper:
 
 Blinn introduced shading with a perturbed normal [3]. A real-time normal map stores the perturbed normal in tangent
 space: relative to the surface at that point rather than to the world. One map then serves a surface in any position,
-and the same UV island can be reused on several parts. To shade, the renderer needs, at each point, the surface normal
+and the same UV island (a connected patch of the UV layout) can be reused on several parts. To shade, the renderer needs, at each point, the surface normal
 $\vec{N}$ and two vectors in the tangent plane, the tangent $\vec{T}$ and the bitangent $\vec{B}$, which give the
 directions of the image's U and V axes on the mesh. The three form the TBN frame $[\vec{T}\ \vec{B}\ \vec{N}]$. They
 are built per vertex from the mesh and its UVs, which is why a mesh carries tangents. In the common convention,
@@ -71,9 +72,9 @@ the tangent, the bitangent and the surface normal with these weights, normalised
 
 ### B. DirectX and OpenGL Layouts
 
-The two common layouts differ in how the green channel is read. In the DirectX layout the first row of the image is at
-the top, so +V runs down the image; in the OpenGL layout it is at the bottom, so +V runs up. A map converts from one
-layout to the other by inverting green [4].
+The two common layouts differ in how the green channel is read. In the DirectX layout V = 0 is at the top row of the
+image, so +V runs down the image; in the OpenGL layout V = 0 is at the bottom row, so +V runs up. Both store the image
+the same way, so a map converts from one layout to the other by inverting green [4].
 
 ### C. Handedness
 
@@ -110,7 +111,8 @@ pointing into the screen.
 ### A. Layout
 
 Elden Ring's normal maps use the DirectX layout (Fig. 1). Red holds the tangent-space normal's x component, towards +U,
-and green its y component, towards +V, with +V running down the image. Blue and alpha hold no part of the normal in
+and green its y component, towards +V, with +V running down the image. The UVs a FLVER stores run the same way, with
+V = 0 at the top row, as the in-game test (IV-C) confirms. Blue and alpha hold no part of the normal in
 the reading used here: it has long been held in the FromSoftware modding community that blue stores gloss and alpha
 other data. This paper did not test what blue or alpha hold. With the red and green values $R$ and $G$ between 0 and
 1:
@@ -159,7 +161,8 @@ $$
 *In words:* the bitangent is the cross product of the normal and the tangent, reversed when W is −1. W is chosen so that
 the bitangent points along +U.
 
-The game reads green along $\vec{T}$ and red along $\vec{B}$, the other way round from (1):
+The roles are swapped from (1): there $\vec{T}$ follows +U and $\vec{B}$ follows +V, while in the game's convention
+$\vec{T}$ follows +V and $\vec{B}$ follows +U. The game reads green along $\vec{T}$ and red along $\vec{B}$:
 
 $$
 \vec{n} = \frac{x\,\vec{B} + y\,\vec{T} + z\,\vec{N}}{\lVert x\,\vec{B} + y\,\vec{T} + z\,\vec{N}\rVert} \tag{7}
@@ -205,14 +208,15 @@ $\vec{N}\times\vec{T}$ before $W$ is applied.
 **Why it matters.** Handedness decides which way $\vec{N}\times\vec{T}$ points as seen in game, and so which value of
 $W$ an island whose texture looks unmirrored needs.
 
-**How the test answers it.** Two properties of one vanilla model, the face part FC_F_0000, each fix the handedness:
+**How the test answers it.** Two properties of one vanilla model, the face part FC_F_0000: its anatomy fixes the
+handedness, and its winding agrees with it.
 
 - **Anatomy:** the character stands along +Y, faces −Z, and has its left side at +X. Seen from in front, x points to
   the right, y up and z into the screen. In the FBX SDK's terms that is a left-handed coordinate system, the same as its
   DirectX preset [2].
 - **Winding:** computed with (2), $(\vec{p}_1-\vec{p}_0)\times(\vec{p}_2-\vec{p}_0)$ points opposite to the stored
-  normal on almost all LOD0 triangles. Front faces therefore run clockwise under right-handed maths, which is
-  anticlockwise as seen in a left-handed space.
+  normal on almost all triangles of LOD0, the most detailed level of detail. With the stored normals pointing outward,
+  front faces therefore run clockwise under right-handed maths, which is anticlockwise as seen in a left-handed space.
 
 **Result.** FLVER space is left-handed, so as seen in game $\vec{N}\times\vec{T}$ follows the left-hand rule. On an
 island whose texture looks unmirrored in game, $\vec{N}\times\vec{T}$ points along −U, and (6) needs $W = -1$. The
@@ -221,8 +225,8 @@ test has limits: one model, LOD0 only, and handedness inferred from anatomy and 
 **Impact on the implementation.** Equation (9), and the import step of Section VI, ER Tangents, through (19), give
 $W = -1$ on unmirrored islands. A Blender scene is carried into this space by swapping its Y and Z axes (Fig. 3(a) and (b)): a −90°
 rotation about X, which brings Blender's up (+Z) to +Y and its forward direction (−Y) to +Z, then Z negated, which
-brings forward to −Z. The swap is a reflection (determinant −1), which changes handedness, so the character stays the
-right way round, with its left side at +X.
+brings forward to −Z. The swap is a reflection (determinant −1): it carries Blender's right-handed space into the
+left-handed FLVER space, and the character keeps its left side at +X.
 
 ![Animated: fixed axes drawn as Blender's Front view shows them, +X right, +Z up and +Y into the scene; a character labelled up, forward and left stands facing the viewer, is rotated −90° about X onto its back, then turned face down as Z is negated; a text names each step and a legend gives the colours](../figures/paper_axis_swap_animated.svg)
 
@@ -265,10 +269,14 @@ $$
 
 *In words:* the partial derivative of red along V (down the image) matches that of green along U (across it).
 
-The two sides were correlated over the more detailed half of the pixels of a map, and tile by tile, in tiles of 256 by
-256 pixels; a tile in which neither channel varies is skipped. The other pairing, red with V and green with U (the
-swapped pairing), was correlated in the same way, and the pairing with the larger correlation wins. A map is untestable
-when a channel does not vary at all or every tile is skipped.
+The two sides were computed by central differences and compared by their Pearson correlation over the more detailed
+half of a map's pixels: those where the sum of the absolute values of the four partial derivatives of red and green is
+above its median. The other pairing, red with V and green with U (the swapped pairing), compares $\partial R/\partial u$
+with $\partial G/\partial v$ in the same way. The pairing whose correlation is larger in absolute value wins, and the
+sign of that correlation tells whether green is inverted relative to red. A map's outcome comes from the whole map. The
+same test also runs tile by tile, in tiles of 256 by 256 pixels, skipping a tile in which the standard deviation of
+both channels is below 0.03 on the scale of (3). A map is untestable when a channel does not vary at all or every tile
+is skipped.
 
 The test ran on 1,437 normal maps, one per file name, from the game's part files as installed for this paper; 50 of them
 are untestable. The test's script and its per-map results are published with this paper [5]; reproducing them needs the
@@ -276,7 +284,7 @@ game's own files, which are not distributed. Per file-name prefix, over the test
 
 <p align="center">TABLE I<br>LAYOUT TEST ON THE GAME'S PART NORMAL MAPS, PER FILE-NAME PREFIX</p>
 
-| Prefix | Maps tested | Untestable | DirectX pairing wins, positive | Median correlation, DirectX | Median correlation, swapped |
+| Prefix | Testable maps | Untestable | DirectX pairing, positive sign | Median correlation, DirectX | Median correlation, swapped |
 |---|---|---|---|---|---|
 | WP (weapons) | 535 | 2 | 98.3% | 0.54 | 0.23 |
 | BD (body) | 247 | 2 | 96.8% | 0.54 | 0.24 |
@@ -292,7 +300,7 @@ game's own files, which are not distributed. Per file-name prefix, over the test
 **Result.** On 1,347 of the 1,387 testable maps (97%), the pairing "red with U, green with V, same sign",
 with V running down, wins with a positive correlation (Fig. 4). That pairing is the DirectX layout. The correlation is
 moderate, not strong: its median is 0.53, against 0.24 for the swapped pairing. On the other 40
-maps the test picks green inverted or the swapped pairing. A sample of four of them, viewed shaded with the light from
+maps the test picks green inverted (32 maps) or the swapped pairing (8 maps). A sample of four of them, viewed shaded with the light from
 the top, looked raised when read in the DirectX layout, so the test likely misreads those maps; the others were not
 investigated. The test has two limits:
 
@@ -315,7 +323,8 @@ start from. The test corroborates the in-game test (IV-C) across the game's maps
 **Why it matters.** The game reads every map through the stored frame, so an importer must write the frame the game's
 models carry.
 
-**How the test answers it.** The frame a mesh implies follows from its positions and UVs alone, by (15) and (16).
+**How the test answers it.** The frame a mesh implies follows from its positions and UVs alone, by (15) and (16) of
+Section VI.
 Comparing it with the stored frame at every triangle corner shows which rule the stored frame follows.
 
 1,515 part models were checked: all those with triangles, tangents and UVs among the game's part files as installed for
@@ -352,7 +361,8 @@ ones. Per file-name prefix, with (9) per UV orientation and pooled over all corn
 | FC | 15 | 1,106,208 | 0.987 to 1.013 | 0.016 | 0.994 | 99.83% | 99.84% |
 
 **Result.** On all 1,515 parts, $W$ is exactly $+1$ or $-1$, and $\vec{T}$ has unit length to within the stored
-precision (0.986 to 1.014). $\vec{T}$ is orthogonal to $\vec{N}$ to within about 2°, and it follows the in-plane +V
+precision (0.986 to 1.014). $\vec{T}$ is orthogonal to $\vec{N}$ to within about 2° on 99% of the corners of every
+part, and it follows the in-plane +V
 direction: the median cosine is at least 0.99 on 76% of parts, and at least 0.95 on all but 2 (the lowest, 0.92, on
 HR_A_0115). Both UV orientations occur on 1,422 parts.
 
@@ -371,9 +381,10 @@ while $\vec{T}$ still follows +V, so (9) fails on their mirrored islands. In the
 known to mark meshes moved by cloth simulation rather than by bones; why they keep $W = -1$ was not investigated, and
 whether the game uses $W$ on them was not tested. Outside cloth materials, 43 meshes fail (9) on more than 5% of their
 corners; they were not investigated. On the weapon WP_A_1253, whose UVs are mostly unmirrored, most vertices carry
-$W = -1$.
+$W = -1$, the value (9) gives on unmirrored islands.
 
-An importer sees the material file each mesh uses (the matxml its material names) rather than its material name. On the
+An importer sees the material file each mesh uses (the game's matxml file, which the mesh's material names) rather than
+its material name. On the
 meshes with corners where $d > 0$, a mesh keeps $W = -1$ when (9) fails on at least 95% of those corners, follows (9)
 when it holds on at least 95%, and is mixed otherwise; it agrees when its material file contains "cloth" and it keeps
 $W = -1$, or its file does not and it follows (9) (Table IV):
@@ -387,18 +398,18 @@ $W = -1$, or its file does not and it follows (9) (Table IV):
 
 The material file and the material name disagree on containing "cloth" on 22 meshes; on 21 of them the material file
 predicts the frame. The 263 meshes that do not agree hold 97,170 of the 16,729,648 corners where $d > 0$. 192 of them
-have fewer than 30 such corners. The 22 mixed meshes without a cloth material file that have 300 or more follow (9) on
-at least 83% of them, and on nearly the same share of the corners where $d < 0$ (a difference of 2 points at the median
-and 12 at most), so they look imprecise rather than like cloth. One large mesh with a cloth material file, on FC_M_0105,
+have fewer than 30 such corners. The 22 mixed meshes without a cloth material file that have 300 or more corners where
+$d > 0$ follow (9) on at least 83% of them. On their corners where $d < 0$ they follow it on nearly the same share (a
+difference of 2 points at the median and 12 at most), so they look imprecise rather than like cloth. One large mesh with a cloth material file, on FC_M_0105,
 follows (9) on all 4,806 of its corners where $d > 0$. The rule was not investigated further.
 
 These measurements fix the stored frame outside cloth meshes: $\vec{T}$ along +V, and $W$ such that
 $W(\vec{N}\times\vec{T})$ points along +U. Which channel the game reads along which direction follows from two other
-results. The integrability test (IV-A) pairs red with U and green with V, and the in-game test (IV-C) confirms the
-layout and the frame together. So green is read along $\vec{T}$ and red along $W(\vec{N}\times\vec{T})$, which is (7).
+results. The integrability test (IV-A) pairs red with U and green with V, and the in-game test (IV-C) fixes the
+overall sign through the stored frame. So green is read along $\vec{T}$ and red along $W(\vec{N}\times\vec{T})$, which is (7).
 
-**Impact on the implementation.** ER Tangents builds $\vec{T}$ along +V and $W$ by (19), which gives the same value as
-(9). On the mirrored islands of cloth meshes, ER Tangents writes $W = +1$ where the game's own models keep $-1$; the
+**Impact on the implementation.** ER Tangents builds $\vec{T}$ along +V and $W$ by (19), which gives the same
+value as (9) wherever the triangles around a vertex agree. On the mirrored islands of cloth meshes, ER Tangents writes $W = +1$ where the game's own models keep $-1$; the
 effect in game was not tested. An optional import step could set $W = -1$ on every tangent of a mesh with a cloth
 material, matching almost all of the game's cloth meshes. Because the name rule has exceptions, the step would be chosen
 for each import rather than applied by the material name, and it is not tested in game.
@@ -419,8 +430,8 @@ DirectX, and DirectX with green inverted. The part's albedo tints the rows, warm
 green-inverted ones.
 
 **Result.** In game (Fig. 5), with the light from above, only the DirectX rows look raised, with their bright side
-towards the light; the green-inverted rows look dented. This confirms the layout, its overall sign and the frame
-together.
+towards the light; the green-inverted rows look dented. The two encodings differ only in green, so this fixes the
+overall sign of green read along $\vec{T}$; with the pairing from IV-A, it confirms the layout and the frame.
 
 ![In game: the cape of BD_M_1730 wearing the test map, lit from above; the warm rows look raised and the cool rows dented](images/ingame_layout_test.webp)
 
@@ -454,16 +465,16 @@ ones.
 ## V. Tangents in the Common Convention
 
 The tangents an FBX file carries, and those the FBX SDK generates for a file without them [2], point along +U, as
-measured in Section IV-D. The importer keeps them as they are. With the frames measured there, the basis vectors the
-game uses become
+measured in Section IV-D. The importer keeps them as they are. Write $\hat{u}$ and $\hat{v}$ for the unit vectors along
++U and +V in the tangent plane, and $\vec{T}'$, $W'$ and $\vec{B}'$ for the tangent, the bitangent sign and the
+bitangent of the frame the importer writes. With the frames measured in IV-D, they are
 
 $$
 \vec{T}' = \hat{u}, \qquad
 \vec{B}' = W'\,(\vec{N}\times\hat{u}) = \begin{cases} -\hat{v} & \text{without a mirror} \\ +\hat{v} & \text{with Z mirrored} \end{cases} \tag{12}
 $$
 
-*In words:* $\hat{u}$ and $\hat{v}$ are the unit vectors along +U and +V in the tangent plane. With tangents along +U,
-green is read along +U, and red along −V (without a mirror) or +V (with Z mirrored) (Fig. 6).
+*In words:* with tangents along +U, green is read along +U, and red along −V (without a mirror) or +V (with Z mirrored) (Fig. 6).
 
 The mirror turns red from −V to +V. Negating z reflects the normal, the tangent and the partial derivatives alike, and
 a reflection reverses every cross product, so $\vec{N}\times\hat{u}$ reverses relative to +V. $W'$ was generated before
@@ -552,7 +563,8 @@ $$
 positive, and −1 when it is negative, so that $W(\vec{N}\times\vec{T})$ always points along +U.
 
 **Fallback.** A vertex with no usable normal, an accumulated +V direction of nearly zero length, or one nearly parallel
-to its normal keeps the tangent the file or the FBX SDK gave it, with W set to +1 or −1 from its sign.
+to its normal keeps the tangent the file or the FBX SDK gave it, with W set to −1 where that tangent's fourth component
+is negative and +1 otherwise.
 
 **Winding.** Swapping vertices 1 and 2 swaps the edges and the UV differences, which reverses the sign of $d$ and of
 both numerators in (16). The directions and $\lVert\vec{e}_1\times\vec{e}_2\rVert$ stay the same, so the result is the
@@ -624,7 +636,8 @@ $$
 R' = 1 - G, \qquad G' = R \tag{20}
 $$
 
-*In words:* without a mirror, the new red is one minus the old green, and the new green is the old red.
+*In words:* without a mirror, the new red is one minus the old green, and the new green is the old red. On 8-bit
+channels, one minus green is 255 minus green.
 
 $$
 R' = G, \qquad G' = R \tag{21}
@@ -669,6 +682,8 @@ Fig. 11. Ways out of Blender, and the tangents each one gives.
   tested.
 - The layout test ran on the game's part normal maps only. Its correlation is moderate, and of the 40 maps on which
   it disagrees, four were viewed.
+- The game version of the files measured in Section IV was not recorded.
+- Mirrored and unmirrored halves without ER Tangents were read back from one test plane.
 - Only Elden Ring was checked; Dark Souls 3, Sekiro, Armored Core 6 and Nightreign were not.
 
 ## X. Conclusion

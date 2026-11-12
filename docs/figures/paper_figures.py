@@ -257,7 +257,7 @@ def figure_layout_test():
     str
     """
     bars = layout_bars(summary(load()["maps"]))
-    body = [text(170, 24, "Share of testable maps", "t h"), text(560, 24, "Maps tested", "t h", "end"),
+    body = [text(170, 24, "Share of testable maps", "t h"), text(560, 24, "Testable maps", "t h", "end"),
             text(670, 24, "Untestable", "t h", "end")]
     for index, (prefix, shares, tested, untestable) in enumerate(bars):
         y = 44 + 26 * index

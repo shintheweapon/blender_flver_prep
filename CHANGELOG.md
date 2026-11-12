@@ -65,6 +65,11 @@
   hold on mirrored islands too. Section V derives why the mirror turns red from -V to +V. The in-game claims match
   what was tested: one plane with ER Tangents, mirror setting not recorded. `tests/test_paper_readers.py` checks the
   new statements against the survey and the formulas.
+- The paper also reads more easily: IV-A names its method (central differences, Pearson correlation, which pixels and
+  tiles count) and splits the 40 maps that disagree (32 green inverted, 8 swapped); Table I and Fig. 4 say "Testable
+  maps"; III-C says the anatomy fixes the handedness and the winding agrees; the in-game layout test is said to fix
+  the sign of green, with IV-A giving the pairing; LOD0, matxml, UV island, the fallback's `W`, `û`, `v̂` and the
+  importer's frame are defined before use; the Limitations add the unrecorded game version and the one test plane.
 
 ## 1.0.0
 
