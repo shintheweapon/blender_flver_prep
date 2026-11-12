@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="380" viewBox="0 0 680 380" role="img">
+<title>原版法线贴图的布局检验</title>
+<desc>横条图，游戏部件法线贴图的每个文件名前缀一条，每条按可检验贴图的比例分段：DirectX 配对（红色对 U、绿色对 V）以正相关胜出、以负相关胜出（绿色反转），或交换配对胜出。以正相关胜出的 DirectX 配对几乎占满每一条。各列给出每个前缀的可检验贴图数和不可检验贴图数。</desc>
+<style>
+.t{fill:#1f2328;font:14px -apple-system,"Segoe UI",Helvetica,Arial,"Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Source Han Sans SC",sans-serif}
+.h{font-weight:600}
+.s{fill:#59636e;font:12px -apple-system,"Segoe UI",Helvetica,Arial,"Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Source Han Sans SC",sans-serif}
+.o{stroke:#59636e}
+.of{fill:#59636e}
+.p{fill:#f6f8fa;stroke:#8c959f}
+.g{stroke:#8c959f}
+@media (prefers-color-scheme: dark){
+.t{fill:#e6edf3}
+.s{fill:#9198a1}
+.o{stroke:#9198a1}
+.of{fill:#9198a1}
+.p{fill:#151b23;stroke:#656c76}
+.g{stroke:#656c76}
+}
+</style>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#E24B4A"/></marker><marker id="ag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#639922"/></marker><marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#378ADD"/></marker><marker id="ao" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="of" d="M1 1L9 5L1 9z"/></marker></defs>
+<text class="t h" x="170" y="24" text-anchor="start">可检验贴图的比例</text>
+<text class="t h" x="560" y="24" text-anchor="end">可检验贴图</text>
+<text class="t h" x="670" y="24" text-anchor="end">不可检验</text>
+<text class="t" x="160" y="57" text-anchor="end">WP（武器）</text>
+<rect x="170.0" y="44" width="295.0" height="18" fill="#639922"/>
+<rect x="465.0" y="44" width="4.5" height="18" fill="#378ADD"/>
+<rect x="469.4" y="44" width="0.6" height="18" fill="#E24B4A"/>
+<text class="t" x="560" y="57" text-anchor="end">535</text>
+<text class="t" x="670" y="57" text-anchor="end">2</text>
+<text class="t" x="160" y="83" text-anchor="end">BD（身体）</text>
+<rect x="170.0" y="70" width="290.3" height="18" fill="#639922"/>
+<rect x="460.3" y="70" width="9.7" height="18" fill="#378ADD"/>
+<text class="t" x="560" y="83" text-anchor="end">247</text>
+<text class="t" x="670" y="83" text-anchor="end">2</text>
+<text class="t" x="160" y="109" text-anchor="end">HD（头部）</text>
+<rect x="170.0" y="96" width="288.1" height="18" fill="#639922"/>
+<rect x="458.1" y="96" width="6.6" height="18" fill="#378ADD"/>
+<rect x="464.7" y="96" width="5.3" height="18" fill="#E24B4A"/>
+<text class="t" x="560" y="109" text-anchor="end">226</text>
+<text class="t" x="670" y="109" text-anchor="end">0</text>
+<text class="t" x="160" y="135" text-anchor="end">LG（腿部）</text>
+<rect x="170.0" y="122" width="296.0" height="18" fill="#639922"/>
+<rect x="466.0" y="122" width="2.0" height="18" fill="#378ADD"/>
+<rect x="468.0" y="122" width="2.0" height="18" fill="#E24B4A"/>
+<text class="t" x="560" y="135" text-anchor="end">151</text>
+<text class="t" x="670" y="135" text-anchor="end">0</text>
+<text class="t" x="160" y="161" text-anchor="end">AM（手臂）</text>
+<rect x="170.0" y="148" width="292.7" height="18" fill="#639922"/>
+<rect x="462.7" y="148" width="7.3" height="18" fill="#378ADD"/>
+<text class="t" x="560" y="161" text-anchor="end">124</text>
+<text class="t" x="670" y="161" text-anchor="end">0</text>
+<text class="t" x="160" y="187" text-anchor="end">FG</text>
+<rect x="170.0" y="174" width="255.3" height="18" fill="#639922"/>
+<rect x="425.3" y="174" width="31.9" height="18" fill="#378ADD"/>
+<rect x="457.2" y="174" width="12.8" height="18" fill="#E24B4A"/>
+<text class="t" x="560" y="187" text-anchor="end">47</text>
+<text class="t" x="670" y="187" text-anchor="end">39</text>
+<text class="t" x="160" y="213" text-anchor="end">AA</text>
+<rect x="170.0" y="200" width="283.3" height="18" fill="#639922"/>
+<rect x="453.3" y="200" width="16.7" height="18" fill="#378ADD"/>
+<text class="t" x="560" y="213" text-anchor="end">36</text>
+<text class="t" x="670" y="213" text-anchor="end">7</text>
+<text class="t" x="160" y="239" text-anchor="end">FC</text>
+<rect x="170.0" y="226" width="300.0" height="18" fill="#639922"/>
+<text class="t" x="560" y="239" text-anchor="end">17</text>
+<text class="t" x="670" y="239" text-anchor="end">0</text>
+<text class="t" x="160" y="265" text-anchor="end">HR</text>
+<rect x="170.0" y="252" width="300.0" height="18" fill="#639922"/>
+<text class="t" x="560" y="265" text-anchor="end">3</text>
+<text class="t" x="670" y="265" text-anchor="end">0</text>
+<text class="t" x="160" y="291" text-anchor="end">HA</text>
+<rect x="170.0" y="278" width="300.0" height="18" fill="#639922"/>
+<text class="t" x="560" y="291" text-anchor="end">1</text>
+<text class="t" x="670" y="291" text-anchor="end">0</text>
+<line x1="170" y1="312" x2="170" y2="318" class="o" stroke-width="1"/>
+<line x1="470" y1="312" x2="470" y2="318" class="o" stroke-width="1"/>
+<text class="s" x="170" y="332" text-anchor="middle">0%</text>
+<text class="s" x="470" y="332" text-anchor="middle">100%</text>
+<rect x="20" y="350" width="14" height="14" fill="#639922"/>
+<text class="s" x="40" y="362" text-anchor="start">DirectX 配对，正相关</text>
+<rect x="200" y="350" width="14" height="14" fill="#378ADD"/>
+<text class="s" x="220" y="362" text-anchor="start">DirectX 配对，负相关（绿色反转）</text>
+<rect x="490" y="350" width="14" height="14" fill="#E24B4A"/>
+<text class="s" x="510" y="362" text-anchor="start">交换配对</text>
+</svg>

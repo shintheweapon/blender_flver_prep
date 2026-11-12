@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="366" viewBox="0 0 680 366" role="img">
+<title>UV 空间中与游戏内的一个三角形</title>
+<desc>算例中的三角形，画了两次。左：UV 空间，U 向右，V 向下：p0 在角上，p1 向右 0.5，p2 向下 0.25。右：游戏内从下方看，x 向右，-z 向上，法线 N 指向屏幕外：边 e1 沿 U 方向的偏导数，e2 沿 V 方向的偏导数，切线 T 沿 +V 向下，N × T 按左手定则指向左方，B = W(N × T)（W = -1）指向右方，沿 +U，与 UV 面板一致。</desc>
+<style>
+.t{fill:#1f2328;font:14px -apple-system,"Segoe UI",Helvetica,Arial,"Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Source Han Sans SC",sans-serif}
+.h{font-weight:600}
+.s{fill:#59636e;font:12px -apple-system,"Segoe UI",Helvetica,Arial,"Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Source Han Sans SC",sans-serif}
+.o{stroke:#59636e}
+.of{fill:#59636e}
+.p{fill:#f6f8fa;stroke:#8c959f}
+.g{stroke:#8c959f}
+@media (prefers-color-scheme: dark){
+.t{fill:#e6edf3}
+.s{fill:#9198a1}
+.o{stroke:#9198a1}
+.of{fill:#9198a1}
+.p{fill:#151b23;stroke:#656c76}
+.g{stroke:#656c76}
+}
+</style>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#E24B4A"/></marker><marker id="ag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#639922"/></marker><marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#378ADD"/></marker><marker id="ao" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="of" d="M1 1L9 5L1 9z"/></marker></defs>
+<polygon class="p" points="110,70 310,70 110,170" stroke-width="1"/>
+<text class="t" x="104" y="64" text-anchor="end">p₀</text>
+<text class="t" x="316" y="64" text-anchor="start">p₁</text>
+<text class="t" x="104" y="184" text-anchor="end">p₂</text>
+<text class="s" x="210" y="62" text-anchor="middle">Δu₁ = 0.5</text>
+<text class="s" x="102" y="124" text-anchor="end">Δv₂ = 0.25</text>
+<line x1="230" y1="190" x2="280" y2="190" class="o" stroke-width="1" marker-end="url(#ao)"/>
+<text class="s" x="286" y="194" text-anchor="start">+U</text>
+<line x1="230" y1="190" x2="230" y2="230" class="o" stroke-width="1" marker-end="url(#ao)"/>
+<text class="s" x="230" y="246" text-anchor="middle">+V</text>
+<text class="t h" x="210" y="276" text-anchor="middle">UV 空间</text>
+<text class="s" x="210" y="294" text-anchor="middle">U 向右，V 向下</text>
+<polygon class="p" points="420,70 620,70 420,170" stroke-width="1"/>
+<text class="t" x="414" y="64" text-anchor="end">p₀</text>
+<text class="t" x="626" y="64" text-anchor="start">p₁</text>
+<text class="t" x="414" y="184" text-anchor="end">p₂</text>
+<text class="s" x="520" y="62" text-anchor="middle">e₁，沿 ∂p/∂u</text>
+<text class="s" x="412" y="124" text-anchor="end">e₂，沿 ∂p/∂v</text>
+<line x1="480" y1="100" x2="480" y2="144" stroke="#639922" stroke-width="2" marker-end="url(#ag)"/>
+<line x1="480" y1="100" x2="524" y2="100" stroke="#E24B4A" stroke-width="2" marker-end="url(#ar)"/>
+<line x1="480" y1="100" x2="444" y2="100" stroke="#E24B4A" stroke-width="1" stroke-dasharray="4 3"/>
+<circle cx="480" cy="100" r="6" fill="none" class="o" stroke-width="1.5"/>
+<circle cx="480" cy="100" r="2" class="of"/>
+<text class="s" x="490" y="92" text-anchor="start">N</text>
+<text class="t h" x="520" y="276" text-anchor="middle">游戏内，从下方看</text>
+<text class="s" x="520" y="294" text-anchor="middle">x 向右，−z 向上，N 指向屏幕外</text>
+<text class="s" x="520" y="310" text-anchor="middle">∂p/∂u = (4, 0, 0), ∂p/∂v = (0, 0, 4)</text>
+<line x1="40" y1="342" x2="64" y2="342" stroke="#639922" stroke-width="2"/>
+<text class="s" x="70" y="346" text-anchor="start">T，沿 +V</text>
+<line x1="180" y1="342" x2="204" y2="342" stroke="#E24B4A" stroke-width="2"/>
+<text class="s" x="210" y="346" text-anchor="start">B = W(N × T)，沿 +U</text>
+<line x1="390" y1="342" x2="414" y2="342" stroke="#E24B4A" stroke-width="1" stroke-dasharray="4 3"/>
+<text class="s" x="420" y="346" text-anchor="start">N × T（左手定则），W = −1</text>
+</svg>

@@ -92,8 +92,11 @@ class TestPaperFigures(unittest.TestCase):
 
     def test_paper_figures_name_no_tool_setting_or_release(self):
         import re
-        paper = {name: content for name, content in make_figures.build_all().items() if name.startswith("paper_")}
-        self.assertEqual(len(paper), 9)
+        figures = make_figures.build_all()
+        paper = {name: content for name, content in figures.items()
+                 if name.startswith("paper_") or name.endswith(".zh.svg")}
+        self.assertEqual(sum(not name.endswith(".zh.svg") for name in paper), 9)
+        self.assertEqual(sum(name.endswith(".zh.svg") for name in paper), 10)
         for name, content in paper.items():
             with self.subTest(name=name):
                 self.assertEqual(re.findall(self.FORBIDDEN, content), [])

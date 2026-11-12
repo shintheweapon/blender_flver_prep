@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="392" viewBox="0 0 680 392" role="img">
+<title>游戏在凸起圆顶周围解码出的切线空间法线</title>
+<desc>动画。三个面板，各含切线坐标系（绿色 T，红色 W(N × T)）和游戏在凸起圆顶周围解码出的切线空间法线。原版切线：法线朝外，圆顶呈凸起。沿 +U 的切线，无镜像导入：坐标系和每条法线逆时针旋转 90°，法线绕圆顶环行。沿 +U 的切线，Z 轴镜像导入：坐标系和每条法线关于 U = V 对角线反射，该对角线上的法线仍朝外（凸起），另一条对角线上的法线转向内（凹陷），U 轴和 V 轴上的法线转向侧面。</desc>
+<style>
+.t{fill:#1f2328;font:14px -apple-system,"Segoe UI",Helvetica,Arial,"Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Source Han Sans SC",sans-serif}
+.h{font-weight:600}
+.s{fill:#59636e;font:12px -apple-system,"Segoe UI",Helvetica,Arial,"Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Source Han Sans SC",sans-serif}
+.o{stroke:#59636e}
+.of{fill:#59636e}
+.p{fill:#f6f8fa;stroke:#8c959f}
+.g{stroke:#8c959f}
+@media (prefers-color-scheme: dark){
+.t{fill:#e6edf3}
+.s{fill:#9198a1}
+.o{stroke:#9198a1}
+.of{fill:#9198a1}
+.p{fill:#151b23;stroke:#656c76}
+.g{stroke:#656c76}
+}
+</style>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#E24B4A"/></marker><marker id="ag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#639922"/></marker><marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#378ADD"/></marker><marker id="ao" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="of" d="M1 1L9 5L1 9z"/></marker></defs>
+<style>
+.spin{transform:rotate(-90deg)}
+.flip{transform:rotate(45deg) scale(1,-1) rotate(-45deg)}
+@media (prefers-reduced-motion: no-preference){
+.spin{animation:spin 5s linear infinite}
+.flip{animation:flip 5s linear infinite}
+}
+@keyframes spin{0%,20%{transform:rotate(0deg)}45%,80%{transform:rotate(-90deg)}100%{transform:rotate(0deg)}}
+@keyframes flip{0%,20%{transform:rotate(45deg) scale(1,1) rotate(-45deg)}45%,80%{transform:rotate(45deg) scale(1,-1) rotate(-45deg)}100%{transform:rotate(45deg) scale(1,1) rotate(-45deg)}}
+</style>
+<g transform="translate(130,40)"><line x1="0" y1="0" x2="0" y2="26" stroke="#639922" stroke-width="2" marker-end="url(#ag)"/><line x1="0" y1="0" x2="26" y2="0" stroke="#E24B4A" stroke-width="2" marker-end="url(#ar)"/></g>
+<text class="s" x="96" y="44" text-anchor="end">坐标系</text>
+<circle cx="130" cy="160" r="40" fill="none" class="o" stroke-width="0.5" stroke-dasharray="3 3"/>
+<g transform="translate(170,160)"><line x1="0" y1="0" x2="18" y2="0" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g>
+<g transform="translate(158.3,188.3)"><line x1="0" y1="0" x2="12.7" y2="12.7" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g>
+<g transform="translate(130,200)"><line x1="0" y1="0" x2="0" y2="18" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g>
+<g transform="translate(101.7,188.3)"><line x1="0" y1="0" x2="-12.7" y2="12.7" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g>
+<g transform="translate(90,160)"><line x1="0" y1="0" x2="-18" y2="0" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g>
+<g transform="translate(101.7,131.7)"><line x1="0" y1="0" x2="-12.7" y2="-12.7" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g>
+<g transform="translate(130,120)"><line x1="0" y1="0" x2="0" y2="-18" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g>
+<g transform="translate(158.3,131.7)"><line x1="0" y1="0" x2="12.7" y2="-12.7" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g>
+<text class="t h" x="130" y="248" text-anchor="middle">原版切线</text>
+<text class="s" x="130" y="268" text-anchor="middle">即游戏原生</text>
+<text class="s" x="130" y="284" text-anchor="middle">模型存储的切线</text>
+<text class="s" x="130" y="306" text-anchor="middle">圆顶呈凸起</text>
+<g transform="translate(350,40)"><g class="spin"><line x1="0" y1="0" x2="0" y2="26" stroke="#639922" stroke-width="2" marker-end="url(#ag)"/><line x1="0" y1="0" x2="26" y2="0" stroke="#E24B4A" stroke-width="2" marker-end="url(#ar)"/></g></g>
+<circle cx="350" cy="160" r="40" fill="none" class="o" stroke-width="0.5" stroke-dasharray="3 3"/>
+<g transform="translate(390,160)"><g class="spin"><line x1="0" y1="0" x2="18" y2="0" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
+<g transform="translate(378.3,188.3)"><g class="spin"><line x1="0" y1="0" x2="12.7" y2="12.7" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
+<g transform="translate(350,200)"><g class="spin"><line x1="0" y1="0" x2="0" y2="18" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
+<g transform="translate(321.7,188.3)"><g class="spin"><line x1="0" y1="0" x2="-12.7" y2="12.7" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
+<g transform="translate(310,160)"><g class="spin"><line x1="0" y1="0" x2="-18" y2="0" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
+<g transform="translate(321.7,131.7)"><g class="spin"><line x1="0" y1="0" x2="-12.7" y2="-12.7" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
+<g transform="translate(350,120)"><g class="spin"><line x1="0" y1="0" x2="0" y2="-18" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
+<g transform="translate(378.3,131.7)"><g class="spin"><line x1="0" y1="0" x2="12.7" y2="-12.7" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
+<text class="t h" x="350" y="248" text-anchor="middle">沿 +U 的切线</text>
+<text class="s" x="350" y="268" text-anchor="middle">导入时</text>
+<text class="s" x="350" y="284" text-anchor="middle">无镜像</text>
+<text class="s" x="350" y="306" text-anchor="middle">逆时针旋转 90°</text>
+<g transform="translate(570,40)"><g class="flip"><line x1="0" y1="0" x2="0" y2="26" stroke="#639922" stroke-width="2" marker-end="url(#ag)"/><line x1="0" y1="0" x2="26" y2="0" stroke="#E24B4A" stroke-width="2" marker-end="url(#ar)"/></g></g>
+<circle cx="570" cy="160" r="40" fill="none" class="o" stroke-width="0.5" stroke-dasharray="3 3"/>
+<line x1="525" y1="115" x2="615" y2="205" class="o" stroke-width="0.5" stroke-dasharray="2 4"/>
+<g transform="translate(610,160)"><g class="flip"><line x1="0" y1="0" x2="18" y2="0" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
+<g transform="translate(598.3,188.3)"><g class="flip"><line x1="0" y1="0" x2="12.7" y2="12.7" stroke="#E24B4A" stroke-width="1.5" marker-end="url(#ar)"/></g></g>
+<g transform="translate(570,200)"><g class="flip"><line x1="0" y1="0" x2="0" y2="18" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
+<g transform="translate(541.7,188.3)"><g class="flip"><line x1="0" y1="0" x2="-12.7" y2="12.7" stroke="#378ADD" stroke-width="1.5" marker-end="url(#ab)"/></g></g>
+<g transform="translate(530,160)"><g class="flip"><line x1="0" y1="0" x2="-18" y2="0" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
+<g transform="translate(541.7,131.7)"><g class="flip"><line x1="0" y1="0" x2="-12.7" y2="-12.7" stroke="#E24B4A" stroke-width="1.5" marker-end="url(#ar)"/></g></g>
+<g transform="translate(570,120)"><g class="flip"><line x1="0" y1="0" x2="0" y2="-18" class="o" stroke-width="1.5" marker-end="url(#ao)"/></g></g>
+<g transform="translate(598.3,131.7)"><g class="flip"><line x1="0" y1="0" x2="12.7" y2="-12.7" stroke="#378ADD" stroke-width="1.5" marker-end="url(#ab)"/></g></g>
+<text class="t h" x="570" y="248" text-anchor="middle">沿 +U 的切线</text>
+<text class="s" x="570" y="268" text-anchor="middle">导入时</text>
+<text class="s" x="570" y="284" text-anchor="middle">Z 轴镜像</text>
+<text class="s" x="570" y="306" text-anchor="middle">关于 U = V 反射</text>
+<line x1="40" y1="338" x2="64" y2="338" stroke="#639922" stroke-width="2"/>
+<text class="s" x="70" y="342" text-anchor="start">T：游戏沿此方向读取绿色</text>
+<line x1="300" y1="338" x2="324" y2="338" stroke="#E24B4A" stroke-width="2"/>
+<text class="s" x="330" y="342" text-anchor="start">W(N × T)：游戏沿此方向读取红色</text>
+<line x1="40" y1="364" x2="64" y2="364" class="o" stroke-width="2" marker-end="url(#ao)"/>
+<text class="s" x="70" y="368" text-anchor="start">解码出的法线 (x, y)</text>
+<line x1="300" y1="364" x2="324" y2="364" stroke="#E24B4A" stroke-width="2" marker-end="url(#ar)"/>
+<text class="s" x="330" y="368" text-anchor="start">对角线上：仍朝外（凸起）</text>
+<line x1="540" y1="364" x2="564" y2="364" stroke="#378ADD" stroke-width="2" marker-end="url(#ab)"/>
+<text class="s" x="570" y="368" text-anchor="start">转向内（凹陷）</text>
+</svg>
