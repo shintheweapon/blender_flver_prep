@@ -83,6 +83,9 @@
   the frame follows the mesh after the Transform, names the settings the fork's unit tests cover (None, Mirror Z,
   Blender/3ds Max, Maya; not Mirror X, Mirror Y or Custom) and the imports that were checked (None and Mirror Z, a
   file without tangents), and its in-game check says the ticked plane "looks alike" on both halves.
+- A video of the paper is being prepared in `docs/video/`: the English narration (`docs/video/script.en.md`, 16
+  scenes of numbered segments, about 17 minutes, ending on the paper's references) and `docs/video/script.py`, which
+  reads it and exports one text file per segment for a speech tool. Audio and renders are git-ignored.
 
 ## 1.0.0
 
