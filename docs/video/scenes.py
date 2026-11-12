@@ -32,6 +32,8 @@ html, body {{ margin: 0; width: {width}px; height: {height}px; overflow: hidden;
   align-items: center; justify-content: center; }}
 .fit {{ transform-origin: center center; }}
 .title {{ font-size: 84px; font-weight: 600; }}
+.stack {{ display: flex; flex-direction: column; align-items: center; gap: 24px; }}
+.stack svg {{ display: block; }}
 .equation {{ font-size: 64px; display: flex; align-items: center; gap: 1.2em; }}
 .equation .number {{ font-family: KaTeX_Main, serif; color: #9198a1; }}
 .caption {{ text-align: center; font-size: 26px; letter-spacing: 0.04em; margin-bottom: 22px; }}
@@ -209,8 +211,13 @@ def content(visual, paper, lang="en"):
     if kind == "title":
         return f'<div class="title">{html.escape(name)}</div>', False, 1.0
     if kind == "figure":
-        with open(os.path.join(script.FIGURES_DIR, name), encoding="utf-8") as file:
-            return figure_text(file.read(), lang), False, 2.4
+        parts = []
+        for part in script.figure_files(name):
+            with open(os.path.join(script.FIGURES_DIR, part), encoding="utf-8") as file:
+                parts.append(figure_text(file.read(), lang))
+        if len(parts) == 1:
+            return parts[0], False, 2.4
+        return '<div class="stack">' + "".join(f"<div>{p}</div>" for p in parts) + "</div>", False, 2.4
     if kind == "screenshot":
         uri = "file:///" + os.path.join(script.IMAGES_DIR, name).replace("\\", "/")
         return f'<img class="shot" src="{html.escape(uri, quote=True)}">', False, 2.0
@@ -261,6 +268,9 @@ def moves(visual):
     kind, name = visual
     if kind != "figure":
         return False
-    with open(os.path.join(script.FIGURES_DIR, name), encoding="utf-8") as file:
-        svg = file.read()
-    return "<animate" in svg or "@keyframes" in svg
+    for part in script.figure_files(name):
+        with open(os.path.join(script.FIGURES_DIR, part), encoding="utf-8") as file:
+            svg = file.read()
+        if "<animate" in svg or "@keyframes" in svg:
+            return True
+    return False

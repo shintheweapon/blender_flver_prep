@@ -3,8 +3,9 @@
 <!--
 Format, read by docs/video/script.py:
 - "## S01 Title" starts a scene.
-- "Visual: <kind> <name>" gives the scene's first visual. Kinds: title, figure (an SVG in docs/figures/),
-  equation (a displayed equation of the paper, by number), table (a table of the paper, by Roman numeral),
+- "Visual: <kind> <name>" gives the scene's first visual. Kinds: title, figure (an SVG in docs/figures/; several
+  joined by " + " are stacked top to bottom), equation (a displayed equation of the paper, by number), table (a table
+  of the paper, by Roman numeral),
   screenshot (an image in docs/paper/images/), references (the paper's reference list; such a scene has no segments
   and is held silent for 10 seconds at the end).
 - "**S01-02**" starts a segment: one narration file. Its text runs to the next segment or scene.
@@ -96,7 +97,7 @@ Blender's up to plus Y, then Z negated, which brings the character's forward dir
 reflection, which carries the right-handed space into the left-handed one.
 
 **S04-06**
-{show: figure paper_axis_swap.svg}
+{show: figure paper_axis_swap_animated.svg + paper_axis_swap.svg}
 The animation steps through that swap in fixed axes. The three panels below show each stage seen from in front.
 
 ## S05 The integrability test

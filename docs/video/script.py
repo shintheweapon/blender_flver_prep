@@ -160,6 +160,22 @@ def segments(scenes):
     return [segment for scene in scenes for segment in scene.segments]
 
 
+def figure_files(name):
+    """
+    The SVG files of a figure visual: one, or several joined by `` + `` to be stacked
+    top to bottom in one frame.
+
+    Parameters
+    ----------
+    name : str
+
+    Returns
+    -------
+    list of str
+    """
+    return [part.strip() for part in name.split(" + ")]
+
+
 def visual_exists(kind, name, paper_text):
     """
     Whether a visual named in the script can be found.
@@ -169,8 +185,9 @@ def visual_exists(kind, name, paper_text):
     kind : str
         One of ``KINDS``.
     name : str
-        A file name for figures and screenshots, an equation number, a table
-        numeral, or the text of a title card.
+        A file name for figures and screenshots (figures joined by `` + `` are
+        stacked in one frame), an equation number, a table numeral, or the text
+        of a title card.
     paper_text : str
         The paper, to look up equations and tables.
 
@@ -181,7 +198,7 @@ def visual_exists(kind, name, paper_text):
     if kind == "title":
         return bool(name.strip())
     if kind == "figure":
-        return os.path.isfile(os.path.join(FIGURES_DIR, name))
+        return all(os.path.isfile(os.path.join(FIGURES_DIR, part)) for part in figure_files(name))
     if kind == "screenshot":
         return os.path.isfile(os.path.join(IMAGES_DIR, name))
     if kind == "equation":

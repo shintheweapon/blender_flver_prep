@@ -91,7 +91,8 @@
   headless Chrome, and joins them with ffmpeg into an MP4 with burned-in subtitles and an SRT file. The video ends on
   the paper's references, held for 10 seconds without narration. The video is dark, with Chrome set to dark mode
   so the figures always use their dark colours; subtitles are 20% larger on an opaque box; scene headings are larger;
-  and `--until SECONDS` renders only the start of the video.
+  and `--until SECONDS` renders only the start of the video. Where the narration speaks of "the three panels below",
+  the video shows Fig. 3(b)'s panels under the animation, as in the paper.
 
 ## 1.0.0
 

@@ -274,6 +274,31 @@ class TestLook(unittest.TestCase):
         self.assertLessEqual(scenes.STAGE_TOP + scenes.STAGE_HEIGHT, make_video.SUBTITLE_TOP)
 
 
+class TestStackedFigures(unittest.TestCase):
+    """Figures joined by " + " are drawn top to bottom in one frame, as Fig. 3(a) over Fig. 3(b)."""
+
+    STACK = "paper_axis_swap_animated.svg + paper_axis_swap.svg"
+
+    def test_a_stack_exists_when_every_file_does(self):
+        self.assertEqual(script.figure_files(self.STACK), ["paper_axis_swap_animated.svg", "paper_axis_swap.svg"])
+        self.assertTrue(script.visual_exists("figure", self.STACK, ""))
+        self.assertFalse(script.visual_exists("figure", "paper_axis_swap.svg + missing.svg", ""))
+
+    def test_the_stack_holds_both_figures_in_order(self):
+        body = scenes.content(("figure", self.STACK), scenes.paper_text())[0]
+        self.assertTrue(body.startswith('<div class="stack">'))
+        self.assertEqual(body.count("<svg"), 2)
+        self.assertLess(body.index("<animate"), body.index("<svg", body.index("<svg") + 1))
+
+    def test_a_stack_with_an_animated_figure_moves(self):
+        self.assertTrue(scenes.moves(("figure", self.STACK)))
+
+    def test_s04_06_shows_the_panels_below_the_animation(self):
+        [segment] = [s for s in script.segments(script.load("en")) if s.ident == "S04-06"]
+        self.assertEqual(segment.show, ("figure", self.STACK))
+        self.assertIn("The three panels below", segment.text)
+
+
 class TestPartialRender(unittest.TestCase):
     """A render of the first seconds keeps only what starts before them, cut to fit."""
 
