@@ -24,8 +24,11 @@ import timeline
 
 FULL = (1920, 1080, 30)
 DRAFT = (960, 540, 15)
-SUBTITLE_STYLE = ("FontName=Segoe UI,FontSize=11,PrimaryColour=&H00FFFFFF,BorderStyle=3,Outline=1,"
-                  "OutlineColour=&H90000000,Shadow=0,MarginV=14")
+# An opaque box per line (BorderStyle 3, alpha 00): where a subtitle's line boxes overlap, an opaque box keeps one
+# shade, while a see-through one doubles its shade there
+SUBTITLE_STYLE = ("FontName=Segoe UI,FontSize=13.2,PrimaryColour=&H00FFFFFF,BorderStyle=3,Outline=1,"
+                  "OutlineColour=&H00221B16,Shadow=0,MarginV=14")
+SUBTITLE_TOP = 924
 
 
 def ffmpeg(*args, cwd=None):
@@ -56,6 +59,32 @@ def frame_counts(spans, fps):
     list of int
     """
     return [round(span.end * fps) - round(span.start * fps) for span in spans]
+
+
+def until_spans(spans, cues, until):
+    """
+    The spans and cues of the video's first ``until`` seconds, for a cheap partial render.
+
+    Spans that start at or after ``until`` are dropped and the last one kept is cut
+    to end at ``until``; cues are kept when they start before ``until``, cut likewise.
+
+    Parameters
+    ----------
+    spans : list of timeline.Span
+    cues : list of timeline.Cue
+    until : float or None
+        Seconds; None keeps everything.
+
+    Returns
+    -------
+    tuple
+        ``(spans, cues, total)``.
+    """
+    if until is None:
+        return spans, cues, spans[-1].end
+    kept = [timeline.Span(s.scene, s.visual, s.start, min(s.end, until)) for s in spans if s.start < until]
+    shown = [timeline.Cue(c.ident, c.scene, c.text, c.start, min(c.end, until)) for c in cues if c.start < until]
+    return kept, shown, kept[-1].end
 
 
 def encode(source_args, frames, size, fps, path):
@@ -115,7 +144,7 @@ def narration_track(cues, files, total, path):
         os.remove(file.name)
 
 
-def main(lang="en", draft=False):
+def main(lang="en", draft=False, until=None):
     """
     Render the video of a language.
 
@@ -124,6 +153,8 @@ def main(lang="en", draft=False):
     lang : str
     draft : bool
         A quick, smaller render.
+    until : float or None
+        Render only the first ``until`` seconds.
 
     Returns
     -------
@@ -142,12 +173,13 @@ def main(lang="en", draft=False):
               + (f" ({', '.join(missing[:5])}{', ...' if len(missing) > 5 else ''})" if files else ""))
         durations = {ident: durations.get(ident, estimated[ident]) for ident in estimated}
     cues, spans, total = timeline.build(all_scenes, durations)
+    spans, cues, total = until_spans(spans, cues, until)
 
     out = os.path.join(script.OUT_DIR)
     cache, pages = os.path.join(out, "cache"), os.path.join(out, "pages")
     os.makedirs(cache, exist_ok=True)
     os.makedirs(pages, exist_ok=True)
-    name = f"normal_maps.{lang}{'.draft' if draft else ''}"
+    name = f"normal_maps.{lang}{'.draft' if draft else ''}{f'.until{until:g}' if until else ''}"
     with open(os.path.join(out, f"{name}.srt"), "w", encoding="utf-8", newline="\n") as file:
         file.write(subtitles.srt(cues))
 
@@ -195,5 +227,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("lang", nargs="?", default="en")
     parser.add_argument("--draft", action="store_true", help="960 by 540 at 15 frames a second")
+    parser.add_argument("--until", type=float, help="render only the first SECONDS", metavar="SECONDS")
     options = parser.parse_args()
-    main(options.lang, options.draft)
+    main(options.lang, options.draft, options.until)

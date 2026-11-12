@@ -89,7 +89,9 @@
 - The video's renderer, `docs/video/make_video.py`: it times the narration from the audio files (or from the word
   count before they exist), captures the paper's figures, equations, tables, screenshots and references with
   headless Chrome, and joins them with ffmpeg into an MP4 with burned-in subtitles and an SRT file. The video ends on
-  the paper's references, held for 10 seconds without narration.
+  the paper's references, held for 10 seconds without narration. The video is dark, with Chrome set to dark mode
+  so the figures always use their dark colours; subtitles are 20% larger on an opaque box; scene headings are larger;
+  and `--until SECONDS` renders only the start of the video.
 
 ## 1.0.0
 

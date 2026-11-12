@@ -72,6 +72,8 @@ class Chrome:
         self.call("Page.enable")
         self.call("Emulation.setDeviceMetricsOverride", width=width, height=height, deviceScaleFactor=1,
                   mobile=False)
+        # the pages are dark, so the figures must use their dark colours, whatever the system's setting
+        self.call("Emulation.setEmulatedMedia", features=[{"name": "prefers-color-scheme", "value": "dark"}])
 
     def call(self, method, **params):
         """

@@ -14,7 +14,9 @@ import re
 import script
 
 WIDTH, HEIGHT = 1920, 1080
-STAGE_HEIGHT = 880
+STAGE_TOP = 100
+STAGE_HEIGHT = 810
+BACKGROUND = "#0d1117"
 FONT = '"Segoe UI", -apple-system, Helvetica, Arial, sans-serif'
 KATEX = "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/"
 
@@ -22,24 +24,25 @@ PAGE = """<!doctype html>
 <html><head><meta charset="utf-8">
 {head}
 <style>
-html, body {{ margin: 0; width: {width}px; height: {height}px; overflow: hidden; background: #ffffff;
-  font-family: {font}; color: #1f2328; }}
-.heading {{ position: absolute; left: 64px; top: 34px; font-size: 30px; color: #59636e; }}
-.stage {{ position: absolute; left: 0; top: 60px; width: {width}px; height: {stage}px; display: flex;
+:root {{ color-scheme: dark; }}
+html, body {{ margin: 0; width: {width}px; height: {height}px; overflow: hidden; background: {background};
+  font-family: {font}; color: #e6edf3; }}
+.heading {{ position: absolute; left: 64px; top: 28px; font-size: 44px; color: #9198a1; }}
+.stage {{ position: absolute; left: 0; top: {stage_top}px; width: {width}px; height: {stage}px; display: flex;
   align-items: center; justify-content: center; }}
 .fit {{ transform-origin: center center; }}
 .title {{ font-size: 84px; font-weight: 600; }}
 .equation {{ font-size: 64px; display: flex; align-items: center; gap: 1.2em; }}
-.equation .number {{ font-family: KaTeX_Main, serif; color: #59636e; }}
+.equation .number {{ font-family: KaTeX_Main, serif; color: #9198a1; }}
 .caption {{ text-align: center; font-size: 26px; letter-spacing: 0.04em; margin-bottom: 22px; }}
 table {{ border-collapse: collapse; font-size: 26px; }}
-th, td {{ border-bottom: 1px solid #d0d7de; padding: 10px 18px; text-align: left; }}
+th, td {{ border-bottom: 1px solid #30363d; padding: 10px 18px; text-align: left; }}
 th {{ font-weight: 600; }}
 img.shot {{ max-width: 1760px; max-height: {stage}px; }}
 .references {{ width: 1760px; column-count: 2; column-gap: 72px; font-size: 22px; line-height: 1.4; }}
 .references p {{ margin: 0 0 14px 0; break-inside: avoid; }}
 .references h2 {{ column-span: all; font-size: 40px; font-weight: 600; margin: 0 0 24px 0; }}
-code {{ font-family: Consolas, monospace; font-size: 0.92em; }}
+code {{ font-family: Consolas, monospace; font-size: 0.92em; color: #e6edf3; }}
 </style></head>
 <body>{heading}<div class="stage"><div class="fit">{content}</div></div>
 <script>
@@ -246,8 +249,8 @@ def page(scene, visual, paper, lang="en"):
     body, needs_katex, max_up = content(visual, paper, lang)
     heading = "" if visual[0] in ("title", "references") else f'<div class="heading">{html.escape(scene.title)}</div>'
     return PAGE.format(head=KATEX_HEAD if needs_katex else "", width=WIDTH, height=HEIGHT, font=FONT,
-                       stage=STAGE_HEIGHT, heading=heading, content=body, max_up=max_up,
-                       prepare=KATEX_RENDER if needs_katex else "")
+                       stage=STAGE_HEIGHT, stage_top=STAGE_TOP, background=BACKGROUND, heading=heading,
+                       content=body, max_up=max_up, prepare=KATEX_RENDER if needs_katex else "")
 
 
 def moves(visual):

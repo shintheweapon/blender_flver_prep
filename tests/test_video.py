@@ -11,6 +11,7 @@ VIDEO_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file_
 if VIDEO_DIR not in sys.path:
     sys.path.insert(0, VIDEO_DIR)
 
+import make_video  # noqa: E402
 import scenes  # noqa: E402
 import script  # noqa: E402
 import subtitles  # noqa: E402
@@ -244,6 +245,54 @@ class TestScenes(unittest.TestCase):
         self.assertTrue(scenes.moves(("figure", "paper_dome_tilts.svg")))
         self.assertFalse(scenes.moves(("figure", "paper_axis_swap.svg")))
         self.assertFalse(scenes.moves(("equation", "1")))
+
+
+class TestLook(unittest.TestCase):
+    """Dark pages, subtitles in an opaque box, and a stage clear of the subtitles."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.paper = scenes.paper_text()
+        found = script.load("en")
+        cls.spans = timeline.build(found, timeline.estimated_durations(found))[1]
+
+    def test_every_page_is_dark(self):
+        for span in self.spans:
+            with self.subTest(scene=span.scene.ident, visual=span.visual):
+                page = scenes.page(span.scene, span.visual, self.paper)
+                self.assertIn("color-scheme: dark", page)
+                self.assertIn(f"background: {scenes.BACKGROUND};", page)
+                self.assertNotRegex(page.lower(), r"background:\s*#fff")
+
+    def test_subtitles_are_larger_in_an_opaque_box(self):
+        style = dict(item.split("=", 1) for item in make_video.SUBTITLE_STYLE.split(","))
+        self.assertEqual(style["FontSize"], "13.2")
+        self.assertEqual(style["BorderStyle"], "3")
+        self.assertTrue(style["OutlineColour"].startswith("&H00"), "the box must be opaque")
+
+    def test_the_stage_ends_above_the_subtitles(self):
+        self.assertLessEqual(scenes.STAGE_TOP + scenes.STAGE_HEIGHT, make_video.SUBTITLE_TOP)
+
+
+class TestPartialRender(unittest.TestCase):
+    """A render of the first seconds keeps only what starts before them, cut to fit."""
+
+    @classmethod
+    def setUpClass(cls):
+        found = script.load("en")
+        cls.cues, cls.spans, cls.total = timeline.build(found, timeline.estimated_durations(found))
+
+    def test_nothing_is_cut_without_a_limit(self):
+        spans, cues, total = make_video.until_spans(self.spans, self.cues, None)
+        self.assertEqual((len(spans), len(cues), total), (len(self.spans), len(self.cues), self.total))
+
+    def test_spans_and_cues_end_at_the_limit(self):
+        spans, cues, total = make_video.until_spans(self.spans, self.cues, 120)
+        self.assertEqual(total, 120)
+        self.assertEqual(spans[-1].end, 120)
+        self.assertTrue(all(s.start < 120 for s in spans) and all(c.end <= 120 for c in cues))
+        self.assertEqual(len(spans), sum(s.start < 120 for s in self.spans))
+        self.assertEqual(sum(make_video.frame_counts(spans, 30)), 120 * 30)
 
 
 if __name__ == "__main__":
