@@ -59,6 +59,26 @@
   its figures call the facing direction "forward", as Blender's FBX settings do.
 - The paper's references write dates day first, in UK order (for example "Accessed: 11 Nov. 2026").
 - The guide mentions the fork's Cloth W check box for cloth materials.
+- After a reading by readers new to it, the paper defines the importer's mirror setting and the sign of `d` (with the
+  game's winding, `d` > 0 on mirrored islands; the worked example winds the other way), and reports both halves of
+  the test plane in IV-D: in each import they are read alike, so the rotation, the reflection and the channel changes
+  hold on mirrored islands too. Section V derives why the mirror turns red from -V to +V. The in-game claims match
+  what was tested: one plane with ER Tangents, mirror setting not recorded. `tests/test_paper_readers.py` checks the
+  new statements against the survey and the formulas.
+- The paper also reads more easily: IV-A names its method (central differences, Pearson correlation, which pixels and
+  tiles count) and splits the 40 maps that disagree (32 green inverted, 8 swapped); Table I and Fig. 4 say "Testable
+  maps"; III-C says the anatomy fixes the handedness and the winding agrees; the in-game layout test is said to fix
+  the sign of green, with IV-A giving the pairing; LOD0, matxml, UV island, the fallback's `W`, `û`, `v̂` and the
+  importer's frame are defined before use; the Limitations add the unrecorded game version and the one test plane.
+- The description of the dome figure (the guide's, and Fig. 7 in the paper) now says what the reflection about U = V
+  does: normals on that diagonal stay outward, those on the other diagonal turn inward, and those along U and V turn
+  sideways; the paper's sentence citing Fig. 7 says the same. The paper also states the identity behind the sign of
+  `d`, explains why `W` per half swaps with the Z mirror, gives the reason the stored UVs have V = 0 at the top,
+  limits Section V's measured claim to the FBX SDK's tangents and Section VII's mirrored islands to that route, says
+  the IV-A tiles only decide whether a map is testable (threshold on values from 0 to 1), names Fig. 4's three
+  outcomes, and says the in-game plane "looks alike" on both halves. It also names each IV-D half by its state after
+  the import, writes out why `d` < 0 on unmirrored islands with the game's winding, and names the dome's diagonals
+  (raised on U = V, dented on U = -V).
 
 ## 1.0.0
 

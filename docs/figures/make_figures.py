@@ -145,8 +145,8 @@ GUIDE_LABELS = Labels(
     dome_desc=("Animated. Three panels, each with the frame (green T, red W(N x T)) and the surface tilts the game "
                "decodes around a raised dome. Vanilla tangents: the tilts point outward and the dome reads raised. "
                "{no_mirror}: the frame and every tilt turn a quarter, so the tilts run round the dome. {z_mirror}: "
-               "the frame and every tilt flip across the U = V diagonal, so the tilts on the diagonal stay outward "
-               "(raised) and the others turn inward (dented)."),
+               "the frame and every tilt flip across the U = V diagonal, so the tilts on that diagonal stay outward "
+               "(raised), those on the other diagonal turn inward (dented) and those along U and V turn sideways."),
     blue_note="Neither is part of the normal",
     blue="Blue holds gloss and alpha other data.",
 )
@@ -170,7 +170,8 @@ PAPER_LABELS = Labels(
                "the game decodes around a raised dome. Vanilla tangents: the normals point outward and the dome "
                "reads raised. {no_mirror}: the frame and every normal rotate by 90° anticlockwise, so the normals run "
                "round the dome. {z_mirror}: the frame and every normal are reflected about the U = V diagonal, so the normals "
-               "on the diagonal stay outward (raised) and the others turn inward (dented)."),
+               "on that diagonal stay outward (raised), those on the other diagonal turn inward (dented) and those "
+               "on the U and V axes turn sideways."),
     blue_note="As held by modders; not tested here",
     blue="Blue is held to store gloss and alpha other data; this was not tested.",
 )

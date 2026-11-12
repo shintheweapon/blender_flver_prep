@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="680" height="380" viewBox="0 0 680 380" role="img">
 <title>The layout test on vanilla normal maps</title>
-<desc>Horizontal bars, one per file-name prefix of the game's part normal maps, each split into the share of its testable maps on which the DirectX pairing (red with U, green with V) wins with a positive correlation, with a negative one (green inverted), or the swapped pairing wins. The DirectX pairing with a positive correlation fills almost every bar. Columns give the maps tested and the untestable maps per prefix.</desc>
+<desc>Horizontal bars, one per file-name prefix of the game's part normal maps, each split into the share of its testable maps on which the DirectX pairing (red with U, green with V) wins with a positive correlation, with a negative one (green inverted), or the swapped pairing wins. The DirectX pairing with a positive correlation fills almost every bar. Columns give the testable maps and the untestable maps per prefix.</desc>
 <style>
 .t{fill:#1f2328;font:14px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
 .h{font-weight:600}
@@ -20,7 +20,7 @@
 </style>
 <defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#E24B4A"/></marker><marker id="ag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#639922"/></marker><marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#378ADD"/></marker><marker id="ao" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="of" d="M1 1L9 5L1 9z"/></marker></defs>
 <text class="t h" x="170" y="24" text-anchor="start">Share of testable maps</text>
-<text class="t h" x="560" y="24" text-anchor="end">Maps tested</text>
+<text class="t h" x="560" y="24" text-anchor="end">Testable maps</text>
 <text class="t h" x="670" y="24" text-anchor="end">Untestable</text>
 <text class="t" x="160" y="57" text-anchor="end">WP (weapons)</text>
 <rect x="170.0" y="44" width="295.0" height="18" fill="#639922"/>
