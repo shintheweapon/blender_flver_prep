@@ -733,7 +733,7 @@ Accessed: 11 Nov. 2026.
 
 [5] shintheweapon, "blender_flver_prep," GitHub repository, branch develop: `docs/figures/` (the scripts
 and results of Sections IV-A and IV-B) and `docs/paper/README.md` (how to reproduce them). [Online].
-Available: https://github.com/shintheweapon/blender_flver_prep/tree/develop. Accessed: 11 Nov. 2026.
+Available: https://github.com/shintheweapon/blender_flver_prep/tree/develop. Accessed: 12 Nov. 2026.
 
 [6] shintheweapon, "FbxImporter," fork, branch develop; and "Add an ER Tangents import option," pull request #10.
 [Online]. Available: https://github.com/shintheweapon/FbxImporter/tree/develop and
