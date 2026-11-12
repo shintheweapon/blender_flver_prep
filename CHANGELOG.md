@@ -86,6 +86,10 @@
 - A video of the paper is being prepared in `docs/video/`: the English narration (`docs/video/script.en.md`, 16
   scenes of numbered segments, about 17 minutes, ending on the paper's references) and `docs/video/script.py`, which
   reads it and exports one text file per segment for a speech tool. Audio and renders are git-ignored.
+- The video's renderer, `docs/video/make_video.py`: it times the narration from the audio files (or from the word
+  count before they exist), captures the paper's figures, equations, tables, screenshots and references with
+  headless Chrome, and joins them with ffmpeg into an MP4 with burned-in subtitles and an SRT file. The video ends on
+  the paper's references, held for 10 seconds without narration.
 
 ## 1.0.0
 

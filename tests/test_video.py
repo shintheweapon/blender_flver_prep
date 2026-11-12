@@ -11,7 +11,10 @@ VIDEO_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file_
 if VIDEO_DIR not in sys.path:
     sys.path.insert(0, VIDEO_DIR)
 
+import scenes  # noqa: E402
 import script  # noqa: E402
+import subtitles  # noqa: E402
+import timeline  # noqa: E402
 
 
 def paper_text():
@@ -109,6 +112,138 @@ class TestEnglishScript(unittest.TestCase):
                        "was not recorded", "likely misreads"):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, text)
+
+
+class TestTimeline(unittest.TestCase):
+    """The narration and the visuals are laid out end to end, ending on the silent references."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.scenes = script.load("en")
+        cls.cues, cls.spans, cls.total = timeline.build(cls.scenes, timeline.estimated_durations(cls.scenes))
+
+    def test_every_segment_has_one_cue_in_order(self):
+        self.assertEqual([c.ident for c in self.cues], [s.ident for s in script.segments(self.scenes)])
+        for before, after in zip(self.cues, self.cues[1:]):
+            self.assertGreater(after.start, before.end)
+
+    def test_spans_join_without_gaps_from_zero_to_the_end(self):
+        self.assertEqual(self.spans[0].start, 0.0)
+        for before, after in zip(self.spans, self.spans[1:]):
+            self.assertEqual(before.end, after.start)
+        self.assertEqual(self.spans[-1].end, self.total)
+
+    def test_every_cue_falls_within_its_scene_spans(self):
+        for cue in self.cues:
+            own = [s for s in self.spans if s.scene.ident == cue.scene]
+            self.assertGreaterEqual(cue.start, own[0].start)
+            self.assertLessEqual(cue.end, own[-1].end)
+
+    def test_the_video_ends_with_a_silent_references_hold(self):
+        last = self.spans[-1]
+        self.assertEqual(last.visual[0], "references")
+        self.assertAlmostEqual(last.duration, script.REFERENCES_HOLD)
+        self.assertLessEqual(self.cues[-1].end, last.start)
+
+    def test_a_show_cue_switches_the_visual_at_its_segment(self):
+        shown = {s.ident: s.show for s in script.segments(self.scenes) if s.show}
+        starts = {c.ident: c.start for c in self.cues}
+        for ident, visual in shown.items():
+            with self.subTest(segment=ident):
+                [span] = [s for s in self.spans if s.start == starts[ident]]
+                self.assertEqual(span.visual, visual)
+
+    def test_estimated_durations_follow_the_word_count(self):
+        segment = script.segments(self.scenes)[0]
+        self.assertAlmostEqual(timeline.estimated_durations(self.scenes)[segment.ident],
+                               60 * segment.words() / script.WORDS_PER_MINUTE)
+
+
+class TestSubtitles(unittest.TestCase):
+    """The SRT is well formed, its lines fit, and nothing is shown during the silent hold."""
+
+    @classmethod
+    def setUpClass(cls):
+        found = script.load("en")
+        cls.cues, cls.spans, _ = timeline.build(found, timeline.estimated_durations(found))
+        cls.entries = subtitles.entries(cls.cues)
+
+    def test_wrap_keeps_lines_within_the_width(self):
+        self.assertEqual(subtitles.wrap("one two three four", 9), ["one two", "three", "four"])
+        self.assertEqual(subtitles.wrap("averyveryverylongword x", 5), ["averyveryverylongword", "x"])
+
+    def test_lines_fit_and_entries_hold_at_most_two(self):
+        for start, end, lines in self.entries:
+            self.assertLessEqual(len(lines), subtitles.MAX_LINES)
+            for line in lines:
+                self.assertTrue(len(line) <= subtitles.LINE_WIDTH or " " not in line, line)
+
+    def test_entries_keep_every_word_in_order(self):
+        words = " ".join(" ".join(lines) for _, _, lines in self.entries).split()
+        self.assertEqual(words, " ".join(c.text for c in self.cues).split())
+
+    def test_entries_are_in_time_order_within_their_cues(self):
+        for (s1, e1, _), (s2, e2, _) in zip(self.entries, self.entries[1:]):
+            self.assertLess(s1, e1)
+            self.assertLessEqual(e1, s2 + 1e-9)
+
+    def test_no_subtitle_during_the_references(self):
+        hold = self.spans[-1]
+        self.assertTrue(all(end <= hold.start + 1e-9 for _, end, _ in self.entries))
+
+    def test_srt_blocks_are_numbered_and_timed(self):
+        text = subtitles.srt(self.cues[:3])
+        blocks = text.strip().split("\n\n")
+        for number, block in enumerate(blocks, 1):
+            lines = block.splitlines()
+            self.assertEqual(lines[0], str(number))
+            self.assertRegex(lines[1], r"^\d\d:\d\d:\d\d,\d{3} --> \d\d:\d\d:\d\d,\d{3}$")
+        self.assertEqual(subtitles.timestamp(3725.5), "01:02:05,500")
+
+
+class TestScenes(unittest.TestCase):
+    """Every visual builds a page, and the references card is the paper's list."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.paper = scenes.paper_text()
+        cls.scenes = script.load("en")
+        cls.spans = timeline.build(cls.scenes, timeline.estimated_durations(cls.scenes))[1]
+
+    def test_every_span_builds_a_page_with_the_two_hooks(self):
+        for span in self.spans:
+            with self.subTest(scene=span.scene.ident, visual=span.visual):
+                page = scenes.page(span.scene, span.visual, self.paper)
+                self.assertIn("window.ready = prepare();", page)
+                self.assertIn("window.setTime = async function", page)
+
+    def test_references_are_the_papers_in_order(self):
+        refs = scenes.references(self.paper)
+        section = self.paper[self.paper.index("\n## References\n"):]
+        self.assertEqual([n for n, _ in refs], list(range(1, len(re.findall(r"^\[\d+\] ", section, re.M)) + 1)))
+        self.assertTrue(refs[0][1].startswith('soulsmods, "SoulsFormatsNEXT,"'))
+
+    def test_references_card_renders_marks_not_symbols(self):
+        body = scenes.content(("references", ""), self.paper)[0]
+        text = re.sub(r"<[^>]+>", "", body)
+        self.assertNotIn("`", text)
+        self.assertNotRegex(text, r"\*\w")
+        self.assertIn("<i>FBX SDK 2020.2.1</i>", body)
+        self.assertEqual(body.count("<p>["), len(scenes.references(self.paper)))
+
+    def test_equations_and_tables_are_read_from_the_paper(self):
+        self.assertIn(r"\tag{19}", scenes.equation_tex(self.paper, "19"))
+        caption, rows = scenes.table(self.paper, "V")
+        self.assertEqual(caption, "WORKED EXAMPLE FOR ONE TRIANGLE")
+        self.assertEqual(rows[0], ["Quantity", "Value"])
+        with self.assertRaises(KeyError):
+            scenes.table(self.paper, "XX")
+
+    def test_only_animated_figures_move(self):
+        self.assertTrue(scenes.moves(("figure", "paper_axis_swap_animated.svg")))
+        self.assertTrue(scenes.moves(("figure", "paper_dome_tilts.svg")))
+        self.assertFalse(scenes.moves(("figure", "paper_axis_swap.svg")))
+        self.assertFalse(scenes.moves(("equation", "1")))
 
 
 if __name__ == "__main__":

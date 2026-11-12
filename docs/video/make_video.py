@@ -1,0 +1,199 @@
+"""
+Render the paper's video: capture each visual span from its page, join the
+clips, lay the narration on its timeline and burn in the subtitles.
+
+Run ``python docs/video/make_video.py`` for the full video (1920 by 1080, 30
+frames a second) or ``python docs/video/make_video.py --draft`` for a quick one
+(960 by 540, 15 frames a second). With audio files in
+``docs/video/audio/<lang>/`` their lengths set the timing and the video has
+sound; without them, durations are estimated from the word count and the video
+is silent. Everything is written under ``docs/video/out/`` (git-ignored);
+clips are cached there, so a second run renders only what changed.
+"""
+
+import argparse
+import hashlib
+import os
+import subprocess
+import tempfile
+
+import scenes
+import script
+import subtitles
+import timeline
+
+FULL = (1920, 1080, 30)
+DRAFT = (960, 540, 15)
+SUBTITLE_STYLE = ("FontName=Segoe UI,FontSize=11,PrimaryColour=&H00FFFFFF,BorderStyle=3,Outline=1,"
+                  "OutlineColour=&H90000000,Shadow=0,MarginV=14")
+
+
+def ffmpeg(*args, cwd=None):
+    """
+    Run ffmpeg quietly.
+
+    Raises
+    ------
+    subprocess.CalledProcessError
+        When ffmpeg fails; its error output is in the exception.
+    """
+    subprocess.run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", *args], check=True, cwd=cwd,
+                   capture_output=True, text=True)
+
+
+def frame_counts(spans, fps):
+    """
+    Frames per span, from rounded start and end frames so the clips add up to the
+    whole video without drift.
+
+    Parameters
+    ----------
+    spans : list of timeline.Span
+    fps : int
+
+    Returns
+    -------
+    list of int
+    """
+    return [round(span.end * fps) - round(span.start * fps) for span in spans]
+
+
+def encode(source_args, frames, size, fps, path):
+    """Encode frames into an H.264 clip of exactly ``frames`` frames."""
+    width, height = size
+    ffmpeg(*source_args, "-frames:v", str(frames), "-vf", f"scale={width}:{height}:flags=lanczos,format=yuv420p",
+           "-r", str(fps), "-c:v", "libx264", "-preset", "medium", "-crf", "18", path)
+
+
+def render_span(browser, page_path, span, frames, size, fps, path):
+    """
+    Capture one span and encode it as a clip.
+
+    A still visual is captured once and repeated; a moving one is captured
+    frame by frame, with the animation's time counted from the span's start.
+    """
+    with tempfile.TemporaryDirectory(prefix="video_frames_") as folder:
+        browser.load(page_path)
+        if scenes.moves(span.visual):
+            for index in range(frames):
+                with open(os.path.join(folder, f"{index:05d}.png"), "wb") as file:
+                    file.write(browser.capture(index / fps))
+            encode(["-framerate", str(fps), "-i", os.path.join(folder, "%05d.png")], frames, size, fps, path)
+        else:
+            still = os.path.join(folder, "still.png")
+            with open(still, "wb") as file:
+                file.write(browser.capture(0.0))
+            encode(["-loop", "1", "-framerate", str(fps), "-i", still], frames, size, fps, path)
+
+
+def narration_track(cues, files, total, path):
+    """
+    Lay each segment's audio at its cue's start, in one track of ``total`` seconds.
+
+    Parameters
+    ----------
+    cues : list of timeline.Cue
+    files : dict
+        Segment ID to audio file.
+    total : float
+    path : str
+        The WAV file to write.
+    """
+    inputs, chains, labels = [], [], []
+    for index, cue in enumerate(cue for cue in cues if cue.ident in files):
+        inputs += ["-i", files[cue.ident]]
+        delay = int(round(cue.start * 1000))
+        chains.append(f"[{index}:a]aresample=48000,aformat=channel_layouts=stereo,adelay={delay}|{delay}[a{index}]")
+        labels.append(f"[a{index}]")
+    graph = ";".join(chains) + ";" + "".join(labels) + \
+        f"amix=inputs={len(labels)}:normalize=0,apad,atrim=0:{total:.3f}[out]"
+    with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False, encoding="utf-8") as file:
+        file.write(graph)
+    try:
+        ffmpeg(*inputs, "-/filter_complex", file.name, "-map", "[out]", "-c:a", "pcm_s16le", path)
+    finally:
+        os.remove(file.name)
+
+
+def main(lang="en", draft=False):
+    """
+    Render the video of a language.
+
+    Parameters
+    ----------
+    lang : str
+    draft : bool
+        A quick, smaller render.
+
+    Returns
+    -------
+    str
+        The video written.
+    """
+    width, height, fps = DRAFT if draft else FULL
+    all_scenes = script.load(lang)
+    audio_dir = os.path.join(script.VIDEO_DIR, "audio", lang)
+    durations, files, missing, extra = timeline.durations_from_audio(all_scenes, audio_dir)
+    if extra:
+        print("audio files that match no segment:", ", ".join(extra))
+    if missing:
+        estimated = timeline.estimated_durations(all_scenes)
+        print(f"{len(missing)} of {len(estimated)} segments have no audio; their length is estimated"
+              + (f" ({', '.join(missing[:5])}{', ...' if len(missing) > 5 else ''})" if files else ""))
+        durations = {ident: durations.get(ident, estimated[ident]) for ident in estimated}
+    cues, spans, total = timeline.build(all_scenes, durations)
+
+    out = os.path.join(script.OUT_DIR)
+    cache, pages = os.path.join(out, "cache"), os.path.join(out, "pages")
+    os.makedirs(cache, exist_ok=True)
+    os.makedirs(pages, exist_ok=True)
+    name = f"normal_maps.{lang}{'.draft' if draft else ''}"
+    with open(os.path.join(out, f"{name}.srt"), "w", encoding="utf-8", newline="\n") as file:
+        file.write(subtitles.srt(cues))
+
+    paper = scenes.paper_text()
+    clips, browser = [], None
+    try:
+        for index, (span, frames) in enumerate(zip(spans, frame_counts(spans, fps))):
+            html = scenes.page(span.scene, span.visual, paper, lang)
+            key = hashlib.sha1(f"{html}|{frames}|{width}x{height}@{fps}|{scenes.moves(span.visual)}".encode()) \
+                .hexdigest()[:16]
+            clip = os.path.join(cache, f"{key}.mp4")
+            if not os.path.exists(clip):
+                page_path = os.path.join(pages, f"{index:03d}_{span.scene.ident}.html")
+                with open(page_path, "w", encoding="utf-8") as file:
+                    file.write(html)
+                if browser is None:
+                    import chrome
+                    browser = chrome.Chrome(scenes.WIDTH, scenes.HEIGHT)
+                print(f"rendering {span.scene.ident} {span.visual[0]} {span.visual[1]} ({frames} frames)", flush=True)
+                render_span(browser, page_path, span, frames, (width, height), fps, clip + ".part.mp4")
+                os.replace(clip + ".part.mp4", clip)
+            clips.append(clip)
+    finally:
+        if browser is not None:
+            browser.close()
+
+    joined = os.path.join(out, f"{name}.video.mp4")
+    with open(os.path.join(out, "clips.txt"), "w", encoding="utf-8", newline="\n") as file:
+        file.write("".join(f"file '{clip.replace(os.sep, '/')}'\n" for clip in clips))
+    ffmpeg("-f", "concat", "-safe", "0", "-i", os.path.join(out, "clips.txt"), "-c", "copy", joined)
+
+    args = ["-i", f"{name}.video.mp4"]
+    if files:
+        narration_track(cues, files, total, os.path.join(out, f"{name}.wav"))
+        args += ["-i", f"{name}.wav", "-c:a", "aac", "-b:a", "192k"]
+    ffmpeg(*args, "-vf", f"subtitles={name}.srt:force_style='{SUBTITLE_STYLE}'", "-c:v", "libx264",
+           "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p", f"{name}.mp4", cwd=out)
+    os.remove(joined)
+    result = os.path.join(out, f"{name}.mp4")
+    print(f"{len(cues)} segments, {len(spans)} visual spans, {total / 60:.1f} minutes: {os.path.relpath(result)}")
+    return result
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    parser.add_argument("lang", nargs="?", default="en")
+    parser.add_argument("--draft", action="store_true", help="960 by 540 at 15 frames a second")
+    options = parser.parse_args()
+    main(options.lang, options.draft)

@@ -23,6 +23,25 @@ audio file.
    `<segment><tab><text>` on its own line.
 2. **Generate the speech**, one audio file per segment, named after the segment, and put the files in
    `docs/video/audio/en/` (for example `docs/video/audio/en/S04-03.wav`). Any format ffprobe reads will do.
-3. **Render** the video (to come with the renderer).
+3. **Render** the video:
+
+   ```
+   python docs/video/make_video.py en
+   ```
+
+   This writes `docs/video/out/normal_maps.en.mp4` (1920 by 1080, 30 frames a second, subtitles burned in) and
+   `normal_maps.en.srt`. Add `--draft` for a quick 960 by 540 render at 15 frames a second. Each segment's audio file
+   sets its length; segments without one are timed from their word count, and the video is silent when no audio
+   exists. The script reports missing files and files that match no segment. Rendered clips are cached in
+   `docs/video/out/cache/`, so a second run renders only the visuals that changed.
+
+## How it is built
+
+- `script.py` reads the script; `timeline.py` lays the segments end to end, with a short pause between segments and
+  a longer one between scenes, and ends on the references, held silent for 10 seconds.
+- `scenes.py` builds one HTML page per visual from the paper and `docs/figures/`: figures, equations (KaTeX),
+  tables, screenshots, title cards and the references. The figures and the paper are used as they are.
+- `chrome.py` drives headless Chrome to capture each page; animated figures are captured frame by frame, the rest
+  once. `subtitles.py` writes the SRT, and `make_video.py` joins it all with ffmpeg.
 
 `docs/video/audio/` and `docs/video/out/` are git-ignored: audio, exports, frames and videos stay out of the repository.
