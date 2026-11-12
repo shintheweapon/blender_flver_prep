@@ -76,7 +76,9 @@
   `d`, explains why `W` per half swaps with the Z mirror, gives the reason the stored UVs have V = 0 at the top,
   limits Section V's measured claim to the FBX SDK's tangents and Section VII's mirrored islands to that route, says
   the IV-A tiles only decide whether a map is testable (threshold on values from 0 to 1), names Fig. 4's three
-  outcomes, and says the in-game plane "looks alike" on both halves.
+  outcomes, and says the in-game plane "looks alike" on both halves. It also names each IV-D half by its state after
+  the import, writes out why `d` < 0 on unmirrored islands with the game's winding, and names the dome's diagonals
+  (raised on U = V, dented on U = -V).
 
 ## 1.0.0
 

@@ -348,6 +348,8 @@ with the paper's other formulas. The UV orientation of a triangle is the sign of
 differences, (15) in Section VI. For any triangle with edges $\vec{e}_1$ and $\vec{e}_2$,
 $\vec{e}_1\times\vec{e}_2 = d\,(\partial\vec{p}/\partial u\times\partial\vec{p}/\partial v)$ by (14) and (15), so the
 sign of $d$ tells mirrored from unmirrored only together with the winding. With the game's winding (III-C),
+$\vec{N}\cdot(\vec{e}_1\times\vec{e}_2) < 0$, so $\vec{N}\cdot(\partial\vec{p}/\partial u\times\partial\vec{p}/\partial v)$
+has the opposite sign to $d$. An unmirrored island, with $W = -1$ by (9), has that dot product positive. So
 $d > 0$ on mirrored islands and $d < 0$ on unmirrored ones. Per file-name prefix, with (9) per UV orientation and pooled over all corners; the other columns give the range, the largest value and the smallest value over the prefix's parts (Table II):
 
 <p align="center">TABLE II<br>STORED TANGENT FRAMES OF THE GAME'S PART MODELS, PER FILE-NAME PREFIX</p>
@@ -458,6 +460,8 @@ other.
 - Without a mirror, $W = -1$ on the unmirrored half, and red is read along −V on both halves.
 - With Z mirrored, $W = +1$ on the unmirrored half, and red is read along +V on both halves.
 
+Each half is named by its state after the import.
+
 So in each import both halves are read alike. The test has limits: one test plane, with tangents generated rather than
 carried by the file.
 
@@ -497,7 +501,8 @@ $$
 
 *In words:* without a mirror, the (x, y) components of every tangent-space normal are rotated by 90° anticlockwise on
 the map (from +U towards −V); with Z mirrored, they are reflected about the line U = V. A raised dome then reads lit
-from the side, or raised on one diagonal, dented on the other and lit from the side along U and V (Fig. 7).
+from the side, or raised on the U = V diagonal, dented on the U = −V diagonal and lit from the side along U and V
+(Fig. 7).
 
 ![Three sheets with N up: vanilla tangents read green along +V and red along +U; tangents along +U read green along +U, with red along -V (without a mirror) or +V (with Z mirrored)](../figures/paper_tangent_directions.svg)
 

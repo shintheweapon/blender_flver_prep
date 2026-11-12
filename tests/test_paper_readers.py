@@ -60,6 +60,10 @@ class TestSignOfD(unittest.TestCase):
     def test_the_paper_states_which_sign_is_mirrored(self):
         self.assertIn("$d > 0$ on mirrored islands and $d < 0$ on unmirrored", self.section())
 
+    def test_the_paper_states_the_game_winding_behind_it(self):
+        text = " ".join(self.section().split())
+        self.assertIn(r"With the game's winding (III-C), $\vec{N}\cdot(\vec{e}_1\times\vec{e}_2) < 0$", text)
+
     def test_cloth_meshes_fail_only_where_d_is_positive(self):
         # cloth meshes keep W = -1, the unmirrored value, so (9) fails exactly on their mirrored corners
         share = held_by_sign(frame_survey.load(), cloth=True)
@@ -87,6 +91,17 @@ class TestWorkedExampleWinding(unittest.TestCase):
         d, du, dv = mf.uv_derivatives(self.POSITIONS, self.UVS)
         self.assertGreater(d, 0)
         # W = -1 by (9), the unmirrored value
+        self.assertGreater(dot(self.NORMAL, cross(du, dv)), 0)
+
+    def test_in_the_game_winding_d_is_negative_on_the_same_island(self):
+        # vertices 1 and 2 swapped: the edges now cross opposite the normal, as on the game's models
+        p0, p1, p2 = self.POSITIONS
+        uv0, uv1, uv2 = self.UVS
+        d, du, dv = mf.uv_derivatives((p0, p2, p1), (uv0, uv2, uv1))
+        edges = cross(tuple(b - a for a, b in zip(p0, p2)), tuple(b - a for a, b in zip(p0, p1)))
+        self.assertLess(dot(self.NORMAL, edges), 0)
+        self.assertLess(d, 0)
+        # W = -1 by (9) either way: the island is unmirrored
         self.assertGreater(dot(self.NORMAL, cross(du, dv)), 0)
 
     def test_the_paper_says_so(self):
@@ -119,7 +134,8 @@ class TestDomeReflection(unittest.TestCase):
 
     def test_the_paper_text_citing_fig_7_says_so(self):
         text = " ".join(read_paper().split())
-        self.assertIn("dented on the other and lit from the side along U and V (Fig. 7)", text)
+        self.assertIn("raised on the U = V diagonal, dented on the U = −V diagonal and lit from the side along U and V "
+                      "(Fig. 7)", text)
 
 
 class TestEdgeIdentity(unittest.TestCase):
