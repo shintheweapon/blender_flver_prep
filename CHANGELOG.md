@@ -103,7 +103,7 @@
   (`docs/figures/*.zh.svg`, from the catalogue `docs/figures/zh_text.py`) and a glossary of the Chinese terms
   (`docs/paper/glossary.zh-CN.md`). The two papers link to each other, and tests check that the Chinese one carries
   the English one's equations, tables, figures, citations, references and counts. The Chinese paper names the games
-  in Chinese (艾尔登法环 and the others), with the English name in brackets at first use.
+  in Chinese (艾尔登法环 and the others), with the English name in brackets at first use, and its wording was revised to read as natural Chinese.
 
 ## 1.0.0
 
