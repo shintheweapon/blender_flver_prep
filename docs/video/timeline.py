@@ -13,6 +13,7 @@ import json
 import os
 import subprocess
 
+import languages
 import script
 
 LEAD_IN = 0.5
@@ -60,20 +61,23 @@ class Span:
         return self.end - self.start
 
 
-def estimated_durations(scenes):
+def estimated_durations(scenes, lang="en"):
     """
-    Each segment's duration from its word count, at ``script.WORDS_PER_MINUTE``.
+    Each segment's duration from its word count, at the language's speaking rate
+    (``languages.Language.rate``).
 
     Parameters
     ----------
     scenes : list of script.Scene
+    lang : str
 
     Returns
     -------
     dict
         Segment ID to seconds.
     """
-    return {s.ident: 60.0 * s.words() / script.WORDS_PER_MINUTE for s in script.segments(scenes)}
+    rate = languages.language(lang).rate
+    return {s.ident: 60.0 * s.words() / rate for s in script.segments(scenes)}
 
 
 def audio_files(folder):

@@ -11,6 +11,7 @@ VIDEO_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file_
 if VIDEO_DIR not in sys.path:
     sys.path.insert(0, VIDEO_DIR)
 
+import languages  # noqa: E402
 import make_video  # noqa: E402
 import scenes  # noqa: E402
 import script  # noqa: E402
@@ -18,8 +19,8 @@ import subtitles  # noqa: E402
 import timeline  # noqa: E402
 
 
-def paper_text():
-    with open(script.PAPER, encoding="utf-8") as file:
+def paper_text(lang="en"):
+    with open(script.paper_path(lang), encoding="utf-8") as file:
         return file.read()
 
 
@@ -98,7 +99,7 @@ class TestEnglishScript(unittest.TestCase):
         self.assertEqual([s for s in self.scenes if s.visual[0] in script.SILENT_KINDS], [self.scenes[-1]])
 
     def test_length_is_12_to_20_minutes(self):
-        minutes = sum(s.words() for s in self.segments) / script.WORDS_PER_MINUTE
+        minutes = sum(s.words() for s in self.segments) / languages.language("en").rate
         self.assertGreaterEqual(minutes, 12)
         self.assertLessEqual(minutes, 20)
 
@@ -157,7 +158,7 @@ class TestTimeline(unittest.TestCase):
     def test_estimated_durations_follow_the_word_count(self):
         segment = script.segments(self.scenes)[0]
         self.assertAlmostEqual(timeline.estimated_durations(self.scenes)[segment.ident],
-                               60 * segment.words() / script.WORDS_PER_MINUTE)
+                               60 * segment.words() / languages.language("en").rate)
 
 
 class TestSubtitles(unittest.TestCase):
@@ -318,6 +319,83 @@ class TestPartialRender(unittest.TestCase):
         self.assertTrue(all(s.start < 120 for s in spans) and all(c.end <= 120 for c in cues))
         self.assertEqual(len(spans), sum(s.start < 120 for s in self.spans))
         self.assertEqual(sum(make_video.frame_counts(spans, 30)), 120 * 30)
+
+
+class TestChinesePipeline(unittest.TestCase):
+    """The pipeline builds Chinese pages and subtitles from the Chinese paper and figures."""
+
+    SAMPLE = ("面部部件 FC_F_0000 沿加 Y 站立，面朝减 Z，左侧位于加 X。从正面看，x 向右、y 向上、z 指向屏幕内："
+              "这是左手坐标系。其三角形的环绕顺序与之一致，前提是法线朝外。共 1,437 张贴图。")
+
+    @classmethod
+    def setUpClass(cls):
+        cls.paper = scenes.paper_text("zh-CN")
+
+    def test_the_chinese_paper_is_read(self):
+        self.assertTrue(script.paper_path("zh-CN").endswith("ER_NORMAL_MAPS.zh-CN.md"))
+        self.assertIn("## 参考文献", self.paper)
+
+    def test_tables_keep_their_chinese_label(self):
+        caption, rows = scenes.table(self.paper, "I")
+        self.assertTrue(caption and len(rows) > 1)
+        self.assertIn('<div class="caption">表 I<br>', scenes.content(("table", "I"), self.paper, "zh-CN")[0])
+        self.assertTrue(script.visual_exists("table", "VI", self.paper, "zh-CN"))
+
+    def test_references_keep_their_chinese_heading(self):
+        self.assertEqual([n for n, _ in scenes.references(self.paper)], list(range(1, 10)))
+        body = scenes.content(("references", ""), self.paper, "zh-CN")[0]
+        self.assertIn("<h2>参考文献</h2>", body)
+        self.assertIn("访问日期", body)
+
+    def test_figures_are_the_chinese_ones_in_the_video_fonts(self):
+        zh_text = scenes._zh_text()
+        stack = zh_text.FONT_STACK.replace("sans-serif", ",".join(languages.CJK_FONTS) + ",sans-serif")
+        names = {p for s in script.load("en") for v in [s.visual] + [g.show for g in s.segments if g.show]
+                 if v[0] == "figure" for p in script.figure_files(v[1])}
+        for name in sorted(names):
+            with self.subTest(figure=name):
+                self.assertTrue(script.visual_exists("figure", name, "", "zh-CN"))
+                with open(os.path.join(script.FIGURES_DIR, name), encoding="utf-8") as file:
+                    video = scenes.figure_text(file.read(), "zh-CN")
+                with open(script.figure_path(name, "zh-CN"), encoding="utf-8") as file:
+                    committed = file.read()
+                self.assertEqual(video, committed.replace(zh_text.ZH_FONT_STACK, stack))
+
+    def test_pages_lead_with_source_han_then_noto(self):
+        page = scenes.page(script.Scene("S01", "问题", ("table", "I"), []), ("table", "I"), self.paper, "zh-CN")
+        self.assertLess(page.index('"Source Han Sans SC"'), page.index('"Noto Sans SC"'))
+        self.assertIn('<div class="heading">问题</div>', page)
+
+    def test_subtitle_font_is_the_first_installed(self):
+        self.assertEqual(languages.language("zh-CN").subtitle_fonts, ("Source Han Sans SC", "Noto Sans SC"))
+        self.assertIn("FontName=Source Han Sans SC,", make_video.subtitle_style("Source Han Sans SC"))
+        self.assertEqual(make_video.pick_font(("A", "B"), lambda f: f == "B"), "B")
+        self.assertEqual(make_video.pick_font(("A", "B"), lambda f: True), "A")
+        with self.assertRaises(LookupError):
+            make_video.pick_font(("A", "B"), lambda f: False)
+
+    def test_chinese_lines_fit_and_keep_every_character(self):
+        lines = subtitles.wrap(self.SAMPLE)
+        self.assertGreater(len(lines), 2)
+        for line in lines:
+            with self.subTest(line=line):
+                self.assertLessEqual(subtitles.columns(line), subtitles.LINE_WIDTH)
+                self.assertNotIn(line[0], subtitles.BREAK_AFTER)
+        self.assertEqual("".join(lines).replace(" ", ""), self.SAMPLE.replace(" ", ""))
+        for token in ("FC_F_0000", "1,437"):
+            with self.subTest(token=token):
+                self.assertTrue(any(token in line for line in lines))
+
+    def test_chinese_counts_by_character(self):
+        self.assertEqual(script.Segment("S01-01", "面朝减 Z，左侧").words(), 5 + 1)  # five characters and Z
+        self.assertEqual(script.Segment("S01-01", "one two three").words(), 3)
+        self.assertEqual(timeline.estimated_durations([script.Scene("S01", "t", ("title", "t"),
+                                                       [script.Segment("S01-01", "面" * 260)])], "zh-CN"),
+                         {"S01-01": 60.0})
+
+    def test_an_unknown_language_is_refused(self):
+        with self.assertRaises(KeyError):
+            languages.language("xx")
 
 
 if __name__ == "__main__":
