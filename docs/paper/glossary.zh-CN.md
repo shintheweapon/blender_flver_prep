@@ -1,7 +1,8 @@
 # 术语表（简体中文）
 
 The Simplified Chinese terms used in the Chinese paper ([ER_NORMAL_MAPS.zh-CN.md](ER_NORMAL_MAPS.zh-CN.md)), its figures
-(`docs/figures/zh_text.py`) and, later, the Chinese video and Word export. Each term is used in this form everywhere;
+(`docs/figures/zh_text.py`), the Chinese video (`docs/video/script.zh-CN.md`) and, later, the Word export. Each term
+is used in this form everywhere;
 the paper gives the English term in brackets at its first use.
 
 Games take their Chinese names, with the English name in brackets at first use: 艾尔登法环 (Elden Ring), 黑暗之魂 3

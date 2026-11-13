@@ -398,5 +398,70 @@ class TestChinesePipeline(unittest.TestCase):
             languages.language("xx")
 
 
+class TestChineseScript(unittest.TestCase):
+    """docs/video/script.zh-CN.md carries the English script's structure, in the Chinese paper's terms."""
+
+    TERMS = ("切线空间法线", "副切线", "副切线符号", "法线贴图", "可积性检验", "偏导数", "左手坐标系", "镜像岛",
+             "切线坐标系", "无镜像", "Z 轴镜像", "左手定则", "镜像变换", "DirectX 格式", "格式检验", "红色通道",
+             "绿色通道", "翻转", "关于直线 U 等于 V 对称", "艾尔登法环")
+    REJECTED = ("双切线", "次切线", "法线图", "左手系", "切空间", "可积分性", "反射", "DirectX 布局", "OpenGL 布局",
+                "布局检验", "通道反转", "细节层级", "Elden Ring")
+    HEDGES = ("未测试", "未确认", "很可能误判", "未作记录", "未在游戏内测试")
+
+    @classmethod
+    def setUpClass(cls):
+        cls.en, cls.zh = script.load("en"), script.load("zh-CN")
+        cls.segments = script.segments(cls.zh)
+        cls.text = "".join(s.text for s in cls.segments)
+
+    def test_same_scenes_segments_and_cues_as_the_english(self):
+        self.assertEqual([s.ident for s in self.zh], [s.ident for s in self.en])
+        self.assertEqual([s.ident for s in self.segments], [s.ident for s in script.segments(self.en)])
+        self.assertEqual([s.show for s in self.segments], [s.show for s in script.segments(self.en)])
+        # title cards carry translated text; every other visual is the same
+        same = [s.visual if s.visual[0] != "title" else ("title",) for s in self.en]
+        self.assertEqual([s.visual if s.visual[0] != "title" else ("title",) for s in self.zh], same)
+
+    def test_every_visual_exists_in_chinese(self):
+        text = paper_text("zh-CN")
+        for scene in self.zh:
+            for kind, name in [scene.visual] + [s.show for s in scene.segments if s.show]:
+                with self.subTest(scene=scene.ident, visual=(kind, name)):
+                    self.assertTrue(script.visual_exists(kind, name, text, "zh-CN"))
+
+    def test_glossary_terms_are_used_and_rejected_ones_are_not(self):
+        for term in self.TERMS:
+            with self.subTest(term=term):
+                self.assertIn(term, self.text)
+        for variant in self.REJECTED:
+            with self.subTest(variant=variant):
+                self.assertNotIn(variant, self.text)
+
+    def test_channels_are_named_as_channels(self):
+        from test_paper_zh import BARE_CHANNEL
+        self.assertEqual(re.findall(BARE_CHANNEL, self.text), [])
+
+    def test_untested_claims_stay_marked(self):
+        for phrase in self.HEDGES:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, self.text)
+
+    def test_handedness_reasons_are_given(self):
+        s04_04 = next(s.text for s in self.segments if s.ident == "S04-04")
+        for reason in ("模组社区长期认为", "两种手性", "这两点本文均未测试"):
+            with self.subTest(reason=reason):
+                self.assertIn(reason, s04_04)
+
+    def test_no_dash_punctuation(self):
+        for segment in self.segments:
+            with self.subTest(segment=segment.ident):
+                self.assertNotRegex(segment.text, r"[–—]|--| - ")
+
+    def test_length_is_12_to_20_minutes(self):
+        minutes = sum(s.words() for s in self.segments) / languages.language("zh-CN").rate
+        self.assertGreaterEqual(minutes, 12)
+        self.assertLessEqual(minutes, 20)
+
+
 if __name__ == "__main__":
     unittest.main()

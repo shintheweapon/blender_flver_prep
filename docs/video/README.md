@@ -36,6 +36,22 @@ audio file.
    exists. The script reports missing files and files that match no segment. Rendered clips are cached in
    `docs/video/out/cache/`, so a second run renders only the visuals that changed.
 
+## The Chinese video
+
+`script.zh-CN.md` is the narration in Simplified Chinese, with the English script's scenes, segment IDs and visuals.
+The same steps with `zh-CN` in place of `en` build it:
+
+```
+python docs/video/script.py zh-CN
+python docs/video/make_video.py zh-CN
+```
+
+The audio goes in `docs/video/audio/zh-CN/`, and the video is written to `docs/video/out/normal_maps.zh-CN.mp4`. Its
+pages are built from the Chinese paper, its tables, its references and the Chinese figures (`docs/figures/zh_text.py`).
+Pages and subtitles use Source Han Sans SC, or Noto Sans SC where it is not installed; the render prints the font it
+chose. Chinese subtitle lines hold 21 characters and break between characters, preferably after punctuation. What
+differs per language is in `languages.py`.
+
 ## How it is built
 
 - `script.py` reads the script; `timeline.py` lays the segments end to end, with a short pause between segments and
