@@ -70,11 +70,12 @@ class TestChinesePaper(unittest.TestCase):
         self.assertEqual(len(equations(self.zh)), 21)
 
     def test_every_displayed_equation_is_followed_by_words(self):
+        # plain in Chinese, where italic is a fake slant; italic in English
         for after in re.findall(r"^\$\$$\n\n(.*)", self.zh, flags=re.M):
-            if after.startswith("*"):
+            if after.startswith(("文字表述", "*")):
                 with self.subTest(line=after[:30]):
-                    self.assertTrue(after.startswith("*文字表述：*"))
-        self.assertEqual(self.zh.count("*文字表述：*"), self.en.count("*In words:*"))
+                    self.assertTrue(after.startswith("文字表述："))
+        self.assertEqual(len(re.findall(r"^文字表述：", self.zh, flags=re.M)), self.en.count("*In words:*"))
 
     def test_the_same_tables_with_the_same_numbers(self):
         self.assertEqual(tables(self.zh), tables(self.en))
@@ -152,6 +153,11 @@ class TestChineseStyle(unittest.TestCase):
                 self.assertIn(reason, section)
         limitations = self.body[self.body.index("## IX."):self.body.index("## X.")]
         self.assertIn("未在更多模型上检查，原因见第 III-C 节", limitations)
+
+    def test_no_chinese_text_is_italic(self):
+        # single-asterisk emphasis around Chinese renders as a fake slant
+        italic = re.findall(r"(?<![*])[*]([^*\n]+)[*](?![*])", without_maths(self.body))
+        self.assertEqual([span for span in italic if re.search(r"[\u4e00-\u9fff]", span)], [])
 
     def test_channels_are_named_as_channels(self):
         # 红色 alone reads as a colour: each channel takes 通道, shared by two named together

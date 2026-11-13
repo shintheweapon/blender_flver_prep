@@ -121,6 +121,9 @@
   captioned 表 I and so on, its Chinese figures, and Chinese text in Noto Sans SC. Both Word files now number every
   page at the bottom and leave out the line linking the other language. The edits made after pandoc are in
   `docs/paper/docx_xml.py`.
+- In both Word files, numbers in maths and the equation numbers are upright, and table captions are upright in
+  small capitals, as IEEE sets them. The Chinese paper sets 文字表述： and its AI line in plain text, since italic
+  Chinese is a slant of upright type.
 
 ## 1.0.0
 

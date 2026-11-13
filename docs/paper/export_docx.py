@@ -34,7 +34,8 @@ import languages  # noqa: E402  (the paper of each language)
 import scenes  # noqa: E402  (scenes.moves tells the animated figures apart; it imports no browser code)
 from docx_xml import (BORDER_EDGES, CAPTION_STYLE, CELL_BORDERS, CENTRE, TABLE_BORDERS,  # noqa: E402,F401
                       TABLE_PROPERTIES, TABLE_PROPERTY_ORDER, check_docx, child_elements, finish,
-                      format_tables, rewrite_document, table_properties, table_rows)
+                      format_tables, rewrite_document, set_caption_style, set_east_asian_font,
+                      table_properties, table_rows, upright_numbers)
 
 STILL_SCALE = 2.0
 GIF_SCALE = 1.5
@@ -271,7 +272,12 @@ def main(out_dir=OUT_DIR, lang="en"):
     warnings = [line for line in run.stderr.decode("utf-8", "replace").splitlines() if line.startswith("[WARNING]")]
     for line in warnings:
         print(line)
-    finish(out_path, format_tables, EAST_ASIAN.get(lang))
+    east_asian = EAST_ASIAN.get(lang)
+    if east_asian:
+        styles = lambda xml: set_caption_style(set_east_asian_font(xml, *east_asian), small_caps=False)  # noqa: E731
+    else:
+        styles = lambda xml: set_caption_style(xml, small_caps=True)  # noqa: E731
+    finish(out_path, lambda xml: upright_numbers(format_tables(xml)), styles)
     report = check_docx(out_path)
     print(", ".join(f"{key} {value!r}" for key, value in report.items()), f"; written to {os.path.relpath(out_path)}")
     return out_path

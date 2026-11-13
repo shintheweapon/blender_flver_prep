@@ -236,5 +236,32 @@ class TestWordPackage(unittest.TestCase):
                 self.assertEqual(package.read("word/footer1.xml"), b"<ftr/>")
 
 
+class TestUpright(unittest.TestCase):
+    """Numbers in maths and table captions are upright; variables stay italic."""
+
+    def test_numbers_in_maths_become_upright(self):
+        xml = ('<m:oMath><m:r><m:t>W</m:t></m:r><m:r><m:rPr><m:sty m:val="p" /></m:rPr><m:t>=</m:t></m:r>'
+               '<m:r><m:t>0.125</m:t></m:r><m:r><m:rPr><m:sty m:val="p" /></m:rPr><m:t>(</m:t></m:r>'
+               '<m:r><m:t>10</m:t></m:r><m:r><m:rPr><m:nor /></m:rPr><m:t>2</m:t></m:r></m:oMath>')
+        out = docx_xml.upright_numbers(xml)
+        self.assertIn('<m:r><m:rPr><m:sty m:val="p" /></m:rPr><m:t>0.125</m:t></m:r>', out)
+        self.assertIn('<m:r><m:rPr><m:sty m:val="p" /></m:rPr><m:t>10</m:t></m:r>', out)
+        self.assertIn("<m:r><m:t>W</m:t></m:r>", out)
+        self.assertIn("<m:rPr><m:nor /></m:rPr><m:t>2</m:t>", out)
+        self.assertEqual(docx_xml.upright_numbers(out), out)
+
+    def test_table_captions_are_upright_and_small_caps_when_asked(self):
+        styles = ('<w:styles><w:style w:styleId="Caption"><w:rPr><w:i /></w:rPr></w:style>'
+                  '<w:style w:customStyle="1" w:styleId="TableCaption" w:type="paragraph"><w:name w:val="Table Caption" />'
+                  '<w:basedOn w:val="Caption" /><w:pPr><w:keepNext /></w:pPr></w:style></w:styles>')
+        english = docx_xml.set_caption_style(styles, small_caps=True)
+        self.assertIn('<w:pPr><w:keepNext /></w:pPr><w:rPr><w:i w:val="0" /><w:smallCaps /></w:rPr></w:style>', english)
+        self.assertIn('w:styleId="Caption"><w:rPr><w:i /></w:rPr>', english)
+        chinese = docx_xml.set_caption_style(styles, small_caps=False)
+        self.assertIn('<w:rPr><w:i w:val="0" /></w:rPr></w:style>', chinese)
+        self.assertNotIn("smallCaps", chinese)
+        self.assertEqual(docx_xml.set_caption_style(english, small_caps=True), english)
+
+
 if __name__ == "__main__":
     unittest.main()

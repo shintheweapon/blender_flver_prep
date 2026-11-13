@@ -306,27 +306,87 @@ def set_east_asian_font(styles_xml, font, lang):
     return re.sub(r"<w:docDefaults>.*?</w:docDefaults>", defaults, styles_xml, count=1, flags=re.S)
 
 
-def finish(path, format_document, east_asian=None):
+NUMBER = re.compile(r"[0-9]+(?:[.,][0-9]+)*")
+MATH_RUN = re.compile(r"<m:r>(?:(?!</m:r>).)*</m:r>", re.S)
+
+
+def upright_numbers(document_xml):
+    """
+    Set every number inside maths upright, as numbers are by convention.
+
+    pandoc marks maths operators plain (``<m:sty m:val="p"/>``) but leaves
+    numbers, equation numbers among them, to the maths italic. Each maths run
+    whose text is a number gets ``m:sty p``; variables and runs already plain
+    are left as they are.
+
+    Parameters
+    ----------
+    document_xml : str
+
+    Returns
+    -------
+    str
+    """
+    def run(match):
+        xml = match.group(0)
+        text = re.search(r"<m:t[^>]*>([^<]*)</m:t>", xml)
+        if not text or not NUMBER.fullmatch(text.group(1)) or "<m:sty " in xml or "<m:nor" in xml:
+            return xml
+        if "<m:rPr>" in xml:
+            return xml.replace("<m:rPr>", '<m:rPr><m:sty m:val="p" />', 1)
+        return xml.replace("<m:r>", '<m:r><m:rPr><m:sty m:val="p" /></m:rPr>', 1)
+
+    return MATH_RUN.sub(run, document_xml)
+
+
+def set_caption_style(styles_xml, small_caps):
+    """
+    Set table captions upright, as IEEE style does, and in small capitals when asked.
+
+    pandoc's ``TableCaption`` style is based on ``Caption``, which is italic; the
+    style gains run properties that switch the italic off (``<w:i w:val="0"/>``)
+    and, with ``small_caps``, turn small capitals on. They go after the style's
+    paragraph properties, in schema order.
+
+    Parameters
+    ----------
+    styles_xml : str
+    small_caps : bool
+        True for English captions; small capitals do nothing to Chinese.
+
+    Returns
+    -------
+    str
+    """
+    def style(match):
+        xml = re.sub(r"<w:rPr>.*?</w:rPr>", "", match.group(0), flags=re.S)
+        props = '<w:rPr><w:i w:val="0" />' + ("<w:smallCaps />" if small_caps else "") + "</w:rPr>"
+        return xml.replace("</w:style>", props + "</w:style>")
+
+    return re.sub(r'<w:style\b[^>]*w:styleId="TableCaption".*?</w:style>', style, styles_xml, count=1, flags=re.S)
+
+
+def finish(path, document, styles=None):
     """
     The edits after pandoc, in one rewrite of the Word file: the document's
-    own edits, a centred page number in the footer, and, for Chinese, the East
-    Asian font and language.
+    and the styles' own edits, and a centred page number in the footer.
 
     Parameters
     ----------
     path : str
-    format_document : callable
-        Takes and returns the document XML (``format_tables``).
-    east_asian : tuple or None
-        ``(font, lang)``, as ``("Noto Sans SC", "zh-CN")``; None leaves the styles.
+    document : callable
+        Takes and returns the document XML (``format_tables``, ``upright_numbers``).
+    styles : callable or None
+        Takes and returns the styles XML (``set_caption_style``,
+        ``set_east_asian_font``); None leaves the styles.
     """
     changes = {
-        "word/document.xml": lambda xml: add_footer(format_document(xml)),
+        "word/document.xml": lambda xml: add_footer(document(xml)),
         "word/_rels/document.xml.rels": lambda xml: add_relationship(xml, FOOTER_ID, FOOTER_TYPE, "footer1.xml"),
         "[Content_Types].xml": lambda xml: add_override(xml, FOOTER_PART, FOOTER_CONTENT),
     }
-    if east_asian:
-        changes["word/styles.xml"] = lambda xml: set_east_asian_font(xml, *east_asian)
+    if styles:
+        changes["word/styles.xml"] = styles
     rewrite_package(path, changes, {FOOTER_PART: footer_xml().encode("utf-8")})
 
 
@@ -347,7 +407,9 @@ def check_docx(path):
         ``tex_left`` (TeX commands left in the text); ``author`` (the file's
         author field); ``east_asian_font`` and ``language`` (the styles'
         defaults); ``page_numbers`` (whether the footer with the page number is
-        referenced).
+        referenced); ``italic_number_runs`` (numbers in maths left italic),
+        ``italic_cjk_runs`` (italic runs of Chinese text) and ``italic_captions``
+        (whether table captions are still italic).
     """
     with zipfile.ZipFile(path) as package:
         document = package.read("word/document.xml").decode("utf-8")
@@ -377,4 +439,11 @@ def check_docx(path):
         "east_asian_font": (re.findall(r'<w:rFonts\b[^>]*\bw:eastAsia="([^"]*)"', defaults) + [""])[0],
         "language": (re.findall(r'<w:lang\b[^>]*\bw:val="([^"]*)"', defaults) + [""])[0],
         "page_numbers": f'r:id="{FOOTER_ID}"' in document and " PAGE " in footer,
+        "italic_number_runs": sum(1 for run in MATH_RUN.findall(document)
+                                  if re.search(r"<m:t[^>]*>[0-9]+(?:[.,][0-9]+)*</m:t>", run)
+                                  and "<m:sty " not in run and "<m:nor" not in run),
+        "italic_cjk_runs": len(re.findall(r"<w:r>(?:(?!</w:r>).)*<w:i ?/>(?:(?!</w:r>).)*<w:t[^>]*>[^<]*"
+                                          r"[\u4e00-\u9fff]", document, flags=re.S)),
+        "italic_captions": not re.search(r'w:styleId="TableCaption"(?:(?!</w:style>).)*<w:i w:val="0"',
+                                         styles, flags=re.S),
     }
