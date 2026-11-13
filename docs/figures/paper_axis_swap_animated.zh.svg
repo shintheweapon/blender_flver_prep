@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="680" height="370" viewBox="0 0 680 370" role="img">
 <title>从 Blender 到 FLVER 空间的坐标轴交换（动画）</title>
-<desc>30 秒的动画：固定坐标轴按 Blender 前视图的方向绘制，+X 向右，+Z 向上，+Y 指向画面内。一个角色面向观察者站立，上方 +Z，前方 -Y，左侧 +X，标签“上”“前”“左”随角色移动。其坐标绕 X 轴旋转 -90 度，使角色仰卧，上方 +Y，前方 +Z；随后 Z 取反（一次反射），使角色俯卧，前方 -Z，左侧仍为 +X。文字标出每一步，图例给出颜色：灰色为身体，琥珀色为前方（鼻子），紫色为左臂和左手，以及三条坐标轴。</desc>
+<desc>30 秒的动画：固定坐标轴按 Blender 前视图的方向绘制，+X 向右，+Z 向上，+Y 指向画面内。一个角色面向观察者站立，上方 +Z，前方 -Y，左侧 +X，标签“上”“前”“左”随角色移动。其坐标绕 X 轴旋转 -90 度，使角色仰卧，上方 +Y，前方 +Z；随后 Z 取反（一次镜像变换），使角色俯卧，前方 -Z，左侧仍为 +X。文字标出每一步，图例给出颜色：灰色为身体，琥珀色为前方（鼻子），紫色为左臂和左手，以及三条坐标轴。</desc>
 <style>
 .t{fill:#1f2328;font:14px -apple-system,"Segoe UI",Helvetica,Arial,"Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Source Han Sans SC",sans-serif}
 .h{font-weight:600}
@@ -42,7 +42,7 @@
 <g opacity="1"><animate attributeName="opacity" values="1;0" keyTimes="0;0.17" calcMode="discrete" dur="30s" repeatCount="indefinite"/><text class="t h" x="20" y="40" text-anchor="start">1. Blender</text><text class="s" x="20" y="64" text-anchor="start">上 +Z，前 −Y，左侧 +X。</text><text class="s" x="20" y="84" text-anchor="start">右手坐标系。</text></g>
 <g opacity="0"><animate attributeName="opacity" values="0;1;0" keyTimes="0;0.17;0.4" calcMode="discrete" dur="30s" repeatCount="indefinite"/><text class="t h" x="20" y="40" text-anchor="start">2. 绕 X 轴旋转 −90°</text><text class="s" x="20" y="64" text-anchor="start">上转为 +Y，前转为 +Z。</text></g>
 <g opacity="0"><animate attributeName="opacity" values="0;1;0" keyTimes="0;0.4;0.55" calcMode="discrete" dur="30s" repeatCount="indefinite"/><text class="t h" x="20" y="40" text-anchor="start">3. 旋转之后</text><text class="s" x="20" y="64" text-anchor="start">上 +Y，前 +Z，左侧 +X。</text><text class="s" x="20" y="84" text-anchor="start">仍为右手坐标系。</text></g>
-<g opacity="0"><animate attributeName="opacity" values="0;1;0" keyTimes="0;0.55;0.75" calcMode="discrete" dur="30s" repeatCount="indefinite"/><text class="t h" x="20" y="40" text-anchor="start">4. Z 取反</text><text class="s" x="20" y="64" text-anchor="start">前方翻转为 −Z：这是反射，</text><text class="s" x="20" y="84" text-anchor="start">而非旋转。</text></g>
+<g opacity="0"><animate attributeName="opacity" values="0;1;0" keyTimes="0;0.55;0.75" calcMode="discrete" dur="30s" repeatCount="indefinite"/><text class="t h" x="20" y="40" text-anchor="start">4. Z 取反</text><text class="s" x="20" y="64" text-anchor="start">前方翻转为 −Z：这是镜像变换，</text><text class="s" x="20" y="84" text-anchor="start">而非旋转。</text></g>
 <g opacity="0"><animate attributeName="opacity" values="0;1" keyTimes="0;0.75" calcMode="discrete" dur="30s" repeatCount="indefinite"/><text class="t h" x="20" y="40" text-anchor="start">5. FLVER</text><text class="s" x="20" y="64" text-anchor="start">上 +Y，前 −Z，左侧 +X。</text></g>
 <line x1="20" y1="345" x2="42" y2="345" stroke="#888780" stroke-width="3"/>
 <text class="s" x="48" y="349" text-anchor="start">身体</text>

@@ -80,6 +80,12 @@ class TestChineseFigures(unittest.TestCase):
             with self.subTest(value=value[:30]):
                 self.assertEqual(re.findall(bare, value), [])
 
+    def test_reflections_are_not_named_as_light(self):
+        # 反射 reads as the reflection of light: 镜像变换, or 关于 U = V 对称
+        for value in zh_text.ZH.values():
+            with self.subTest(value=value[:30]):
+                self.assertNotIn("反射", value)
+
     def test_chinese_fonts_are_added(self):
         for name in zh_text.PAPER_FIGURES:
             with self.subTest(name=name):

@@ -45,7 +45,8 @@ setting name Tangent Space. Symbols stay as in the English paper: N, T, B, W, U,
 | front face | 正面 | |
 | forward (facing direction) | 前方 | |
 | axis swap | 坐标轴交换 | |
-| reflection | 反射 | |
+| reflection (determinant −1, the handedness flip) | 镜像变换 | 镜像 as a verb; 反射 is not used, as it reads as the reflection of light |
+| reflected about a line | 关于该直线对称 | 关于直线 U = V 对称; the noun 对称变换 |
 | rotation | 旋转 | |
 | cross product | 叉积 | |
 | dot product | 点积 | |

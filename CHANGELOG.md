@@ -104,7 +104,8 @@
   (`docs/paper/glossary.zh-CN.md`). The two papers link to each other, and tests check that the Chinese one carries
   the English one's equations, tables, figures, citations, references and counts. The Chinese paper names the games
   in Chinese (艾尔登法环 and the others), with the English name in brackets at first use, and its wording was revised to read as natural Chinese. The Chinese paper and figures name the channels as
-  channels (红色通道, 绿色通道 and so on), since a bare 红色 reads as the colour.
+  channels (红色通道, 绿色通道 and so on), since a bare 红色 reads as the colour. Reflections are named 镜像变换, or 关于直线 U = V 对称,
+  rather than 反射, which reads as the reflection of light.
 
 ## 1.0.0
 

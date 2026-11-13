@@ -64,7 +64,7 @@ ZH = {
      "and hand, and the three axes."):
         ("30 秒的动画：固定坐标轴按 Blender 前视图的方向绘制，+X 向右，+Z 向上，+Y 指向画面内。一个角色面向观察者"
          "站立，上方 +Z，前方 -Y，左侧 +X，标签“上”“前”“左”随角色移动。其坐标绕 X 轴旋转 -90 度，使角色仰卧，"
-         "上方 +Y，前方 +Z；随后 Z 取反（一次反射），使角色俯卧，前方 -Z，左侧仍为 +X。文字标出每一步，图例给出"
+         "上方 +Y，前方 +Z；随后 Z 取反（一次镜像变换），使角色俯卧，前方 -Z，左侧仍为 +X。文字标出每一步，图例给出"
          "颜色：灰色为身体，琥珀色为前方（鼻子），紫色为左臂和左手，以及三条坐标轴。"),
     "up": "上",
     "forward": "前",
@@ -78,7 +78,7 @@ ZH = {
     "Up +Y, forward +Z, left side +X.": "上 +Y，前 +Z，左侧 +X。",
     "Still right-handed.": "仍为右手坐标系。",
     "4. Negate Z": "4. Z 取反",
-    "Forward flips to −Z: a reflection,": "前方翻转为 −Z：这是反射，",
+    "Forward flips to −Z: a reflection,": "前方翻转为 −Z：这是镜像变换，",
     "not a rotation.": "而非旋转。",
     "5. FLVER": "5. FLVER",
     "Up +Y, forward −Z, left side +X.": "上 +Y，前 −Z，左侧 +X。",
@@ -154,12 +154,12 @@ ZH = {
      "(dented) and those on the U and V axes turn sideways."):
         ("动画。三个面板，各含切线坐标系（绿色 T，红色 W(N × T)）和游戏在凸起圆顶周围解码出的切线空间法线。原版"
          "切线：法线朝外，圆顶呈凸起。沿 +U 的切线，无镜像导入：坐标系和每条法线逆时针旋转 90°，法线绕圆顶环行。"
-         "沿 +U 的切线，Z 轴镜像导入：坐标系和每条法线关于 U = V 对角线反射，该对角线上的法线仍朝外（凸起），"
+         "沿 +U 的切线，Z 轴镜像导入：坐标系和每条法线变为关于 U = V 对角线对称的方向，该对角线上的法线仍朝外（凸起），"
          "另一条对角线上的法线转向内（凹陷），U 轴和 V 轴上的法线转向侧面。"),
     "Frame": "坐标系",
     "Dome reads raised": "圆顶呈凸起",
     "Rotated 90° anticlockwise": "逆时针旋转 90°",
-    "Reflected about U = V": "关于 U = V 反射",
+    "Reflected about U = V": "关于 U = V 对称",
     "Decoded normal (x, y)": "解码出的法线 (x, y)",
     "On the diagonal: stays out (raised)": "对角线上：仍朝外（凸起）",
     "Turns in (dented)": "转向内（凹陷）",
@@ -190,14 +190,14 @@ ZH = {
      "or (21): every normal points outward, as authored. The changes are derived from the measured frames, not "
      "tested in game."):
         ("两列，分别为无镜像和 Z 轴镜像，每列有两个从上方看的圆顶。上：按原样制作的贴图，经沿 +U 的切线读取：无镜像"
-         "时每条法线逆时针旋转 90 度，指向侧面；Z 轴镜像时每条法线关于直线 U = V 反射，该对角线上的法线朝外，另一条"
+         "时每条法线逆时针旋转 90 度，指向侧面；Z 轴镜像时每条法线变为关于直线 U = V 对称的方向，该对角线上的法线朝外，另一条"
          "对角线上的朝内。下：通道变换 (20) 或 (21) 之后的贴图：每条法线都朝外，与制作时一致。这些变换由实测的切线"
          "坐标系推导得出，未在游戏内测试。"),
     "Without a mirror": "无镜像",
     "Map as authored: rotated 90° anticlockwise": "原样贴图：逆时针旋转 90°",
     "After (20): outward, as authored": "经 (20) 变换后：朝外，与制作时一致",
     "With Z mirrored": "Z 轴镜像",
-    "Map as authored: reflected about U = V": "原样贴图：关于 U = V 反射",
+    "Map as authored: reflected about U = V": "原样贴图：关于 U = V 对称",
     "After (21): outward, as authored": "经 (21) 变换后：朝外，与制作时一致",
     "Outward (raised)": "朝外（凸起）",
     "Inward (dented)": "朝内（凹陷）",
