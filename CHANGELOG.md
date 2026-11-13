@@ -125,10 +125,9 @@
   small capitals, as IEEE sets them. The Chinese paper sets 文字表述： and its AI line in plain text, since italic
   Chinese is a slant of upright type.
 - The Word tables have columns sized to their content, so no word breaks inside a cell, with 0.05 in cell margins;
-  the pages are US Letter with 0.75 in margins; no figure is taller than 7 in, and each stays on the page of its
-  caption. In the Chinese file, the bracketed part of 表 I and 表 II's first column has its own line, and
-  `--serif` writes a serif edition (Noto Serif SC body, Noto Sans SC headings, table headers and captions). The
-  Word edits are split by subject into `docx_tables.py`, `docx_styles.py` and `docx_xml.py`.
+  the pages are US Letter with 0.75 in margins; figures and tables are centred, no figure is taller than 7 in, and
+  each stays on the page of its caption. In the Chinese file, the bracketed part of 表 I and 表 II's first column
+  has its own line. The Word edits are split by subject into `docx_tables.py`, `docx_styles.py` and `docx_xml.py`.
 
 ## 1.0.0
 

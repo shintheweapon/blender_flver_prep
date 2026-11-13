@@ -35,9 +35,9 @@ import scenes  # noqa: E402  (scenes.moves tells the animated figures apart; it 
 from docx_tables import (BORDER_EDGES, CAPTION_STYLE, CELL_BORDERS, CENTRE, TABLE_BORDERS,  # noqa: E402,F401
                          TABLE_PROPERTIES, TABLE_PROPERTY_ORDER, break_before_brackets, child_elements,
                          format_tables, set_table_widths, table_properties, table_rows)
-from docx_styles import sans_runs, set_caption_style, set_east_asian_font, set_serif_body  # noqa: E402
-from docx_xml import (check_docx, finish, keep_figures_with_captions, rewrite_document,  # noqa: E402,F401
-                      set_page, upright_numbers)
+from docx_styles import set_caption_style, set_east_asian_font  # noqa: E402
+from docx_xml import (centre_figures, check_docx, finish, keep_figures_with_captions,  # noqa: E402,F401
+                      rewrite_document, set_page, upright_numbers)
 
 STILL_SCALE = 2.0
 GIF_SCALE = 1.5
@@ -47,7 +47,6 @@ MAX_WIDTH_INCHES = 6.5
 MAX_HEIGHT_INCHES = 7.0
 MARGIN = 1080  # twips, 0.75 in
 TEXT_WIDTH = 12240 - 2 * MARGIN  # US Letter less two margins, in twips
-CAPTION_START = {"en": r"Fig\. \d+\.", "zh-CN": r"图 \d+\."}
 PANDOC_FORMAT = "markdown-implicit_figures"
 B = "\\"
 TAG = re.compile(re.escape(B + "tag{") + r"([^}]*)\}")
@@ -274,19 +273,18 @@ def render_figures(text, out_dir):
     return widths
 
 
-def document_edits(lang, serif=False):
+def document_edits(lang):
     """
     The edits to ``word/document.xml`` after pandoc, for a language.
 
     Tables are laid out and sized to their content (for Chinese, a first-column
     bracketed part goes on its own line first), numbers in maths are set upright,
-    figures are kept with their captions, and the page gets its size and
-    margins; in the serif edition, table headers and figure captions stay sans.
+    figures are centred and kept with their captions, and the page gets its size
+    and margins.
 
     Parameters
     ----------
     lang : str
-    serif : bool
 
     Returns
     -------
@@ -297,22 +295,20 @@ def document_edits(lang, serif=False):
         xml = format_tables(xml)
         if lang.startswith("zh"):
             xml = break_before_brackets(xml)
-        xml = set_page(keep_figures_with_captions(set_table_widths(upright_numbers(xml), TEXT_WIDTH)), MARGIN)
-        return sans_runs(xml, CAPTION_START[lang]) if serif else xml
+        xml = keep_figures_with_captions(set_table_widths(upright_numbers(xml), TEXT_WIDTH))
+        return set_page(centre_figures(xml), MARGIN)
 
     return edit
 
 
-def style_edits(lang, serif=False):
+def style_edits(lang):
     """
     The edits to ``word/styles.xml``: upright table captions (small capitals in
-    English), for Chinese the East Asian font and language, and in the serif
-    edition the serif body with sans headings.
+    English), and for Chinese the East Asian font and language.
 
     Parameters
     ----------
     lang : str
-    serif : bool
 
     Returns
     -------
@@ -324,13 +320,12 @@ def style_edits(lang, serif=False):
     def edit(xml):
         if east_asian:
             xml = set_east_asian_font(xml, *east_asian)
-        xml = set_caption_style(xml, small_caps=not east_asian)
-        return set_serif_body(xml) if serif else xml
+        return set_caption_style(xml, small_caps=not east_asian)
 
     return edit
 
 
-def main(out_dir=OUT_DIR, lang="en", serif=False):
+def main(out_dir=OUT_DIR, lang="en"):
     """
     Export a language's paper and report what the Word file holds.
 
@@ -339,15 +334,11 @@ def main(out_dir=OUT_DIR, lang="en", serif=False):
     out_dir : str
     lang : str
         ``en`` or ``zh-CN`` (``docs/video/languages.py``).
-    serif : bool
-        The serif edition of the Chinese paper: body text in Noto Serif SC and
-        Noto Serif, headings, table headers and captions in Noto Sans SC and
-        Noto Sans; written as ``<paper>.serif.docx``.
 
     Returns
     -------
     str
-        The Word file written: ``<paper>.docx`` or ``<paper>.serif.docx``.
+        The Word file written, ``<paper>.docx``.
 
     Raises
     ------
@@ -358,13 +349,13 @@ def main(out_dir=OUT_DIR, lang="en", serif=False):
     with open(os.path.join(PAPER_DIR, paper), encoding="utf-8") as file:
         text = file.read()
     widths = render_figures(text, out_dir)
-    out_path = os.path.join(out_dir, os.path.splitext(paper)[0] + (".serif" if serif else "") + ".docx")
+    out_path = os.path.join(out_dir, os.path.splitext(paper)[0] + ".docx")
     run = subprocess.run(pandoc_command(out_path), input=prepare_markdown(text, widths).encode("utf-8"),
                          cwd=out_dir, capture_output=True, check=True)
     warnings = [line for line in run.stderr.decode("utf-8", "replace").splitlines() if line.startswith("[WARNING]")]
     for line in warnings:
         print(line)
-    finish(out_path, document_edits(lang, serif), style_edits(lang, serif))
+    finish(out_path, document_edits(lang), style_edits(lang))
     report = check_docx(out_path)
     print(", ".join(f"{key} {value!r}" for key, value in report.items()), f"; written to {os.path.relpath(out_path)}")
     return out_path
@@ -374,8 +365,5 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--out", default=OUT_DIR, help="folder to write to (default: docs/paper/out)")
     parser.add_argument("--lang", default="en", choices=sorted(languages.LANGUAGES), help="the paper's language")
-    parser.add_argument("--serif", action="store_true", help="the serif edition (Chinese only)")
     options = parser.parse_args()
-    if options.serif and not options.lang.startswith("zh"):
-        parser.error("--serif is for the Chinese paper (--lang zh-CN)")
-    main(options.out, options.lang, options.serif)
+    main(options.out, options.lang)

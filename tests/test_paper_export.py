@@ -345,40 +345,22 @@ class TestPageAndFigures(unittest.TestCase):
         self.assertNotIn("<w:keepNext/></w:pPr><w:r><w:t>Fig.", out)
         self.assertEqual(docx_xml.keep_figures_with_captions(out), out)
 
+    def test_pictures_are_centred(self):
+        xml = ('<w:p><w:pPr><w:pStyle w:val="BodyText" /><w:keepNext/></w:pPr><w:r><w:drawing>a</w:drawing></w:r></w:p>'
+               '<w:p><w:r><w:drawing>b</w:drawing></w:r></w:p>'
+               '<w:p><w:pPr><w:pStyle w:val="X" /><w:rPr><w:b/></w:rPr></w:pPr><w:r><w:drawing>c</w:drawing></w:r></w:p>'
+               '<w:p><w:r><w:t>Fig. 1.</w:t></w:r></w:p>')
+        out = docx_xml.centre_figures(xml)
+        self.assertIn('<w:keepNext/><w:jc w:val="center"/></w:pPr><w:r><w:drawing>a', out)
+        self.assertIn('<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:drawing>b', out)
+        self.assertIn('<w:pStyle w:val="X" /><w:jc w:val="center"/><w:rPr><w:b/></w:rPr></w:pPr>', out)
+        self.assertIn("<w:p><w:r><w:t>Fig. 1.", out)
+        self.assertEqual(docx_xml.centre_figures(out), out)
+
     def test_figures_are_no_taller_than_the_cap(self):
         self.assertAlmostEqual(export_docx.figure_width(680, 1065), 7.0 * 680 / 1065)
         self.assertAlmostEqual(export_docx.figure_width(1360, 636), 6.5)
         self.assertAlmostEqual(export_docx.figure_width(480, 200), 5.0)
-
-
-class TestSerifEdition(unittest.TestCase):
-    """The serif edition: serif body, sans headings, captions, table headers and figure captions."""
-
-    STYLES = ('<w:styles><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:eastAsia="Noto Sans SC" '
-              'w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" /></w:rPr></w:rPrDefault></w:docDefaults>'
-              '<w:style w:styleId="Heading1"><w:rPr><w:rFonts w:asciiTheme="majorHAnsi" /><w:b /></w:rPr></w:style>'
-              '<w:style w:styleId="TableCaption"><w:pPr /></w:style></w:styles>')
-
-    def test_serif_body_and_sans_headings(self):
-        out = docx_styles.set_serif_body(self.STYLES)
-        defaults = re.search(r"<w:docDefaults>.*?</w:docDefaults>", out).group(0)
-        self.assertIn('w:ascii="Noto Serif" w:eastAsia="Noto Serif SC"', defaults)
-        self.assertNotIn("Theme", re.search(r"<w:rFonts[^>]*>", defaults).group(0).replace("cstheme", ""))
-        self.assertIn('w:styleId="Heading1"><w:rPr><w:rFonts w:ascii="Noto Sans" w:eastAsia="Noto Sans SC"', out)
-        self.assertIn('<w:rPr><w:rFonts w:ascii="Noto Sans"', re.search(r'w:styleId="TableCaption".*?</w:style>', out).group(0))
-        self.assertEqual(docx_styles.set_serif_body(out), out)
-
-    def test_table_headers_and_figure_captions_stay_sans(self):
-        xml = ('<w:tbl><w:tr><w:tc><w:p><w:r><w:rPr><w:b/></w:rPr><w:t>前缀</w:t></w:r></w:p></w:tc></w:tr>'
-               '<w:tr><w:tc><w:p><w:r><w:t>WP</w:t></w:r></w:p></w:tc></w:tr></w:tbl>'
-               '<w:p><w:r><w:t>图 5. 游戏内测试</w:t></w:r></w:p><w:p><w:r><w:t>正文</w:t></w:r></w:p>')
-        out = docx_styles.sans_runs(xml, r"图 \d+\.")
-        self.assertIn('<w:rPr><w:rFonts w:ascii="Noto Sans" w:eastAsia="Noto Sans SC" w:hAnsi="Noto Sans" '
-                      'w:cstheme="minorBidi" /><w:b/></w:rPr><w:t>前缀', out)
-        self.assertIn('Noto Sans SC" w:hAnsi="Noto Sans" w:cstheme="minorBidi" /></w:rPr><w:t>图 5.', out)
-        self.assertIn("<w:r><w:t>WP</w:t></w:r>", out)
-        self.assertIn("<w:r><w:t>正文</w:t></w:r>", out)
-        self.assertEqual(docx_styles.sans_runs(out, r"图 \d+\."), out)
 
 
 if __name__ == "__main__":

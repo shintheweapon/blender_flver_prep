@@ -1,7 +1,7 @@
 """
 The Word package's XML, after pandoc: the page number in the footer and the
-page's size and margins, upright numbers in maths, figures kept with their
-captions, the rewrite of parts inside the ``.docx`` file, and the check of
+page's size and margins, upright numbers in maths, figures centred and kept
+with their captions, the rewrite of parts inside the ``.docx`` file, and the check of
 what the file holds. The tables are in ``docx_tables.py``, the fonts and
 styles in ``docx_styles.py``. ``export_docx.py`` prepares the paper and its
 figures and calls these.
@@ -255,6 +255,34 @@ def keep_figures_with_captions(document_xml):
     return PARAGRAPH.sub(paragraph, document_xml)
 
 
+def centre_figures(document_xml):
+    """
+    Centre every picture on the page: each paragraph holding a ``<w:drawing>``
+    gets ``<w:jc w:val="center"/>``, last in its paragraph properties as the
+    schema orders them. Paragraphs that already set an alignment are left.
+
+    Parameters
+    ----------
+    document_xml : str
+
+    Returns
+    -------
+    str
+    """
+    def paragraph(match):
+        xml = match.group(0)
+        if "<w:drawing>" not in xml or "<w:jc " in xml:
+            return xml
+        if xml.startswith("<w:p><w:pPr>"):
+            end = xml.index("</w:pPr>")
+            mark = xml.find("<w:rPr>", 0, end)  # the paragraph mark's run properties come after jc
+            at = end if mark < 0 else mark
+            return xml[:at] + CENTRE + xml[at:]
+        return "<w:p><w:pPr>" + CENTRE + "</w:pPr>" + xml[len("<w:p>"):]
+
+    return PARAGRAPH.sub(paragraph, document_xml)
+
+
 def finish(path, document, styles=None):
     """
     The edits after pandoc, in one rewrite of the Word file: the document's
@@ -316,7 +344,7 @@ def check_docx(path):
         defaults); ``page_numbers`` (whether the footer with the page number is
         referenced); ``page_margin``, ``fixed_tables``, ``squeezed_tables``
         (tables with a column narrower than a word in it),
-        ``figures_kept_with_captions`` and ``latin_font``; ``italic_number_runs`` (numbers in maths left italic),
+        ``figures_kept_with_captions``, ``centred_figures`` and ``latin_font``; ``italic_number_runs`` (numbers in maths left italic),
         ``italic_cjk_runs`` (italic runs of Chinese text) and ``italic_captions``
         (whether table captions are still italic).
     """
@@ -360,6 +388,7 @@ def check_docx(path):
                                if squeezed(table)),
         "figures_kept_with_captions": sum(1 for p in PARAGRAPH.findall(document)
                                           if "<w:drawing>" in p and "<w:keepNext" in p),
+        "centred_figures": sum(1 for p in PARAGRAPH.findall(document) if "<w:drawing>" in p and CENTRE in p),
         "latin_font": (re.findall(r'<w:rFonts\b[^>]*\bw:ascii="([^"]*)"', defaults) + ["theme"])[0],
         "italic_captions": not re.search(r'w:styleId="TableCaption"(?:(?!</w:style>).)*<w:i w:val="0"',
                                          styles, flags=re.S),
