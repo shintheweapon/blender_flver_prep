@@ -227,13 +227,31 @@ def set_page(document_xml, margin):
 
 
 PARAGRAPH = re.compile(r"<w:p>(?:(?!</w:p>).)*</w:p>", re.S)
+DRAWING = re.compile(r"<w:drawing>.*?</w:drawing>", re.S)
+# The maths pictures of ``math_images``, by the file name pandoc writes into the picture
+MATH_PICTURE = re.compile(r'descr="(?:math/)?math_[id]_[0-9a-f]{12}\.png"')
+
+
+def holds_figure(paragraph_xml):
+    """
+    Whether a paragraph holds a figure: a picture other than a maths picture.
+
+    Parameters
+    ----------
+    paragraph_xml : str
+
+    Returns
+    -------
+    bool
+    """
+    return any(not MATH_PICTURE.search(drawing) for drawing in DRAWING.findall(paragraph_xml))
 
 
 def keep_figures_with_captions(document_xml):
     """
-    Keep each picture on the same page as the paragraph after it, its caption
+    Keep each figure on the same page as the paragraph after it, its caption
     (or, for Fig. 3(a), Fig. 3(b) and then the caption): every paragraph holding
-    a ``<w:drawing>`` gets ``<w:keepNext/>``.
+    a figure (``holds_figure``) gets ``<w:keepNext/>``.
 
     Parameters
     ----------
@@ -245,7 +263,7 @@ def keep_figures_with_captions(document_xml):
     """
     def paragraph(match):
         xml = match.group(0)
-        if "<w:drawing>" not in xml or "<w:keepNext" in xml:
+        if not holds_figure(xml) or "<w:keepNext" in xml:
             return xml
         if xml.startswith("<w:p><w:pPr>"):
             style = re.match(r"<w:p><w:pPr>(<w:pStyle\b[^>]*/>)?", xml)
@@ -257,9 +275,10 @@ def keep_figures_with_captions(document_xml):
 
 def centre_figures(document_xml):
     """
-    Centre every picture on the page: each paragraph holding a ``<w:drawing>``
-    gets ``<w:jc w:val="center"/>``, last in its paragraph properties as the
-    schema orders them. Paragraphs that already set an alignment are left.
+    Centre every figure on the page: each paragraph holding a figure
+    (``holds_figure``) gets ``<w:jc w:val="center"/>``, last in its paragraph
+    properties as the schema orders them. Paragraphs that already set an
+    alignment are left.
 
     Parameters
     ----------
@@ -271,7 +290,7 @@ def centre_figures(document_xml):
     """
     def paragraph(match):
         xml = match.group(0)
-        if "<w:drawing>" not in xml or "<w:jc " in xml:
+        if not holds_figure(xml) or "<w:jc " in xml:
             return xml
         if xml.startswith("<w:p><w:pPr>"):
             end = xml.index("</w:pPr>")
@@ -387,8 +406,8 @@ def check_docx(path):
         "squeezed_tables": sum(1 for table in re.findall(r"<w:tbl>.*?</w:tbl>", document, re.S)
                                if squeezed(table)),
         "figures_kept_with_captions": sum(1 for p in PARAGRAPH.findall(document)
-                                          if "<w:drawing>" in p and "<w:keepNext" in p),
-        "centred_figures": sum(1 for p in PARAGRAPH.findall(document) if "<w:drawing>" in p and CENTRE in p),
+                                          if holds_figure(p) and "<w:keepNext" in p),
+        "centred_figures": sum(1 for p in PARAGRAPH.findall(document) if holds_figure(p) and CENTRE in p),
         "latin_font": (re.findall(r'<w:rFonts\b[^>]*\bw:ascii="([^"]*)"', defaults) + ["theme"])[0],
         "italic_captions": not re.search(r'w:styleId="TableCaption"(?:(?!</w:style>).)*<w:i w:val="0"',
                                          styles, flags=re.S),

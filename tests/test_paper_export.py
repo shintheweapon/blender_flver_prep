@@ -16,6 +16,7 @@ import docx_styles  # noqa: E402
 import docx_tables  # noqa: E402
 import docx_xml  # noqa: E402
 import export_docx  # noqa: E402
+import math_images  # noqa: E402
 
 
 class TestPrepareMarkdown(unittest.TestCase):
@@ -361,6 +362,89 @@ class TestPageAndFigures(unittest.TestCase):
         self.assertAlmostEqual(export_docx.figure_width(680, 1065), 7.0 * 680 / 1065)
         self.assertAlmostEqual(export_docx.figure_width(1360, 636), 6.5)
         self.assertAlmostEqual(export_docx.figure_width(480, 200), 5.0)
+
+
+class TestMathImages(unittest.TestCase):
+    """Maths as pictures: the tree rewrite, the placement in the Word file and the table widths."""
+
+    @staticmethod
+    def math(kind, tex):
+        return {"t": "Math", "c": [{"t": kind}, tex]}
+
+    def tree(self):
+        para = {"t": "Para", "c": [{"t": "Str", "c": "x"}, {"t": "Space"}, self.math("InlineMath", " a+b ")]}
+        display = {"t": "Para", "c": [{"t": "SoftBreak"}, self.math("DisplayMath", "\n\\vec{n} = 1 \\qquad (3)\n")]}
+        cell = {"t": "Plain", "c": [self.math("InlineMath", "W")]}
+        return {"pandoc-api-version": [1, 22], "meta": {}, "blocks": [para, display, {"t": "Table", "c": [[cell]]}]}
+
+    def test_split_number(self):
+        self.assertEqual(math_images.split_number("\n\\vec{n} = 1 \\qquad (12)\n"), ("\\vec{n} = 1", "12"))
+        self.assertEqual(math_images.split_number("a \\qquad b"), ("a \\qquad b", None))
+
+    def test_math_nodes_in_order_and_names_by_kind(self):
+        nodes = math_images.math_nodes(self.tree())
+        self.assertEqual([kind for kind, _ in nodes], ["inline", "display", "inline"])
+        self.assertEqual(math_images.image_name("inline", "a+b"), math_images.image_name("inline", " a+b "))
+        self.assertRegex(math_images.image_name("display", "a+b"), r"^math_d_[0-9a-f]{12}\.png$")
+        self.assertNotEqual(math_images.image_name("display", "a+b"), math_images.image_name("inline", "a+b"))
+        self.assertEqual(len(math_images.distinct_items(self.tree())), 3)
+
+    def test_replace_math_gives_pictures_and_numbers(self):
+        tree = self.tree()
+        sizes = {name: (1.0, 0.25, 1.5, False) for name, _, _ in math_images.distinct_items(tree)}
+        out, numbers = math_images.replace_math(tree, sizes)
+        self.assertEqual(numbers, ["3"])
+        self.assertEqual(math_images.math_nodes(out), [])
+        display = out["blocks"][1]["c"]
+        self.assertEqual(len(display), 1)
+        self.assertEqual(display[0]["c"][1], [{"t": "Str", "c": "\\vec{n} = 1"}])
+        self.assertEqual(display[0]["c"][0][2], [["width", "1.000in"], ["height", "0.250in"]])
+        self.assertTrue(display[0]["c"][2][0].startswith("math/math_d_"))
+        self.assertEqual(math_images.math_nodes(tree)[0], ("inline", " a+b "))
+
+    def test_picture_sizes(self):
+        self.assertEqual(math_images.picture_size("inline", 96, 48, 8, 7.0), (1.0, 0.5, 6.0, False))
+        width, height, depth, scaled = math_images.picture_size("display", 960, 96, 0, 7.0)
+        self.assertTrue(scaled)
+        self.assertAlmostEqual(width, 7.0 - math_images.NUMBER_ROOM_INCHES)
+        self.assertAlmostEqual(height, width / 10)
+
+    def test_place_math(self):
+        inline = "math_i_" + "a" * 12 + ".png"
+        display = "math_d_" + "b" * 12 + ".png"
+        drawing = '<w:drawing><wp:extent cx="635000" cy="1"/><pic:cNvPr descr="math/{}" id="0"/></w:drawing>'
+        xml = ('<w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t>x</w:t></w:r><w:r>'
+               + drawing.format(inline) + '</w:r></w:p>'
+               '<w:p><w:pPr><w:pStyle w:val="BodyText" /><w:jc w:val="center"/></w:pPr><w:r>'
+               + drawing.format(display) + '</w:r></w:p>'
+               '<w:p><w:r><w:drawing><pic:cNvPr descr="figure.png"/></w:drawing></w:r></w:p>')
+        sizes = {inline: (1.0, 0.2, 2.5, False), display: (3.0, 0.5, 0.0, False)}
+        out = math_images.place_math(xml, sizes, ["7"], 10080)
+        self.assertIn('<w:r><w:rPr><w:position w:val="-5"/></w:rPr><w:drawing>', out)
+        self.assertIn('<w:pStyle w:val="BodyText" /><w:tabs><w:tab w:val="center" w:pos="5040"/>'
+                      '<w:tab w:val="right" w:pos="10080"/></w:tabs></w:pPr><w:r><w:tab/></w:r><w:r><w:drawing>', out)
+        self.assertIn("</w:drawing></w:r><w:r><w:tab/><w:t>(7)</w:t></w:r></w:p>", out)
+        self.assertNotIn("<w:jc", out)
+        self.assertIn('<w:p><w:r><w:drawing><pic:cNvPr descr="figure.png"/>', out)
+        self.assertEqual(math_images.place_math(out, sizes, ["7"], 10080), out)
+
+    def test_figure_edits_skip_maths_pictures(self):
+        maths = '<w:p><w:r><w:drawing><pic:cNvPr descr="math_i_' + "c" * 12 + '.png"/></w:drawing></w:r></w:p>'
+        self.assertFalse(docx_xml.holds_figure(maths))
+        self.assertEqual(docx_xml.centre_figures(docx_xml.keep_figures_with_captions(maths)), maths)
+        self.assertTrue(docx_xml.holds_figure('<w:p><w:r><w:drawing>a</w:drawing></w:r></w:p>'))
+
+    def test_a_picture_in_a_cell_is_measured(self):
+        cell = ('<w:tc><w:p><w:r><w:t>by</w:t></w:r><w:r><w:drawing><wp:extent cx="762000" cy="1"/>'
+                '</w:drawing></w:r></w:p></w:tc>')
+        self.assertEqual(docx_tables.cell_lines(cell), ["by" + "x" * 10])
+
+    def test_the_page_escapes_tex_and_marks_display(self):
+        page = math_images.math_page([("n", "display", 'a<b "c"'), ("m", "inline", "x")], "<head-tags>")
+        self.assertIn('data-tex="a&lt;b &quot;c&quot;" data-display="1"', page)
+        self.assertIn('data-tex="x" data-display="0"', page)
+        self.assertIn("<head-tags>", page)
+        self.assertIn("Source Han Sans SC", page)
 
 
 if __name__ == "__main__":

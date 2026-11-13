@@ -4,6 +4,7 @@ unsplittable rows, their bold header, their columns sized to their content,
 and line breaks before a first-column cell's bracketed part.
 """
 
+import math
 import re
 import unicodedata
 
@@ -123,6 +124,7 @@ def format_tables(document_xml):
 # bold header text HEADER_FACTOR wider again, since wide letters (M, W) and rounding would otherwise break a word
 LATIN_TWIPS = 120
 WIDE_TWIPS = 240
+EMU_PER_TWIP = 635
 TEXT_SLACK = 1.08
 HEADER_FACTOR = 1.1
 # Each cell's left and right margin (0.05 in, tighter than Word's 0.075 in), and the room a column keeps beyond its
@@ -241,6 +243,9 @@ def cell_lines(cell_xml):
     """
     The lines of a table cell's text: one per paragraph, split again at line breaks.
 
+    An inline picture (a maths picture) counts as a word of ``x`` as wide as
+    the picture (``wp:extent``), so it is measured and never broken.
+
     Parameters
     ----------
     cell_xml : str
@@ -249,6 +254,12 @@ def cell_lines(cell_xml):
     -------
     list of str
     """
+    def picture(match):
+        extent = re.search(r'<wp:extent cx="(\d+)"', match.group(0))
+        twips = int(extent.group(1)) / EMU_PER_TWIP if extent else 0
+        return f"<w:t>{'x' * math.ceil(twips / LATIN_TWIPS)}</w:t>"
+
+    cell_xml = re.sub(r"<w:drawing>.*?</w:drawing>", picture, cell_xml, flags=re.S)
     lines = []
     for paragraph in re.findall(r"<w:p\b.*?</w:p>", cell_xml, re.S):
         for part in re.split(r"<w:br\s*/>", paragraph):
