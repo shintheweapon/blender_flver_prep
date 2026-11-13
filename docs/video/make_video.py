@@ -257,7 +257,8 @@ def main(lang="en", draft=False, until=None):
     os.makedirs(pages, exist_ok=True)
     name = f"normal_maps.{lang}{'.draft' if draft else ''}{f'.until{until:g}' if until else ''}"
     # subtitles are timed on the whole cues and only then cut, so a cut segment keeps its own timing
-    layout = subtitles.Layout(split=WORD_SPLITTERS[languages.language(lang).words])
+    language = languages.language(lang)
+    layout = subtitles.Layout(split=WORD_SPLITTERS[language.words], sentences=language.subtitle_sentences)
     shown = subtitles.clip(subtitles.entries(full_cues, layout, timeline.speech_pauses(files)), until)
     with open(os.path.join(out, f"{name}.srt"), "w", encoding="utf-8", newline="\n") as file:
         file.write(subtitles.srt(shown))
