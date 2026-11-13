@@ -83,6 +83,55 @@
   the frame follows the mesh after the Transform, names the settings the fork's unit tests cover (None, Mirror Z,
   Blender/3ds Max, Maya; not Mirror X, Mirror Y or Custom) and the imports that were checked (None and Mirror Z, a
   file without tangents), and its in-game check says the ticked plane "looks alike" on both halves.
+- A video of the paper is being prepared in `docs/video/`: the English narration (`docs/video/script.en.md`, 16
+  scenes of numbered segments, about 17 minutes, ending on the paper's references) and `docs/video/script.py`, which
+  reads it and exports one text file per segment for a speech tool. Audio and renders are git-ignored.
+- The video's renderer, `docs/video/make_video.py`: it times the narration from the audio files (or from the word
+  count before they exist), captures the paper's figures, equations, tables, screenshots and references with
+  headless Chrome, and joins them with ffmpeg into an MP4 with burned-in subtitles and an SRT file. The video ends on
+  the paper's references, held for 10 seconds without narration. The video is dark, with Chrome set to dark mode
+  so the figures always use their dark colours; subtitles are 20% larger on an opaque box; scene headings are larger;
+  and `--until SECONDS` renders only the start of the video. Where the narration speaks of "the three panels below",
+  the video shows Fig. 3(b)'s panels under the animation, as in the paper. The narration gives the paper's reasons
+  for testing handedness on one model.
+- `docs/paper/export_docx.py` exports the paper to a Word file for Google Docs: all equations as native Word
+  equations, table captions above their tables, still figures as PNGs in light mode and Figs. 3(a) and 7 as
+  animated GIFs (`docs/paper/README.md` says how to open it as a Google Doc). The video's Chrome helper takes a
+  `color_scheme` for this. The tables carry their own grid lines, which pandoc's Word output leaves out, on every
+  cell too, so the line under the header row shows in Google Docs; they are centred with centred captions, have a
+  bold header row, and each stays on one page.
+- The paper in Simplified Chinese, `docs/paper/ER_NORMAL_MAPS.zh-CN.md`, with its figures in Chinese
+  (`docs/figures/*.zh.svg`, from the catalogue `docs/figures/zh_text.py`) and a glossary of the Chinese terms
+  (`docs/paper/glossary.zh-CN.md`). The two papers link to each other, and tests check that the Chinese one carries
+  the English one's equations, tables, figures, citations, references and counts. The Chinese paper names the games
+  in Chinese (艾尔登法环 and the others), with the English name in brackets at first use, and its wording was revised to read as natural Chinese. The Chinese paper and figures name the channels as
+  channels (红色通道, 绿色通道 and so on), since a bare 红色 reads as the colour. Reflections are named 镜像变换, or 关于直线 U = V 对称,
+  rather than 反射, which reads as the reflection of light. The Chinese paper and figures use the terms of Chinese
+  graphics writing: DirectX 格式, 翻转绿色通道 and 细节层次.
+- Both papers say why the handedness of FLVER space was not checked on more models: it has long been held in the
+  FromSoftware modding community that the games' model space is left-handed, and a game is unlikely to use two
+  handednesses at once. Neither reason was tested; the Limitations point to Section III-C.
+- Fig. 10's lower labels no longer run into the domes' arrows, in English and Chinese.
+- The video in Simplified Chinese: `docs/video/script.zh-CN.md`, built with `make_video.py zh-CN` from the Chinese
+  paper and figures, in Source Han Sans SC (or Noto Sans SC). `docs/video/languages.py` holds what differs per
+  language. Chinese subtitles break between words (jieba, with the glossary's terms), preferably after punctuation.
+  In both videos each change of subtitle moves to the nearest pause in the speech, and a partial render keeps the
+  subtitles of its last segment in step.
+- The Chinese paper exports to Word too (`export_docx.py --lang zh-CN`, `ER_NORMAL_MAPS.zh-CN.docx`), with its tables
+  captioned 表 I and so on, its Chinese figures, and Chinese text in Noto Sans SC. Both Word files now number every
+  page at the bottom and leave out the line linking the other language. The edits made after pandoc are in
+  `docs/paper/docx_xml.py`.
+- In both Word files, numbers in maths and the equation numbers are upright, and table captions are upright in
+  small capitals, as IEEE sets them. The Chinese paper sets 文字表述： and its AI line in plain text, since italic
+  Chinese is a slant of upright type.
+- The Word tables have columns sized to their content, so no word breaks inside a cell, with 0.05 in cell margins;
+  the pages are US Letter with 0.75 in margins; figures and tables are centred, no figure is taller than 7 in, and
+  each stays on the page of its caption. In the Chinese file, the bracketed part of 表 I and 表 II's first column
+  has its own line. The Word edits are split by subject into `docx_tables.py`, `docx_styles.py` and `docx_xml.py`.
+- `export_docx.py --lang zh-CN --math-images` writes `ER_NORMAL_MAPS.zh-CN.math-images.docx`, with every maths
+  expression as a picture drawn by KaTeX, for viewers that do not show Word equations: inline maths lowered onto the
+  baseline, display equations centred with their number at the right margin. The steps are in
+  `docs/paper/math_images.py`.
 
 ## 1.0.0
 

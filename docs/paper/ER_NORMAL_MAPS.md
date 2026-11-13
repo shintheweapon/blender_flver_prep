@@ -1,5 +1,7 @@
 # Normal Maps and Tangent Frames in Elden Ring: Measurement, Analysis and Matching Tangents on Import
 
+English | [简体中文](ER_NORMAL_MAPS.zh-CN.md)
+
 **shintheweapon and Claude (Anthropic, Claude Opus 5.5)**
 
 *AI disclosure: see the Acknowledgement.*
@@ -221,7 +223,9 @@ handedness, and its winding agrees with it.
 
 **Result.** FLVER space is left-handed, so as seen in game $\vec{N}\times\vec{T}$ follows the left-hand rule. On an
 island whose texture looks unmirrored in game, $\vec{N}\times\vec{T}$ points along −U, and (6) needs $W = -1$. The
-test has limits: one model, LOD0 only, and handedness inferred from anatomy and winding.
+test has limits: one model, LOD0 only, and handedness inferred from anatomy and winding. It was not repeated on more
+models, for two reasons: it has long been held in the FromSoftware modding community that the games' model space is
+left-handed, and a game is unlikely to use two handednesses at once. Neither reason was tested here.
 
 **Impact on the implementation.** Equation (9), and the import step of Section VI, ER Tangents, through (19), give
 $W = -1$ on unmirrored islands. A Blender scene is carried into this space by swapping its Y and Z axes (Fig. 3(a) and (b)): a −90°
@@ -689,7 +693,8 @@ Fig. 11. Ways out of Blender, and the tangents each one gives.
 - Reconstructing z (4), normalising (7) and the height relation (5) are common real-time graphics practice. They are
   unconfirmed for Elden Ring, because its shaders have not been examined and no in-game test isolates them.
 - What blue and alpha hold was not tested; this paper follows the modding community's view that blue holds gloss.
-- The handedness of FLVER space was inferred from one model, LOD0 only.
+- The handedness of FLVER space was inferred from one model, LOD0 only, and was not checked on more models, for the
+  reasons given in Section III-C.
 - Cloth meshes keep $W = -1$ on mirrored islands, unlike (9) and ER Tangents; the cause and the effect in game were not
   tested.
 - The layout test ran on the game's part normal maps only. Its correlation is moderate, and of the 40 maps on which
@@ -733,7 +738,7 @@ Accessed: 11 Nov. 2026.
 
 [5] shintheweapon, "blender_flver_prep," GitHub repository, branch develop: `docs/figures/` (the scripts
 and results of Sections IV-A and IV-B) and `docs/paper/README.md` (how to reproduce them). [Online].
-Available: https://github.com/shintheweapon/blender_flver_prep/tree/develop. Accessed: 12 Nov. 2026.
+Available: https://github.com/shintheweapon/blender_flver_prep/tree/develop. Accessed: 13 Nov. 2026.
 
 [6] shintheweapon, "FbxImporter," fork, branch develop; and "Add an ER Tangents import option," pull request #10.
 [Online]. Available: https://github.com/shintheweapon/FbxImporter/tree/develop and

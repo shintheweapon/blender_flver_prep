@@ -26,6 +26,16 @@ test is
 `tests/test_figures.py` and `tests/test_paper.py` check
 them and the paper's worked example.
 
+## Chinese version
+
+[`ER_NORMAL_MAPS.zh-CN.md`](ER_NORMAL_MAPS.zh-CN.md) is the paper in Simplified Chinese, with the same sections,
+equations, tables, citations and references (kept in their published form, with the access dates in Chinese). Its
+figures are the paper's figures with Chinese text, `../figures/*.zh.svg`, written by `make_figures.py` from the
+catalogue in [`../figures/zh_text.py`](../figures/zh_text.py); the English figures are unchanged. The Chinese terms
+are fixed in [`glossary.zh-CN.md`](glossary.zh-CN.md). `tests/test_paper_zh.py` checks the Chinese paper against the
+English one (equations, table numbers, figures, citations, references and counts), and `tests/test_figures_zh.py` checks
+the Chinese figures. A change to the English paper is made in the Chinese one too.
+
 ## Reproducing the measurements
 
 The paper cites this repository for the scripts and results of Sections IV-A and IV-B. The committed results
@@ -44,3 +54,31 @@ are not distributed here.
 4. **IV-B, the frame survey:** `python docs/figures/survey_parts.py <path to flverdump.exe> <unpack folder>` dumps and
    surveys every `.flver` (one per file name) and rewrites `frame_survey.json`. It keeps its progress in the unpack
    folder, so a stopped run resumes.
+
+## Exporting to Word or Google Docs
+
+`python docs/paper/export_docx.py` writes `docs/paper/out/ER_NORMAL_MAPS.docx` (git-ignored), with every equation as a
+native Word equation, the tables with their captions above them, and the figures as images: still figures as PNGs in
+light mode, Figs. 3(a) and 7 as animated GIFs, and the in-game screenshots as PNGs. The pages are US Letter with 0.75 in
+margins and their number centred at the bottom; each table's columns are sized to its content, so no word breaks
+inside a cell; figures and tables are centred, no figure is taller than 7 in, and each stays on the page of its
+caption. The line linking the paper in the other language is left out. It needs pandoc, ffmpeg, Google Chrome and the Python package `websocket-client`, and
+reports what the file holds.
+
+`python docs/paper/export_docx.py --lang zh-CN` exports the Chinese paper the same way, to
+`docs/paper/out/ER_NORMAL_MAPS.zh-CN.docx`, with its tables captioned 表 I and so on, the bracketed part of 表 I and
+表 II's first column on its own line, and its own figures. Chinese text is set in Noto Sans SC, the name Google Docs
+offers for Source Han Sans SC, and the figures are drawn in Source Han Sans SC. The edits made to the Word file after
+pandoc are in `docx_tables.py` (tables), `docx_styles.py` (fonts and styles) and `docx_xml.py` (the rest).
+
+`python docs/paper/export_docx.py --lang zh-CN --math-images` writes
+`docs/paper/out/ER_NORMAL_MAPS.zh-CN.math-images.docx`, for viewers that do not show Word equations: every maths
+expression is a picture, drawn by KaTeX in headless Chrome at four times screen resolution (into
+`docs/paper/out/math/`), with its TeX as the picture's alt text. Inline maths is lowered onto the text's baseline (Word's character position;
+LibreOffice leaves the pictures raised), and each display equation is centred with its number at the right margin as
+text. The maths in this file cannot be edited. The steps are in `math_images.py`.
+
+To get a Google Doc, upload the `.docx` to Google Drive and choose **Open with > Google Docs**; Google Docs turns the
+Word equations into its own. If the two GIFs do not animate there, insert `paper_axis_swap_animated.gif` (Fig. 3(a))
+and `paper_dome_tilts.gif` (Fig. 7) from `docs/paper/out/` in place of the stills (**Insert > Image > Upload from
+computer**); for the Chinese file, `paper_axis_swap_animated.zh.gif` and `paper_dome_tilts.zh.gif`.

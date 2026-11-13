@@ -173,5 +173,22 @@ class TestLayoutFigureCaption(unittest.TestCase):
                 self.assertIn(outcome, caption)
 
 
+class TestHandednessScope(unittest.TestCase):
+    """III-C says why the handedness test was not repeated on more models, and the Limitations point to it."""
+
+    def test_section_gives_both_reasons(self):
+        text = " ".join(read_paper().split())
+        section = text[text.index("### C. The Handedness of FLVER Space"):text.index("## IV. Measurements")]
+        for reason in ("long been held in the FromSoftware modding community", "unlikely to use two handednesses",
+                       "Neither reason was tested"):
+            with self.subTest(reason=reason):
+                self.assertIn(reason, section)
+
+    def test_limitations_cite_the_section(self):
+        text = " ".join(read_paper().split())
+        limitations = text[text.index("## IX. Limitations"):text.index("## X. Conclusion")]
+        self.assertIn("not checked on more models, for the reasons given in Section III-C", limitations)
+
+
 if __name__ == "__main__":
     unittest.main()

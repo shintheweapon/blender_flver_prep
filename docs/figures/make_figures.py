@@ -16,6 +16,7 @@ import os
 
 from axis_swap_figure import figure_axis_swap, figure_axis_swap_animated
 from paper_figures import figure_channel_changes, figure_layout_test, figure_uv_triangle
+import zh_text
 from route_chart import PAPER_CHART, figure_ways_out
 from svg_parts import BLUE, GREEN, RED, fmt, legend, line, project, svg, text
 from tangent_geometry import (CASES, MOTION, NORMAL, V, cross_as_drawn, decode, dome_points, dot, read_directions,
@@ -418,9 +419,11 @@ def build_all():
     Returns
     -------
     dict
-        File name to SVG text.
+        File name to SVG text: the figures in ``FIGURES``, then the paper's
+        figures in Chinese (``<name>.zh.svg``, from ``zh_text``).
     """
-    return {name: make() for name, make in FIGURES.items()}
+    english = {name: make() for name, make in FIGURES.items()}
+    return {**english, **zh_text.build(english)}
 
 
 def main():
