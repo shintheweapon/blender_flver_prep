@@ -30,10 +30,11 @@ VIDEO_DIR = os.path.join(DOCS_DIR, "video")
 if VIDEO_DIR not in sys.path:
     sys.path.insert(0, VIDEO_DIR)
 
+import languages  # noqa: E402  (the paper of each language)
 import scenes  # noqa: E402  (scenes.moves tells the animated figures apart; it imports no browser code)
 from docx_xml import (BORDER_EDGES, CAPTION_STYLE, CELL_BORDERS, CENTRE, TABLE_BORDERS,  # noqa: E402,F401
-                      TABLE_PROPERTIES, TABLE_PROPERTY_ORDER, check_docx, child_elements, format_tables,
-                      rewrite_document, table_properties, table_rows)
+                      TABLE_PROPERTIES, TABLE_PROPERTY_ORDER, check_docx, child_elements, finish,
+                      format_tables, rewrite_document, table_properties, table_rows)
 
 STILL_SCALE = 2.0
 GIF_SCALE = 1.5
@@ -42,7 +43,11 @@ MAX_WIDTH_INCHES = 6.5
 PANDOC_FORMAT = "markdown-implicit_figures"
 B = "\\"
 TAG = re.compile(re.escape(B + "tag{") + r"([^}]*)\}")
-TABLE_CAPTION = re.compile(r'<p align="center">TABLE ([IVXL]+)<br>(.*?)</p>')
+TABLE_CAPTION = re.compile(r'<p align="center">(?:TABLE|表) ([IVXL]+)<br>(.*?)</p>')
+# The line under the title that links the paper in the other language, a dead link in a Word file
+LANGUAGE_LINE = re.compile(r"\]\(ER_NORMAL_MAPS[\w.-]*\.md\)")
+# The font of Chinese text in the Chinese Word file: Source Han Sans SC under the name Google Docs offers
+EAST_ASIAN = {"zh-CN": ("Noto Sans SC", "zh-CN")}
 IMAGE = re.compile(r"!\[([^\]]*)\]\(([^)]+)\)")
 
 
@@ -89,7 +94,10 @@ def prepare_markdown(text, widths=None):
     - ``\\tag{n}`` becomes ``\\qquad (n)``, which pandoc can turn into a Word
       equation;
     - each ``<p align="center">TABLE N<br>CAPTION</p>`` becomes a pandoc table
-      caption, ``Table: TABLE N. CAPTION``, which Word places above the table;
+      caption, ``Table: TABLE N. CAPTION``, which Word places above the table
+      (``表 N<br>`` becomes ``Table: 表 N　CAPTION``);
+    - the language line under the title, which links the other paper's
+      Markdown file, is left out;
     - each image points at its exported file, with its width in inches.
 
     Parameters
@@ -104,7 +112,10 @@ def prepare_markdown(text, widths=None):
     """
     widths = widths or {}
     text = TAG.sub(lambda m: f"{B}qquad ({m.group(1)})", text)
-    text = TABLE_CAPTION.sub(lambda m: f"Table: TABLE {m.group(1)}. {m.group(2)}", text)
+    text = TABLE_CAPTION.sub(lambda m: (f"Table: 表 {m.group(1)}　{m.group(2)}"
+                                        if m.group(0).startswith('<p align="center">表')
+                                        else f"Table: TABLE {m.group(1)}. {m.group(2)}"), text)
+    text = drop_language_line(text)
 
     def image(match):
         name = export_name(match.group(2))
@@ -112,6 +123,40 @@ def prepare_markdown(text, widths=None):
         return f"![{match.group(1)}]({name}){size}"
 
     return IMAGE.sub(image, text)
+
+
+def drop_language_line(text):
+    """
+    The paper without its language line: the first line, among the first five,
+    that links one of the papers' Markdown files, and the blank line after it.
+
+    Parameters
+    ----------
+    text : str
+
+    Returns
+    -------
+    str
+    """
+    lines = text.split("\n")
+    for index, line in enumerate(lines[:5]):
+        if LANGUAGE_LINE.search(line):
+            drop = 2 if index + 1 < len(lines) and not lines[index + 1].strip() else 1
+            return "\n".join(lines[:index] + lines[index + drop:])
+    return text
+
+
+def gif_timing(source):
+    """
+    Frames a second and seconds of an animated figure's GIF, by its English
+    name (``.zh.svg`` is read as ``.svg``).
+
+    Raises
+    ------
+    KeyError
+        For a figure that is not animated.
+    """
+    return GIF_TIMING[os.path.basename(source).replace(".zh.svg", ".svg")]
 
 
 def pandoc_command(out_path):
@@ -166,6 +211,8 @@ def render_figures(text, out_dir):
         else:
             with open(path, encoding="utf-8") as file:
                 svg = file.read()
+            if source.endswith(".zh.svg"):
+                svg = scenes.with_video_fonts(svg)
             width, height = svg_size(svg)
             animated = name.endswith(".gif")
             scale = GIF_SCALE if animated else STILL_SCALE
@@ -177,7 +224,7 @@ def render_figures(text, out_dir):
                 with chrome.Chrome(*size, color_scheme="light") as browser:
                     browser.load(page)
                     if animated:
-                        fps, seconds = GIF_TIMING[os.path.basename(source)]
+                        fps, seconds = gif_timing(source)
                         frames = [browser.capture(i / fps) for i in range(int(round(fps * seconds)))]
                     else:
                         frames = [browser.capture(0.0)]
@@ -194,30 +241,37 @@ def render_figures(text, out_dir):
     return widths
 
 
-def main(out_dir=OUT_DIR):
+def main(out_dir=OUT_DIR, lang="en"):
     """
-    Export the paper and report what the Word file holds.
+    Export a language's paper and report what the Word file holds.
+
+    Parameters
+    ----------
+    out_dir : str
+    lang : str
+        ``en`` or ``zh-CN`` (``docs/video/languages.py``).
 
     Returns
     -------
     str
-        The Word file written.
+        The Word file written: ``<paper>.docx``.
 
     Raises
     ------
     subprocess.CalledProcessError
         When pandoc or ffmpeg fails.
     """
-    with open(PAPER, encoding="utf-8") as file:
+    paper = languages.language(lang).paper
+    with open(os.path.join(PAPER_DIR, paper), encoding="utf-8") as file:
         text = file.read()
     widths = render_figures(text, out_dir)
-    out_path = os.path.join(out_dir, "ER_NORMAL_MAPS.docx")
+    out_path = os.path.join(out_dir, os.path.splitext(paper)[0] + ".docx")
     run = subprocess.run(pandoc_command(out_path), input=prepare_markdown(text, widths).encode("utf-8"),
                          cwd=out_dir, capture_output=True, check=True)
     warnings = [line for line in run.stderr.decode("utf-8", "replace").splitlines() if line.startswith("[WARNING]")]
     for line in warnings:
         print(line)
-    rewrite_document(out_path, format_tables)
+    finish(out_path, format_tables, EAST_ASIAN.get(lang))
     report = check_docx(out_path)
     print(", ".join(f"{key} {value!r}" for key, value in report.items()), f"; written to {os.path.relpath(out_path)}")
     return out_path
@@ -226,4 +280,6 @@ def main(out_dir=OUT_DIR):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--out", default=OUT_DIR, help="folder to write to (default: docs/paper/out)")
-    main(parser.parse_args().out)
+    parser.add_argument("--lang", default="en", choices=sorted(languages.LANGUAGES), help="the paper's language")
+    options = parser.parse_args()
+    main(options.out, options.lang)

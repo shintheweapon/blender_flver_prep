@@ -4,12 +4,15 @@
 import os
 import re
 import sys
+import tempfile
 import unittest
+import zipfile
 
 PAPER_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs", "paper")
 if PAPER_DIR not in sys.path:
     sys.path.insert(0, PAPER_DIR)
 
+import docx_xml  # noqa: E402
 import export_docx  # noqa: E402
 
 
@@ -113,6 +116,124 @@ class TestFormatTables(unittest.TestCase):
 
     def test_text_outside_tables_is_unchanged(self):
         self.assertTrue(self.result.startswith("<w:body><w:p><w:t>before</w:t></w:p>"))
+
+
+class TestChineseExport(unittest.TestCase):
+    """The Chinese paper's Markdown is prepared the same way, with its own caption label."""
+
+    @classmethod
+    def setUpClass(cls):
+        with open(os.path.join(PAPER_DIR, "ER_NORMAL_MAPS.zh-CN.md"), encoding="utf-8") as file:
+            cls.paper = file.read()
+        cls.prepared = export_docx.prepare_markdown(cls.paper)
+
+    def test_every_table_caption_becomes_a_pandoc_caption(self):
+        captions = export_docx.TABLE_CAPTION.findall(self.paper)
+        self.assertEqual(len(captions), 6)
+        self.assertNotIn('<p align="center">表', self.prepared)
+        for numeral, caption in captions:
+            with self.subTest(table=numeral):
+                self.assertIn(f"Table: 表 {numeral}　{caption}", self.prepared)
+
+    def test_animated_chinese_figures_get_their_gif_timing(self):
+        for name in ("paper_axis_swap_animated.zh.svg", "paper_dome_tilts.zh.svg"):
+            with self.subTest(figure=name):
+                self.assertEqual(export_docx.gif_timing("../figures/" + name),
+                                 export_docx.GIF_TIMING[name.replace(".zh.svg", ".svg")])
+                self.assertTrue(export_docx.export_name("../figures/" + name).endswith(".zh.gif"))
+
+    def test_the_chinese_figures_lead_with_the_video_fonts(self):
+        with open(os.path.join(os.path.dirname(PAPER_DIR), "figures", "paper_layout_test.zh.svg"),
+                  encoding="utf-8") as file:
+            svg = export_docx.scenes.with_video_fonts(file.read())
+        self.assertIn(export_docx.scenes.chinese_figure_stack(), svg)
+        self.assertTrue(export_docx.scenes.chinese_figure_stack().index("Source Han Sans SC")
+                        < export_docx.scenes.chinese_figure_stack().index("Noto Sans SC"))
+
+
+class TestLanguageLine(unittest.TestCase):
+    """Both Word files start at the title: the line linking the other paper's Markdown file is left out."""
+
+    def test_the_line_is_dropped_in_both_languages(self):
+        for name in ("ER_NORMAL_MAPS.md", "ER_NORMAL_MAPS.zh-CN.md"):
+            with open(os.path.join(PAPER_DIR, name), encoding="utf-8") as file:
+                paper = file.read()
+            prepared = export_docx.prepare_markdown(paper)
+            with self.subTest(paper=name):
+                self.assertNotRegex(prepared, export_docx.LANGUAGE_LINE)
+                self.assertTrue(prepared.startswith(paper.split("\n")[0] + "\n\n"))
+                self.assertEqual(prepared.split("\n")[2], paper.split("\n")[4])
+
+    def test_nothing_else_changes(self):
+        text = "# Title\n\nEnglish | [简体中文](ER_NORMAL_MAPS.zh-CN.md)\n\nBody, linking [x](ER_NORMAL_MAPS.md) later.\n" \
+               + "\n" * 6 + "end"
+        self.assertEqual(export_docx.drop_language_line(text),
+                         "# Title\n\nBody, linking [x](ER_NORMAL_MAPS.md) later.\n" + "\n" * 6 + "end")
+        self.assertEqual(export_docx.drop_language_line("# Title\n\nNo links.\n"), "# Title\n\nNo links.\n")
+
+
+class TestWordPackage(unittest.TestCase):
+    """The page number in the footer, the East Asian font, and the rewrite of the Word package."""
+
+    STYLES = ('<w:styles><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:asciiTheme="minorHAnsi" '
+              'w:cstheme="minorBidi" w:eastAsiaTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" /><w:sz w:val="24" />'
+              '<w:lang w:bidi="ar-SA" w:eastAsia="en-US" w:val="en-US" /></w:rPr></w:rPrDefault></w:docDefaults>'
+              '<w:style><w:rPr><w:rFonts w:asciiTheme="majorHAnsi" w:eastAsiaTheme="majorEastAsia" /></w:rPr></w:style>'
+              '<w:style><w:rPr><w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" /></w:rPr></w:style></w:styles>')
+
+    def test_east_asian_text_gets_the_font_and_language(self):
+        styles = docx_xml.set_east_asian_font(self.STYLES, "Noto Sans SC", "zh-CN")
+        self.assertNotIn("eastAsiaTheme", styles)
+        self.assertEqual(styles.count('w:eastAsia="Noto Sans SC"'), 3)
+        self.assertIn('w:asciiTheme="minorHAnsi"', styles)
+        self.assertIn('w:hAnsi="Consolas"', styles)
+        self.assertIn('<w:lang w:bidi="ar-SA" w:eastAsia="zh-CN" w:val="zh-CN" />', styles)
+        self.assertEqual(docx_xml.set_east_asian_font(styles, "Noto Sans SC", "zh-CN"), styles)
+
+    def test_the_footer_holds_a_centred_page_field(self):
+        footer = docx_xml.footer_xml()
+        self.assertIn('<w:jc w:val="center"/>', footer)
+        self.assertIn("> PAGE <", footer)
+        for kind in ("begin", "separate", "end"):
+            self.assertIn(f'w:fldCharType="{kind}"', footer)
+
+    def test_the_last_section_refers_to_the_footer_once(self):
+        reference = '<w:footerReference w:type="default" r:id="rIdPageNumbers"/>'
+        for body, expected in (
+                ("<w:body><w:p/><w:sectPr /></w:body>", f"<w:body><w:p/><w:sectPr>{reference}</w:sectPr></w:body>"),
+                ("<w:body><w:p/></w:body>", f"<w:body><w:p/><w:sectPr>{reference}</w:sectPr></w:body>"),
+                ('<w:body><w:sectPr w:rsidR="1"><w:pgSz/></w:sectPr></w:body>',
+                 f'<w:body><w:sectPr w:rsidR="1">{reference}<w:pgSz/></w:sectPr></w:body>')):
+            with self.subTest(body=body):
+                once = docx_xml.add_footer(body)
+                self.assertEqual(once, expected)
+                self.assertEqual(docx_xml.add_footer(once), once)
+
+    def test_relationship_and_content_type_are_added_once(self):
+        rels = '<Relationships><Relationship Id="rId1" Target="styles.xml" /></Relationships>'
+        once = docx_xml.add_relationship(rels, "rIdPageNumbers", docx_xml.FOOTER_TYPE, "footer1.xml")
+        self.assertIn('Id="rId1"', once)
+        self.assertEqual(once.count('Id="rIdPageNumbers"'), 1)
+        self.assertEqual(docx_xml.add_relationship(once, "rIdPageNumbers", docx_xml.FOOTER_TYPE, "footer1.xml"), once)
+        types = '<Types><Override PartName="/word/document.xml" ContentType="x" /></Types>'
+        once = docx_xml.add_override(types, "word/footer1.xml", docx_xml.FOOTER_CONTENT)
+        self.assertIn('PartName="/word/footer1.xml"', once)
+        self.assertIn('PartName="/word/document.xml"', once)
+        self.assertEqual(docx_xml.add_override(once, "word/footer1.xml", docx_xml.FOOTER_CONTENT), once)
+
+    def test_rewrite_package_changes_adds_and_keeps_the_rest(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = os.path.join(folder, "sample.docx")
+            with zipfile.ZipFile(path, "w") as package:
+                package.writestr("word/document.xml", "<doc/>")
+                package.writestr("word/media/a.png", b"\x89PNG kept")
+            docx_xml.rewrite_package(path, {"word/document.xml": lambda xml: xml.replace("doc", "changed")},
+                                     {"word/footer1.xml": b"<ftr/>"})
+            with zipfile.ZipFile(path) as package:
+                self.assertEqual(package.namelist(), ["word/document.xml", "word/media/a.png", "word/footer1.xml"])
+                self.assertEqual(package.read("word/document.xml"), b"<changed/>")
+                self.assertEqual(package.read("word/media/a.png"), b"\x89PNG kept")
+                self.assertEqual(package.read("word/footer1.xml"), b"<ftr/>")
 
 
 if __name__ == "__main__":

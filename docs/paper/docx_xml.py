@@ -1,7 +1,8 @@
 """
 The Word package's XML, after pandoc: the tables' borders, centring and
-unsplittable rows, the rewrite of a part inside the ``.docx`` file, and the
-check of what the file holds. ``export_docx.py`` prepares the paper and its
+unsplittable rows, the page number in the footer, the East Asian font and
+language, the rewrite of parts inside the ``.docx`` file, and the check of what
+the file holds. ``export_docx.py`` prepares the paper and its
 figures and calls these.
 """
 
@@ -123,10 +124,41 @@ def format_tables(document_xml):
     return re.sub(re.escape(CAPTION_STYLE) + r"(?!" + re.escape(CENTRE) + ")", CAPTION_STYLE + CENTRE, document_xml)
 
 
+def rewrite_package(path, changes, added=None):
+    """
+    Rewrite parts of a Word file, and add new ones, keeping every other part
+    as it is and in the same order.
+
+    Parameters
+    ----------
+    path : str
+    changes : dict
+        Part name (``word/document.xml``) to a function that takes and
+        returns that part's text.
+    added : dict or None
+        New part names to their bytes, written after the existing parts; a part
+        that already exists is replaced in place instead.
+    """
+    added = dict(added or {})
+    with zipfile.ZipFile(path) as package:
+        parts = [(info, package.read(info.filename)) for info in package.infolist()]
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as package:
+        for info, data in parts:
+            if info.filename in added:
+                data = added.pop(info.filename)
+            elif info.filename in changes:
+                data = changes[info.filename](data.decode("utf-8")).encode("utf-8")
+            package.writestr(info, data)
+        for name, data in added.items():
+            package.writestr(name, data)
+    with open(path, "wb") as file:
+        file.write(buffer.getvalue())
+
+
 def rewrite_document(path, change):
     """
-    Apply ``change`` to ``word/document.xml`` inside a Word file, keeping every
-    other part as it is and in the same order.
+    Apply ``change`` to ``word/document.xml`` inside a Word file (``rewrite_package``).
 
     Parameters
     ----------
@@ -134,16 +166,168 @@ def rewrite_document(path, change):
     change : callable
         Takes and returns the document XML as text.
     """
-    with zipfile.ZipFile(path) as package:
-        parts = [(info, package.read(info.filename)) for info in package.infolist()]
-    buffer = io.BytesIO()
-    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as package:
-        for info, data in parts:
-            if info.filename == "word/document.xml":
-                data = change(data.decode("utf-8")).encode("utf-8")
-            package.writestr(info, data)
-    with open(path, "wb") as file:
-        file.write(buffer.getvalue())
+    rewrite_package(path, {"word/document.xml": change})
+
+
+FOOTER_PART = "word/footer1.xml"
+FOOTER_ID = "rIdPageNumbers"
+FOOTER_TYPE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer"
+FOOTER_CONTENT = "application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"
+W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+R_NS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+
+
+def footer_xml():
+    """
+    A footer part holding the page number, centred: one paragraph with a
+    ``PAGE`` field.
+
+    Returns
+    -------
+    str
+    """
+    run = '<w:r><w:fldChar w:fldCharType="{}"/></w:r>'
+    return ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            f'<w:ftr xmlns:w="{W_NS}" xmlns:r="{R_NS}"><w:p><w:pPr><w:jc w:val="center"/></w:pPr>'
+            + run.format("begin") + '<w:r><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r>'
+            + run.format("separate") + "<w:r><w:t>1</w:t></w:r>" + run.format("end") + "</w:p></w:ftr>")
+
+
+def add_footer(document_xml, rid=FOOTER_ID):
+    """
+    Point the document's last section at a footer, by relationship ID.
+
+    The reference goes first in the body's last ``<w:sectPr>``, which pandoc
+    writes empty (``<w:sectPr />``), or in a new one where there is none; a
+    document that already refers to ``rid`` is returned unchanged.
+
+    Parameters
+    ----------
+    document_xml : str
+    rid : str
+
+    Returns
+    -------
+    str
+    """
+    if f'r:id="{rid}"' in document_xml:
+        return document_xml
+    reference = f'<w:footerReference w:type="default" r:id="{rid}"/>'
+    body_end = document_xml.rindex("</w:body>")
+    body, rest = document_xml[:body_end], document_xml[body_end:]
+    found = list(re.finditer(r"<w:sectPr\b[^>]*>", body))
+    if not found:
+        return body + f"<w:sectPr>{reference}</w:sectPr>" + rest
+    tag = found[-1]
+    if tag.group(0).endswith("/>"):
+        opening = tag.group(0)[:-2].rstrip() + ">"
+        return body[:tag.start()] + opening + reference + "</w:sectPr>" + body[tag.end():] + rest
+    return body[:tag.end()] + reference + body[tag.end():] + rest
+
+
+def add_relationship(rels_xml, rid, kind, target):
+    """
+    Add a relationship to a ``.rels`` part, unless one with that ID exists.
+
+    Parameters
+    ----------
+    rels_xml : str
+    rid, kind, target : str
+        The relationship's ID, type URI and target part (relative).
+
+    Returns
+    -------
+    str
+    """
+    if f'Id="{rid}"' in rels_xml:
+        return rels_xml
+    entry = f'<Relationship Type="{kind}" Id="{rid}" Target="{target}" />'
+    return rels_xml.replace("</Relationships>", entry + "</Relationships>")
+
+
+def add_override(types_xml, part, content_type):
+    """
+    Declare a part's content type in ``[Content_Types].xml``, unless it is declared.
+
+    Parameters
+    ----------
+    types_xml : str
+    part : str
+        The part name, as ``word/footer1.xml``.
+    content_type : str
+
+    Returns
+    -------
+    str
+    """
+    name = "/" + part.lstrip("/")
+    if f'PartName="{name}"' in types_xml:
+        return types_xml
+    entry = f'<Override PartName="{name}" ContentType="{content_type}" />'
+    return types_xml.replace("</Types>", entry + "</Types>")
+
+
+def set_east_asian_font(styles_xml, font, lang):
+    """
+    Give East Asian text a font and language in ``word/styles.xml``.
+
+    Every ``w:eastAsiaTheme`` attribute, which takes the font from the theme,
+    gives way to ``w:eastAsia`` with ``font``; the default language
+    (``w:docDefaults``) becomes ``lang`` for its main and its East Asian text.
+    Latin fonts are left as they are.
+
+    Parameters
+    ----------
+    styles_xml : str
+    font : str
+    lang : str
+        A language tag, as ``zh-CN``.
+
+    Returns
+    -------
+    str
+    """
+    def fonts(match):
+        tag = re.sub(r'\s*w:eastAsiaTheme="[^"]*"', "", match.group(0))
+        if "w:eastAsia=" in tag:
+            return re.sub(r'w:eastAsia="[^"]*"', f'w:eastAsia="{font}"', tag)
+        return tag.replace("<w:rFonts", f'<w:rFonts w:eastAsia="{font}"', 1)
+
+    styles_xml = re.sub(r"<w:rFonts\b[^>]*>", fonts, styles_xml)
+
+    def defaults(match):
+        block = match.group(0)
+        new = f'<w:lang w:bidi="ar-SA" w:eastAsia="{lang}" w:val="{lang}" />'
+        found = re.search(r"<w:lang\b[^>]*/>", block)
+        if found:
+            return block.replace(found.group(0), new, 1)
+        return block.replace("</w:rPr>", new + "</w:rPr>", 1)
+
+    return re.sub(r"<w:docDefaults>.*?</w:docDefaults>", defaults, styles_xml, count=1, flags=re.S)
+
+
+def finish(path, format_document, east_asian=None):
+    """
+    The edits after pandoc, in one rewrite of the Word file: the document's
+    own edits, a centred page number in the footer, and, for Chinese, the East
+    Asian font and language.
+
+    Parameters
+    ----------
+    path : str
+    format_document : callable
+        Takes and returns the document XML (``format_tables``).
+    east_asian : tuple or None
+        ``(font, lang)``, as ``("Noto Sans SC", "zh-CN")``; None leaves the styles.
+    """
+    changes = {
+        "word/document.xml": lambda xml: add_footer(format_document(xml)),
+        "word/_rels/document.xml.rels": lambda xml: add_relationship(xml, FOOTER_ID, FOOTER_TYPE, "footer1.xml"),
+        "[Content_Types].xml": lambda xml: add_override(xml, FOOTER_PART, FOOTER_CONTENT),
+    }
+    if east_asian:
+        changes["word/styles.xml"] = lambda xml: set_east_asian_font(xml, *east_asian)
+    rewrite_package(path, changes, {FOOTER_PART: footer_xml().encode("utf-8")})
 
 
 def check_docx(path):
@@ -161,13 +345,18 @@ def check_docx(path):
         ``centred_captions``; ``cells`` and ``bordered_cells``; ``rows`` and
         ``unsplittable_rows``; ``bold_header_runs``; ``images`` and ``gifs``;
         ``tex_left`` (TeX commands left in the text); ``author`` (the file's
-        author field).
+        author field); ``east_asian_font`` and ``language`` (the styles'
+        defaults); ``page_numbers`` (whether the footer with the page number is
+        referenced).
     """
     with zipfile.ZipFile(path) as package:
         document = package.read("word/document.xml").decode("utf-8")
         media = [n for n in package.namelist() if n.startswith("word/media/")]
         core = package.read("docProps/core.xml").decode("utf-8")
+        styles = package.read("word/styles.xml").decode("utf-8")
+        footer = package.read(FOOTER_PART).decode("utf-8") if FOOTER_PART in package.namelist() else ""
     text_only = re.sub(r"<m:oMath.*?</m:oMath>", "", document, flags=re.S)
+    defaults = (re.findall(r"<w:docDefaults>.*?</w:docDefaults>", styles, flags=re.S) + [""])[0]
     author = re.search(r"<dc:creator>(.*?)</dc:creator>", core)
     return {
         "equations": len(re.findall(r"<m:oMath[ >]", document)),
@@ -185,4 +374,7 @@ def check_docx(path):
         "gifs": sum(n.lower().endswith(".gif") for n in media),
         "tex_left": len(re.findall(re.escape(B) + r"(?:vec|frac|partial|times|hat)\b", text_only)),
         "author": author.group(1) if author else "",
+        "east_asian_font": (re.findall(r'<w:rFonts\b[^>]*\bw:eastAsia="([^"]*)"', defaults) + [""])[0],
+        "language": (re.findall(r'<w:lang\b[^>]*\bw:val="([^"]*)"', defaults) + [""])[0],
+        "page_numbers": f'r:id="{FOOTER_ID}"' in document and " PAGE " in footer,
     }

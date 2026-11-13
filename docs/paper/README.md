@@ -59,10 +59,16 @@ are not distributed here.
 
 `python docs/paper/export_docx.py` writes `docs/paper/out/ER_NORMAL_MAPS.docx` (git-ignored), with every equation as a
 native Word equation, the tables with their captions above them, and the figures as images: still figures as PNGs in
-light mode, Figs. 3(a) and 7 as animated GIFs, and the in-game screenshots as PNGs. It needs pandoc, ffmpeg, Google
+light mode, Figs. 3(a) and 7 as animated GIFs, and the in-game screenshots as PNGs. Every page has its number centred
+at the bottom, and the line linking the paper in the other language is left out. It needs pandoc, ffmpeg, Google
 Chrome and the Python package `websocket-client`, and reports what the file holds.
+
+`python docs/paper/export_docx.py --lang zh-CN` exports the Chinese paper the same way, to
+`docs/paper/out/ER_NORMAL_MAPS.zh-CN.docx`, with its tables captioned 表 I and so on and its own figures. Chinese text
+is set in Noto Sans SC, the name Google Docs offers for Source Han Sans SC, and the figures are drawn in Source Han Sans
+SC. `docx_xml.py` holds the edits made to the Word file after pandoc.
 
 To get a Google Doc, upload the `.docx` to Google Drive and choose **Open with > Google Docs**; Google Docs turns the
 Word equations into its own. If the two GIFs do not animate there, insert `paper_axis_swap_animated.gif` (Fig. 3(a))
 and `paper_dome_tilts.gif` (Fig. 7) from `docs/paper/out/` in place of the stills (**Insert > Image > Upload from
-computer**).
+computer**); for the Chinese file, `paper_axis_swap_animated.zh.gif` and `paper_dome_tilts.zh.gif`.

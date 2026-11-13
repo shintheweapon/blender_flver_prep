@@ -117,6 +117,10 @@
   language. Chinese subtitles break between words (jieba, with the glossary's terms), preferably after punctuation.
   In both videos each change of subtitle moves to the nearest pause in the speech, and a partial render keeps the
   subtitles of its last segment in step.
+- The Chinese paper exports to Word too (`export_docx.py --lang zh-CN`, `ER_NORMAL_MAPS.zh-CN.docx`), with its tables
+  captioned 表 I and so on, its Chinese figures, and Chinese text in Noto Sans SC. Both Word files now number every
+  page at the bottom and leave out the line linking the other language. The edits made after pandoc are in
+  `docs/paper/docx_xml.py`.
 
 ## 1.0.0
 
