@@ -17,6 +17,7 @@ import os
 import subprocess
 import tempfile
 
+import languages
 import scenes
 import script
 import subtitles
@@ -24,11 +25,86 @@ import timeline
 
 FULL = (1920, 1080, 30)
 DRAFT = (960, 540, 15)
-# An opaque box per line (BorderStyle 3, alpha 00): where a subtitle's line boxes overlap, an opaque box keeps one
-# shade, while a see-through one doubles its shade there
-SUBTITLE_STYLE = ("FontName=Segoe UI,FontSize=13.2,PrimaryColour=&H00FFFFFF,BorderStyle=3,Outline=1,"
-                  "OutlineColour=&H00221B16,Shadow=0,MarginV=14")
 SUBTITLE_TOP = 924
+# The word splitters a language may name (``languages.Language.words``)
+WORD_SPLITTERS = {None: None, "jieba": subtitles.jieba_words}
+
+
+def subtitle_style(font):
+    """
+    The libass style of the burned-in subtitles, in a font family.
+
+    An opaque box per line (BorderStyle 3, alpha 00): where a subtitle's line
+    boxes overlap, an opaque box keeps one shade, while a see-through one
+    doubles its shade there.
+
+    Parameters
+    ----------
+    font : str
+        A font family name.
+
+    Returns
+    -------
+    str
+    """
+    return (f"FontName={font},FontSize=13.2,PrimaryColour=&H00FFFFFF,BorderStyle=3,Outline=1,"
+            "OutlineColour=&H00221B16,Shadow=0,MarginV=14")
+
+
+SUBTITLE_STYLE = subtitle_style("Segoe UI")
+
+
+def pick_font(fonts, available):
+    """
+    The first font family that is installed.
+
+    Parameters
+    ----------
+    fonts : sequence of str
+        The families in order of preference.
+    available : callable
+        Takes a family name, returns whether it is installed.
+
+    Returns
+    -------
+    str
+
+    Raises
+    ------
+    LookupError
+        When none of them is installed.
+    """
+    for font in fonts:
+        if available(font):
+            return font
+    raise LookupError(f"none of these fonts is installed: {', '.join(fonts)}")
+
+
+# Whether a family is installed: text drawn in it, with a generic fallback, measures differently from the fallback
+# alone (``document.fonts.check`` answers true for any family that needs no download, installed or not)
+FONT_PROBE = """(() => {{
+  const c = document.createElement('canvas').getContext('2d'), s = '汉字测试 Abg 0123';
+  const w = f => {{ c.font = f; return c.measureText(s).width; }};
+  return ['monospace', 'serif', 'sans-serif'].some(b => w('32px "{font}", ' + b) !== w('32px ' + b));
+}})()"""
+
+
+def subtitle_font(lang):
+    """
+    The subtitle family for a language: its only one, or the first of its list
+    that Chrome finds installed (``FONT_PROBE``).
+
+    Raises
+    ------
+    LookupError
+        When none of the language's families is installed.
+    """
+    fonts = languages.language(lang).subtitle_fonts
+    if len(fonts) == 1:
+        return fonts[0]
+    import chrome
+    with chrome.Chrome(64, 64) as browser:
+        return pick_font(fonts, lambda font: bool(browser.evaluate(FONT_PROBE.format(font=font))))
 
 
 def ffmpeg(*args, cwd=None):
@@ -168,22 +244,27 @@ def main(lang="en", draft=False, until=None):
     if extra:
         print("audio files that match no segment:", ", ".join(extra))
     if missing:
-        estimated = timeline.estimated_durations(all_scenes)
+        estimated = timeline.estimated_durations(all_scenes, lang)
         print(f"{len(missing)} of {len(estimated)} segments have no audio; their length is estimated"
               + (f" ({', '.join(missing[:5])}{', ...' if len(missing) > 5 else ''})" if files else ""))
         durations = {ident: durations.get(ident, estimated[ident]) for ident in estimated}
-    cues, spans, total = timeline.build(all_scenes, durations)
-    spans, cues, total = until_spans(spans, cues, until)
+    full_cues, spans, total = timeline.build(all_scenes, durations)
+    spans, cues, total = until_spans(spans, full_cues, until)
 
     out = os.path.join(script.OUT_DIR)
     cache, pages = os.path.join(out, "cache"), os.path.join(out, "pages")
     os.makedirs(cache, exist_ok=True)
     os.makedirs(pages, exist_ok=True)
     name = f"normal_maps.{lang}{'.draft' if draft else ''}{f'.until{until:g}' if until else ''}"
+    # subtitles are timed on the whole cues and only then cut, so a cut segment keeps its own timing
+    layout = subtitles.Layout(split=WORD_SPLITTERS[languages.language(lang).words])
+    shown = subtitles.clip(subtitles.entries(full_cues, layout, timeline.speech_pauses(files)), until)
     with open(os.path.join(out, f"{name}.srt"), "w", encoding="utf-8", newline="\n") as file:
-        file.write(subtitles.srt(cues))
+        file.write(subtitles.srt(shown))
 
-    paper = scenes.paper_text()
+    paper = scenes.paper_text(lang)
+    font = subtitle_font(lang)
+    print(f"subtitles in {font}")
     clips, browser = [], None
     try:
         for index, (span, frames) in enumerate(zip(spans, frame_counts(spans, fps))):
@@ -215,7 +296,7 @@ def main(lang="en", draft=False, until=None):
     if files:
         narration_track(cues, files, total, os.path.join(out, f"{name}.wav"))
         args += ["-i", f"{name}.wav", "-c:a", "aac", "-b:a", "192k"]
-    ffmpeg(*args, "-vf", f"subtitles={name}.srt:force_style='{SUBTITLE_STYLE}'", "-c:v", "libx264",
+    ffmpeg(*args, "-vf", f"subtitles={name}.srt:force_style='{subtitle_style(font)}'", "-c:v", "libx264",
            "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p", f"{name}.mp4", cwd=out)
     os.remove(joined)
     result = os.path.join(out, f"{name}.mp4")

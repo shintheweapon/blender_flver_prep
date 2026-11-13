@@ -112,6 +112,11 @@
   FromSoftware modding community that the games' model space is left-handed, and a game is unlikely to use two
   handednesses at once. Neither reason was tested; the Limitations point to Section III-C.
 - Fig. 10's lower labels no longer run into the domes' arrows, in English and Chinese.
+- The video in Simplified Chinese: `docs/video/script.zh-CN.md`, built with `make_video.py zh-CN` from the Chinese
+  paper and figures, in Source Han Sans SC (or Noto Sans SC). `docs/video/languages.py` holds what differs per
+  language. Chinese subtitles break between words (jieba, with the glossary's terms), preferably after punctuation.
+  In both videos each change of subtitle moves to the nearest pause in the speech, and a partial render keeps the
+  subtitles of its last segment in step.
 
 ## 1.0.0
 

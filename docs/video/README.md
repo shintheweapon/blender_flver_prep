@@ -6,7 +6,7 @@ audio file.
 
 ## Prerequisites
 
-- Python 3.11 or later; for rendering, the `websocket-client` package.
+- Python 3.11 or later; for rendering, the `websocket-client` package, and for the Chinese video, `jieba`.
 - Google Chrome, run headless to capture frames.
 - ffmpeg and ffprobe, with libx264, AAC and libass (the `subtitles` filter).
 - A network connection while rendering equation cards, which load KaTeX from a CDN.
@@ -36,6 +36,22 @@ audio file.
    exists. The script reports missing files and files that match no segment. Rendered clips are cached in
    `docs/video/out/cache/`, so a second run renders only the visuals that changed.
 
+## The Chinese video
+
+`script.zh-CN.md` is the narration in Simplified Chinese, with the English script's scenes, segment IDs and visuals.
+The same steps with `zh-CN` in place of `en` build it:
+
+```
+python docs/video/script.py zh-CN
+python docs/video/make_video.py zh-CN
+```
+
+The audio goes in `docs/video/audio/zh-CN/`, and the video is written to `docs/video/out/normal_maps.zh-CN.mp4`. Its
+pages are built from the Chinese paper, its tables, its references and the Chinese figures (`docs/figures/zh_text.py`).
+Pages and subtitles use Source Han Sans SC, or Noto Sans SC where it is not installed; the render prints the font it
+chose. Chinese subtitle lines hold 21 characters and break between words, found with jieba and the glossary's
+terms (`docs/paper/glossary.zh-CN.md`), preferably after punctuation. What differs per language is in `languages.py`.
+
 ## How it is built
 
 - `script.py` reads the script; `timeline.py` lays the segments end to end, with a short pause between segments and
@@ -45,6 +61,9 @@ audio file.
   are dark, and Chrome is set to dark mode, so the figures use their own dark colours whatever the system's setting.
   Figures joined by ` + ` in the script are stacked top to bottom in one frame, as Fig. 3(a) over Fig. 3(b).
 - Subtitles are burned in white on an opaque box, so the boxes of a two-line subtitle meet without a darker band.
+  Each segment's time is shared between its subtitles by their length, and each change of subtitle then moves to
+  the nearest pause in the segment's audio, found with ffmpeg's `silencedetect`, within 1.5 seconds. A partial
+  render (`--until`) times the subtitles on the whole video and then cuts them, so they keep in step.
 - `chrome.py` drives headless Chrome to capture each page; animated figures are captured frame by frame, the rest
   once. `subtitles.py` writes the SRT, and `make_video.py` joins it all with ffmpeg.
 

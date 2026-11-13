@@ -10,14 +10,16 @@ seconds and settles once that is painted), the two calls ``chrome.py`` makes.
 import html
 import os
 import re
+import sys
 
+import languages
 import script
 
 WIDTH, HEIGHT = 1920, 1080
 STAGE_TOP = 100
 STAGE_HEIGHT = 810
 BACKGROUND = "#0d1117"
-FONT = '"Segoe UI", -apple-system, Helvetica, Arial, sans-serif'
+FONT = languages.language("en").page_font
 KATEX = "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/"
 
 PAGE = """<!doctype html>
@@ -87,7 +89,10 @@ def figure_text(svg, lang="en"):
     """
     The figure's text in a language: unchanged for English.
 
-    This is the one place where a translated label set will be applied.
+    For Chinese, the figure's text is translated with the catalogue of
+    ``docs/figures/zh_text.py`` (the same text as the committed ``.zh.svg``),
+    and its font stack is led by the video's Chinese fonts, so figures and
+    subtitles share one face.
 
     Parameters
     ----------
@@ -98,12 +103,34 @@ def figure_text(svg, lang="en"):
     -------
     str
     """
-    return svg
+    if not lang.startswith("zh"):
+        return svg
+    zh_text = _zh_text()
+    video_stack = zh_text.FONT_STACK.replace("sans-serif", ",".join(languages.CJK_FONTS) + ",sans-serif")
+    return zh_text.translate(svg).replace(zh_text.ZH_FONT_STACK, video_stack)
 
 
-def paper_text():
-    """The paper's Markdown."""
-    with open(script.PAPER, encoding="utf-8") as file:
+def _zh_text():
+    """The figures' Chinese catalogue, ``docs/figures/zh_text.py``."""
+    if script.FIGURES_DIR not in sys.path:
+        sys.path.insert(0, script.FIGURES_DIR)
+    import zh_text
+    return zh_text
+
+
+def paper_text(lang="en"):
+    """
+    The Markdown of the paper a language's video is built from.
+
+    Parameters
+    ----------
+    lang : str
+
+    Returns
+    -------
+    str
+    """
+    with open(script.paper_path(lang), encoding="utf-8") as file:
         return file.read()
 
 
@@ -163,7 +190,8 @@ def table(paper, numeral):
     KeyError
         When the paper has no table with that numeral.
     """
-    match = re.search(rf'<p align="center">TABLE {numeral}<br>(.*?)</p>\n\n((?:\|.*\n)+)', paper)
+    labels = "|".join(script.TABLE_LABELS)
+    match = re.search(rf'<p align="center">(?:{labels}) {numeral}<br>(.*?)</p>\n\n((?:\|.*\n)+)', paper)
     if not match:
         raise KeyError(f"no TABLE {numeral}")
     lines = [line for line in match.group(2).splitlines() if not re.match(r"^\|[-| ]+\|$", line)]
@@ -180,9 +208,41 @@ def references(paper):
     list of tuple
         ``(number, text)``, the text on one line, with its Markdown marks.
     """
-    section = paper[paper.index("\n## References\n"):]
+    section = paper[paper.index(f"\n## {references_heading(paper)}\n"):]
     entries = re.findall(r"^\[(\d+)\] (.*?)(?=\n\n\[\d+\] |\n*\Z)", section, flags=re.M | re.S)
     return [(int(number), " ".join(text.split())) for number, text in entries]
+
+
+def references_heading(paper):
+    """
+    The heading of the paper's reference list, as the paper writes it.
+
+    Returns
+    -------
+    str
+        ``References`` or ``参考文献``.
+
+    Raises
+    ------
+    ValueError
+        When the paper has neither heading.
+    """
+    for heading in script.REFERENCE_HEADINGS:
+        if f"\n## {heading}\n" in paper:
+            return heading
+    raise ValueError("the paper has no reference list")
+
+
+def table_label(paper):
+    """
+    The word the paper labels its tables with: ``TABLE`` or ``表``.
+
+    Returns
+    -------
+    str
+    """
+    return next((label for label in script.TABLE_LABELS if f'<p align="center">{label} ' in paper),
+                script.TABLE_LABELS[0])
 
 
 def content(visual, paper, lang="en"):
@@ -229,11 +289,12 @@ def content(visual, paper, lang="en"):
         caption, rows = table(paper, name)
         head = "".join(f"<th>{inline(cell)}</th>" for cell in rows[0])
         body = "".join("<tr>" + "".join(f"<td>{inline(cell)}</td>" for cell in row) + "</tr>" for row in rows[1:])
-        return (f'<div class="caption">TABLE {html.escape(name)}<br>{html.escape(caption)}</div>'
+        return (f'<div class="caption">{table_label(paper)} {html.escape(name)}<br>{html.escape(caption)}</div>'
                 f"<table><tr>{head}</tr>{body}</table>"), True, 1.5
     if kind == "references":
         items = "".join(f"<p>[{number}] {inline(text)}</p>" for number, text in references(paper))
-        return f'<div class="references"><h2>References</h2>{items}</div>', False, 1.0
+        return (f'<div class="references"><h2>{html.escape(references_heading(paper))}</h2>{items}</div>',
+                False, 1.0)
     raise ValueError(f"unknown visual kind {kind}")
 
 
@@ -255,7 +316,8 @@ def page(scene, visual, paper, lang="en"):
     """
     body, needs_katex, max_up = content(visual, paper, lang)
     heading = "" if visual[0] in ("title", "references") else f'<div class="heading">{html.escape(scene.title)}</div>'
-    return PAGE.format(head=KATEX_HEAD if needs_katex else "", width=WIDTH, height=HEIGHT, font=FONT,
+    return PAGE.format(head=KATEX_HEAD if needs_katex else "", width=WIDTH, height=HEIGHT,
+                       font=languages.language(lang).page_font,
                        stage=STAGE_HEIGHT, stage_top=STAGE_TOP, background=BACKGROUND, heading=heading,
                        content=body, max_up=max_up, prepare=KATEX_RENDER if needs_katex else "")
 

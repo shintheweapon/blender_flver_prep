@@ -11,17 +11,21 @@ import os
 import re
 import sys
 
+import languages
+
 VIDEO_DIR = os.path.dirname(os.path.abspath(__file__))
 DOCS_DIR = os.path.dirname(VIDEO_DIR)
 FIGURES_DIR = os.path.join(DOCS_DIR, "figures")
 IMAGES_DIR = os.path.join(DOCS_DIR, "paper", "images")
-PAPER = os.path.join(DOCS_DIR, "paper", "ER_NORMAL_MAPS.md")
 OUT_DIR = os.path.join(VIDEO_DIR, "out")
 
 KINDS = ("title", "figure", "equation", "table", "screenshot", "references")
 SILENT_KINDS = ("references",)
 REFERENCES_HOLD = 10.0
-WORDS_PER_MINUTE = 145
+# Each CJK character is a unit of speech; other text counts in space-separated words
+CJK_RE = re.compile(r"[㐀-鿿豈-﫿]")
+TABLE_LABELS = ("TABLE", "表")
+REFERENCE_HEADINGS = ("References", "参考文献")
 SCENE_RE = re.compile(r"^## (S\d\d) (.+)$")
 VISUAL_RE = re.compile(r"^Visual: (\w+)(?: (.+))?$")
 SEGMENT_RE = re.compile(r"^\*\*(S\d\d-\d\d)\*\*$")
@@ -47,8 +51,15 @@ class Segment:
         self.ident, self.text, self.show = ident, text, show
 
     def words(self):
-        """Number of words in the narration."""
-        return len(self.text.split())
+        """
+        Units of speech in the narration: its space-separated words, with each
+        CJK character counted as one (so Chinese counts by character).
+
+        Returns
+        -------
+        int
+        """
+        return len(CJK_RE.findall(self.text)) + len(CJK_RE.sub(" ", self.text).split())
 
 
 class Scene:
@@ -72,6 +83,37 @@ class Scene:
 def script_path(lang="en"):
     """Path of the script for a language code."""
     return os.path.join(VIDEO_DIR, f"script.{lang}.md")
+
+
+def paper_path(lang="en"):
+    """
+    Path of the paper a language's video is built from.
+
+    Raises
+    ------
+    KeyError
+        For a language without video settings.
+    """
+    return os.path.join(DOCS_DIR, "paper", languages.language(lang).paper)
+
+
+def figure_path(part, lang="en"):
+    """
+    Path of one figure file for a language: its ``.zh.svg`` version for Chinese.
+
+    Parameters
+    ----------
+    part : str
+        An English figure file name, as in the script.
+    lang : str
+
+    Returns
+    -------
+    str
+    """
+    if lang.startswith("zh") and part.endswith(".svg"):
+        part = part[:-len(".svg")] + ".zh.svg"
+    return os.path.join(FIGURES_DIR, part)
 
 
 def parse(text):
@@ -176,7 +218,7 @@ def figure_files(name):
     return [part.strip() for part in name.split(" + ")]
 
 
-def visual_exists(kind, name, paper_text):
+def visual_exists(kind, name, paper_text, lang="en"):
     """
     Whether a visual named in the script can be found.
 
@@ -189,7 +231,9 @@ def visual_exists(kind, name, paper_text):
         stacked in one frame), an equation number, a table numeral, or the text
         of a title card.
     paper_text : str
-        The paper, to look up equations and tables.
+        The paper, to look up equations and tables (labelled ``TABLE`` or ``表``).
+    lang : str
+        The language, which picks each figure's file (``figure_path``).
 
     Returns
     -------
@@ -198,15 +242,15 @@ def visual_exists(kind, name, paper_text):
     if kind == "title":
         return bool(name.strip())
     if kind == "figure":
-        return all(os.path.isfile(os.path.join(FIGURES_DIR, part)) for part in figure_files(name))
+        return all(os.path.isfile(figure_path(part, lang)) for part in figure_files(name))
     if kind == "screenshot":
         return os.path.isfile(os.path.join(IMAGES_DIR, name))
     if kind == "equation":
         return f"\\tag{{{name}}}" in paper_text
     if kind == "table":
-        return f"TABLE {name}<br>" in paper_text
+        return any(f"{label} {name}<br>" in paper_text for label in TABLE_LABELS)
     if kind == "references":
-        return "\n## References\n" in paper_text
+        return any(f"\n## {heading}\n" in paper_text for heading in REFERENCE_HEADINGS)
     return False
 
 
@@ -246,7 +290,7 @@ def main(lang="en"):
     scenes = load(lang)
     folder = export(scenes, lang)
     words = sum(segment.words() for segment in segments(scenes))
-    print(f"{len(segments(scenes))} segments, {words} words, about {words / WORDS_PER_MINUTE:.1f} minutes; "
+    print(f"{len(segments(scenes))} segments, {words} words, about {words / languages.language(lang).rate:.1f} minutes; "
           f"written to {os.path.relpath(folder, DOCS_DIR)}")
 
 
