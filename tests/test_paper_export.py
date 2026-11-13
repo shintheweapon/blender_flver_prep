@@ -12,6 +12,8 @@ PAPER_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file_
 if PAPER_DIR not in sys.path:
     sys.path.insert(0, PAPER_DIR)
 
+import docx_styles  # noqa: E402
+import docx_tables  # noqa: E402
 import docx_xml  # noqa: E402
 import export_docx  # noqa: E402
 
@@ -182,13 +184,13 @@ class TestWordPackage(unittest.TestCase):
               '<w:style><w:rPr><w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" /></w:rPr></w:style></w:styles>')
 
     def test_east_asian_text_gets_the_font_and_language(self):
-        styles = docx_xml.set_east_asian_font(self.STYLES, "Noto Sans SC", "zh-CN")
+        styles = docx_styles.set_east_asian_font(self.STYLES, "Noto Sans SC", "zh-CN")
         self.assertNotIn("eastAsiaTheme", styles)
         self.assertEqual(styles.count('w:eastAsia="Noto Sans SC"'), 3)
         self.assertIn('w:asciiTheme="minorHAnsi"', styles)
         self.assertIn('w:hAnsi="Consolas"', styles)
         self.assertIn('<w:lang w:bidi="ar-SA" w:eastAsia="zh-CN" w:val="zh-CN" />', styles)
-        self.assertEqual(docx_xml.set_east_asian_font(styles, "Noto Sans SC", "zh-CN"), styles)
+        self.assertEqual(docx_styles.set_east_asian_font(styles, "Noto Sans SC", "zh-CN"), styles)
 
     def test_the_footer_holds_a_centred_page_field(self):
         footer = docx_xml.footer_xml()
@@ -254,13 +256,129 @@ class TestUpright(unittest.TestCase):
         styles = ('<w:styles><w:style w:styleId="Caption"><w:rPr><w:i /></w:rPr></w:style>'
                   '<w:style w:customStyle="1" w:styleId="TableCaption" w:type="paragraph"><w:name w:val="Table Caption" />'
                   '<w:basedOn w:val="Caption" /><w:pPr><w:keepNext /></w:pPr></w:style></w:styles>')
-        english = docx_xml.set_caption_style(styles, small_caps=True)
+        english = docx_styles.set_caption_style(styles, small_caps=True)
         self.assertIn('<w:pPr><w:keepNext /></w:pPr><w:rPr><w:i w:val="0" /><w:smallCaps /></w:rPr></w:style>', english)
         self.assertIn('w:styleId="Caption"><w:rPr><w:i /></w:rPr>', english)
-        chinese = docx_xml.set_caption_style(styles, small_caps=False)
+        chinese = docx_styles.set_caption_style(styles, small_caps=False)
         self.assertIn('<w:rPr><w:i w:val="0" /></w:rPr></w:style>', chinese)
         self.assertNotIn("smallCaps", chinese)
-        self.assertEqual(docx_xml.set_caption_style(english, small_caps=True), english)
+        self.assertEqual(docx_styles.set_caption_style(english, small_caps=True), english)
+
+
+class TestColumnWidths(unittest.TestCase):
+    """Columns are sized to their content, so no word breaks inside a cell."""
+
+    def test_the_widest_word_sets_a_columns_minimum(self):
+        rows = [[["Prefix"], ["Untestable"]], [["WP"], ["2"]]]
+        minimums, preferred = docx_tables.column_bounds(rows)
+        factor = docx_tables.TEXT_SLACK * docx_tables.HEADER_FACTOR
+        self.assertEqual(minimums[1], int(round(len("Untestable") * 120 * factor)) + docx_tables.CELL_PADDING)
+        self.assertEqual(preferred, minimums)
+
+    def test_quotes_count_with_their_word_and_chinese_keeps_four_characters(self):
+        minimums, _ = docx_tables.column_bounds([[["名称"]], [["材质名称包含“cloth”"]]])
+        widest = max(len("“cloth”") * 120, 4 * 240)
+        self.assertEqual(minimums[0], int(round(widest * docx_tables.TEXT_SLACK)) + docx_tables.CELL_PADDING)
+
+    def test_lines_split_at_a_break_are_measured_apart(self):
+        one = docx_tables.column_bounds([[["前缀"]], [["WP（武器）"]]])[1][0]
+        two = docx_tables.column_bounds([[["前缀"]], [["WP", "（武器）"]]])[1][0]
+        self.assertLess(two, one)
+
+    def test_widths_fit_and_preferred_widths_are_kept_when_they_fit(self):
+        rows = [[["a"], ["b"]], [["x " * 30], ["short"]]]
+        widths, squeezed = docx_tables.column_widths(rows, 5000)
+        self.assertLessEqual(sum(widths), 5000)
+        self.assertFalse(squeezed)
+        _, preferred = docx_tables.column_bounds(rows)
+        self.assertEqual(docx_tables.column_widths(rows, 100000), (preferred, False))
+
+    def test_minimums_that_do_not_fit_are_reported(self):
+        widths, squeezed = docx_tables.column_widths([[["Untestable"], ["Untestable"]]], 1000)
+        self.assertTrue(squeezed)
+        self.assertLessEqual(sum(widths), 1000)
+
+
+class TestTableLayout(unittest.TestCase):
+    """The computed widths are written into every table, and a first-column bracket starts its own line."""
+
+    TABLE = ('<w:tbl><w:tblPr><w:tblW w:type="auto" w:w="0"/><w:jc w:val="center"/></w:tblPr>'
+             '<w:tr><w:tc><w:tcPr><w:tcBorders/></w:tcPr><w:p><w:r><w:t>前缀</w:t></w:r></w:p></w:tc>'
+             '<w:tc><w:p><w:r><w:t>可检验贴图</w:t></w:r></w:p></w:tc></w:tr>'
+             '<w:tr><w:tc><w:p><w:r><w:t xml:space="preserve">WP（武器）</w:t></w:r></w:p></w:tc>'
+             '<w:tc><w:p><w:r><w:t>535（不是名称）</w:t></w:r></w:p></w:tc></w:tr></w:tbl>')
+
+    def test_grid_cell_widths_and_fixed_layout(self):
+        out = docx_tables.set_table_widths(self.TABLE, 10080)
+        grid = re.findall(r'<w:gridCol w:w="(\d+)"/>', out)
+        self.assertEqual(len(grid), 2)
+        self.assertEqual(len(re.findall(r'<w:tcW w:type="dxa" w:w="\d+"/>', out)), 4)
+        self.assertIn(f'<w:tblW w:type="dxa" w:w="{sum(map(int, grid))}"/><w:jc w:val="center"/>', out)
+        self.assertIn('<w:tblLayout w:type="fixed"/>' + docx_tables.CELL_MARGINS + '</w:tblPr><w:tblGrid>', out)
+        self.assertIn("<w:tcPr><w:tcW", out)
+        self.assertEqual(docx_tables.set_table_widths(out, 10080), out)
+
+    def test_a_first_column_bracket_starts_its_own_line(self):
+        out = docx_tables.break_before_brackets(self.TABLE)
+        self.assertIn('WP</w:t><w:br/><w:t xml:space="preserve">（武器）', out)
+        self.assertEqual(out.count("<w:br/>"), 1)
+        self.assertIn("535（不是名称）", out)
+        self.assertEqual(docx_tables.break_before_brackets(out), out)
+
+
+class TestPageAndFigures(unittest.TestCase):
+    """US Letter pages with 0.75 in margins, figures kept with their captions, and a height cap."""
+
+    def test_page_size_and_margins_after_the_footer(self):
+        body = '<w:body><w:p/><w:sectPr><w:footerReference w:type="default" r:id="x"/></w:sectPr></w:body>'
+        out = docx_xml.set_page(body, 1080)
+        self.assertIn('r:id="x"/><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1080"', out)
+        self.assertEqual(docx_xml.set_page(out, 1080), out)
+        self.assertIn("<w:sectPr><w:pgSz", docx_xml.set_page("<w:body><w:sectPr /></w:body>", 1080))
+
+    def test_pictures_are_kept_with_the_next_paragraph(self):
+        xml = ('<w:p><w:pPr><w:pStyle w:val="Figure" /></w:pPr><w:r><w:drawing>a</w:drawing></w:r></w:p>'
+               '<w:p><w:r><w:drawing>b</w:drawing></w:r></w:p><w:p><w:r><w:t>Fig. 1.</w:t></w:r></w:p>')
+        out = docx_xml.keep_figures_with_captions(xml)
+        self.assertIn('<w:pStyle w:val="Figure" /><w:keepNext/>', out)
+        self.assertIn("<w:p><w:pPr><w:keepNext/></w:pPr><w:r><w:drawing>b", out)
+        self.assertNotIn("<w:keepNext/></w:pPr><w:r><w:t>Fig.", out)
+        self.assertEqual(docx_xml.keep_figures_with_captions(out), out)
+
+    def test_figures_are_no_taller_than_the_cap(self):
+        self.assertAlmostEqual(export_docx.figure_width(680, 1065), 7.0 * 680 / 1065)
+        self.assertAlmostEqual(export_docx.figure_width(1360, 636), 6.5)
+        self.assertAlmostEqual(export_docx.figure_width(480, 200), 5.0)
+
+
+class TestSerifEdition(unittest.TestCase):
+    """The serif edition: serif body, sans headings, captions, table headers and figure captions."""
+
+    STYLES = ('<w:styles><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:eastAsia="Noto Sans SC" '
+              'w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" /></w:rPr></w:rPrDefault></w:docDefaults>'
+              '<w:style w:styleId="Heading1"><w:rPr><w:rFonts w:asciiTheme="majorHAnsi" /><w:b /></w:rPr></w:style>'
+              '<w:style w:styleId="TableCaption"><w:pPr /></w:style></w:styles>')
+
+    def test_serif_body_and_sans_headings(self):
+        out = docx_styles.set_serif_body(self.STYLES)
+        defaults = re.search(r"<w:docDefaults>.*?</w:docDefaults>", out).group(0)
+        self.assertIn('w:ascii="Noto Serif" w:eastAsia="Noto Serif SC"', defaults)
+        self.assertNotIn("Theme", re.search(r"<w:rFonts[^>]*>", defaults).group(0).replace("cstheme", ""))
+        self.assertIn('w:styleId="Heading1"><w:rPr><w:rFonts w:ascii="Noto Sans" w:eastAsia="Noto Sans SC"', out)
+        self.assertIn('<w:rPr><w:rFonts w:ascii="Noto Sans"', re.search(r'w:styleId="TableCaption".*?</w:style>', out).group(0))
+        self.assertEqual(docx_styles.set_serif_body(out), out)
+
+    def test_table_headers_and_figure_captions_stay_sans(self):
+        xml = ('<w:tbl><w:tr><w:tc><w:p><w:r><w:rPr><w:b/></w:rPr><w:t>前缀</w:t></w:r></w:p></w:tc></w:tr>'
+               '<w:tr><w:tc><w:p><w:r><w:t>WP</w:t></w:r></w:p></w:tc></w:tr></w:tbl>'
+               '<w:p><w:r><w:t>图 5. 游戏内测试</w:t></w:r></w:p><w:p><w:r><w:t>正文</w:t></w:r></w:p>')
+        out = docx_styles.sans_runs(xml, r"图 \d+\.")
+        self.assertIn('<w:rPr><w:rFonts w:ascii="Noto Sans" w:eastAsia="Noto Sans SC" w:hAnsi="Noto Sans" '
+                      'w:cstheme="minorBidi" /><w:b/></w:rPr><w:t>前缀', out)
+        self.assertIn('Noto Sans SC" w:hAnsi="Noto Sans" w:cstheme="minorBidi" /></w:rPr><w:t>图 5.', out)
+        self.assertIn("<w:r><w:t>WP</w:t></w:r>", out)
+        self.assertIn("<w:r><w:t>正文</w:t></w:r>", out)
+        self.assertEqual(docx_styles.sans_runs(out, r"图 \d+\."), out)
 
 
 if __name__ == "__main__":

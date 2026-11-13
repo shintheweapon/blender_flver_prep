@@ -32,15 +32,22 @@ if VIDEO_DIR not in sys.path:
 
 import languages  # noqa: E402  (the paper of each language)
 import scenes  # noqa: E402  (scenes.moves tells the animated figures apart; it imports no browser code)
-from docx_xml import (BORDER_EDGES, CAPTION_STYLE, CELL_BORDERS, CENTRE, TABLE_BORDERS,  # noqa: E402,F401
-                      TABLE_PROPERTIES, TABLE_PROPERTY_ORDER, check_docx, child_elements, finish,
-                      format_tables, rewrite_document, set_caption_style, set_east_asian_font,
-                      table_properties, table_rows, upright_numbers)
+from docx_tables import (BORDER_EDGES, CAPTION_STYLE, CELL_BORDERS, CENTRE, TABLE_BORDERS,  # noqa: E402,F401
+                         TABLE_PROPERTIES, TABLE_PROPERTY_ORDER, break_before_brackets, child_elements,
+                         format_tables, set_table_widths, table_properties, table_rows)
+from docx_styles import sans_runs, set_caption_style, set_east_asian_font, set_serif_body  # noqa: E402
+from docx_xml import (check_docx, finish, keep_figures_with_captions, rewrite_document,  # noqa: E402,F401
+                      set_page, upright_numbers)
 
 STILL_SCALE = 2.0
 GIF_SCALE = 1.5
 GIF_TIMING = {"paper_axis_swap_animated.svg": (10, 30.0), "paper_dome_tilts.svg": (15, 5.0)}
 MAX_WIDTH_INCHES = 6.5
+# No figure taller than this, so it and its caption fit on a page between 0.75 in margins
+MAX_HEIGHT_INCHES = 7.0
+MARGIN = 1080  # twips, 0.75 in
+TEXT_WIDTH = 12240 - 2 * MARGIN  # US Letter less two margins, in twips
+CAPTION_START = {"en": r"Fig\. \d+\.", "zh-CN": r"图 \d+\."}
 PANDOC_FORMAT = "markdown-implicit_figures"
 B = "\\"
 TAG = re.compile(re.escape(B + "tag{") + r"([^}]*)\}")
@@ -160,6 +167,33 @@ def gif_timing(source):
     return GIF_TIMING[os.path.basename(source).replace(".zh.svg", ".svg")]
 
 
+def figure_width(width, height):
+    """
+    The width in inches a figure is shown at: its own size at 96 pixels an
+    inch, no wider than ``MAX_WIDTH_INCHES`` and no taller than
+    ``MAX_HEIGHT_INCHES``, keeping its shape.
+
+    Parameters
+    ----------
+    width, height : float
+        The figure's size in pixels.
+
+    Returns
+    -------
+    float
+    """
+    return min(width / 96.0, MAX_WIDTH_INCHES, MAX_HEIGHT_INCHES * width / height)
+
+
+def figure_size(target, svg=None):
+    """The size of a figure in pixels: its SVG's declared size, or the exported image's."""
+    if svg is not None:
+        return svg_size(svg)
+    from PIL import Image
+    with Image.open(target) as image:
+        return image.size
+
+
 def pandoc_command(out_path):
     """The pandoc command that reads the prepared Markdown from stdin and writes ``out_path``."""
     return ["pandoc", "-f", PANDOC_FORMAT, "-t", "docx", "-o", out_path]
@@ -194,7 +228,7 @@ def render_figures(text, out_dir):
     Returns
     -------
     dict
-        Exported file name to width in inches (capped at ``MAX_WIDTH_INCHES``).
+        Exported file name to width in inches (``figure_width``).
     """
     import chrome  # needs websocket-client; imported here so the pure steps stay testable without it
     from PIL import Image
@@ -208,7 +242,6 @@ def render_figures(text, out_dir):
         if not source.lower().endswith(".svg"):
             with Image.open(path) as image:
                 image.save(target)
-                width_px = image.width
         else:
             with open(path, encoding="utf-8") as file:
                 svg = file.read()
@@ -236,13 +269,68 @@ def render_figures(text, out_dir):
             else:
                 with open(target, "wb") as file:
                     file.write(frames[0])
-            width_px = width
-        widths[name] = min(width_px / 96.0, MAX_WIDTH_INCHES)
+        widths[name] = figure_width(*figure_size(target, svg if source.lower().endswith(".svg") else None))
         print(f"{name}: {os.path.getsize(target) / 1e6:.2f} MB")
     return widths
 
 
-def main(out_dir=OUT_DIR, lang="en"):
+def document_edits(lang, serif=False):
+    """
+    The edits to ``word/document.xml`` after pandoc, for a language.
+
+    Tables are laid out and sized to their content (for Chinese, a first-column
+    bracketed part goes on its own line first), numbers in maths are set upright,
+    figures are kept with their captions, and the page gets its size and
+    margins; in the serif edition, table headers and figure captions stay sans.
+
+    Parameters
+    ----------
+    lang : str
+    serif : bool
+
+    Returns
+    -------
+    callable
+        Takes and returns the document XML.
+    """
+    def edit(xml):
+        xml = format_tables(xml)
+        if lang.startswith("zh"):
+            xml = break_before_brackets(xml)
+        xml = set_page(keep_figures_with_captions(set_table_widths(upright_numbers(xml), TEXT_WIDTH)), MARGIN)
+        return sans_runs(xml, CAPTION_START[lang]) if serif else xml
+
+    return edit
+
+
+def style_edits(lang, serif=False):
+    """
+    The edits to ``word/styles.xml``: upright table captions (small capitals in
+    English), for Chinese the East Asian font and language, and in the serif
+    edition the serif body with sans headings.
+
+    Parameters
+    ----------
+    lang : str
+    serif : bool
+
+    Returns
+    -------
+    callable
+        Takes and returns the styles XML.
+    """
+    east_asian = EAST_ASIAN.get(lang)
+
+    def edit(xml):
+        if east_asian:
+            xml = set_east_asian_font(xml, *east_asian)
+        xml = set_caption_style(xml, small_caps=not east_asian)
+        return set_serif_body(xml) if serif else xml
+
+    return edit
+
+
+def main(out_dir=OUT_DIR, lang="en", serif=False):
     """
     Export a language's paper and report what the Word file holds.
 
@@ -251,11 +339,15 @@ def main(out_dir=OUT_DIR, lang="en"):
     out_dir : str
     lang : str
         ``en`` or ``zh-CN`` (``docs/video/languages.py``).
+    serif : bool
+        The serif edition of the Chinese paper: body text in Noto Serif SC and
+        Noto Serif, headings, table headers and captions in Noto Sans SC and
+        Noto Sans; written as ``<paper>.serif.docx``.
 
     Returns
     -------
     str
-        The Word file written: ``<paper>.docx``.
+        The Word file written: ``<paper>.docx`` or ``<paper>.serif.docx``.
 
     Raises
     ------
@@ -266,18 +358,13 @@ def main(out_dir=OUT_DIR, lang="en"):
     with open(os.path.join(PAPER_DIR, paper), encoding="utf-8") as file:
         text = file.read()
     widths = render_figures(text, out_dir)
-    out_path = os.path.join(out_dir, os.path.splitext(paper)[0] + ".docx")
+    out_path = os.path.join(out_dir, os.path.splitext(paper)[0] + (".serif" if serif else "") + ".docx")
     run = subprocess.run(pandoc_command(out_path), input=prepare_markdown(text, widths).encode("utf-8"),
                          cwd=out_dir, capture_output=True, check=True)
     warnings = [line for line in run.stderr.decode("utf-8", "replace").splitlines() if line.startswith("[WARNING]")]
     for line in warnings:
         print(line)
-    east_asian = EAST_ASIAN.get(lang)
-    if east_asian:
-        styles = lambda xml: set_caption_style(set_east_asian_font(xml, *east_asian), small_caps=False)  # noqa: E731
-    else:
-        styles = lambda xml: set_caption_style(xml, small_caps=True)  # noqa: E731
-    finish(out_path, lambda xml: upright_numbers(format_tables(xml)), styles)
+    finish(out_path, document_edits(lang, serif), style_edits(lang, serif))
     report = check_docx(out_path)
     print(", ".join(f"{key} {value!r}" for key, value in report.items()), f"; written to {os.path.relpath(out_path)}")
     return out_path
@@ -287,5 +374,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--out", default=OUT_DIR, help="folder to write to (default: docs/paper/out)")
     parser.add_argument("--lang", default="en", choices=sorted(languages.LANGUAGES), help="the paper's language")
+    parser.add_argument("--serif", action="store_true", help="the serif edition (Chinese only)")
     options = parser.parse_args()
-    main(options.out, options.lang)
+    if options.serif and not options.lang.startswith("zh"):
+        parser.error("--serif is for the Chinese paper (--lang zh-CN)")
+    main(options.out, options.lang, options.serif)

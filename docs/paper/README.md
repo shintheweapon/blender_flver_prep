@@ -59,14 +59,19 @@ are not distributed here.
 
 `python docs/paper/export_docx.py` writes `docs/paper/out/ER_NORMAL_MAPS.docx` (git-ignored), with every equation as a
 native Word equation, the tables with their captions above them, and the figures as images: still figures as PNGs in
-light mode, Figs. 3(a) and 7 as animated GIFs, and the in-game screenshots as PNGs. Every page has its number centred
-at the bottom, and the line linking the paper in the other language is left out. It needs pandoc, ffmpeg, Google
-Chrome and the Python package `websocket-client`, and reports what the file holds.
+light mode, Figs. 3(a) and 7 as animated GIFs, and the in-game screenshots as PNGs. The pages are US Letter with 0.75 in
+margins and their number centred at the bottom; each table's columns are sized to its content, so no word breaks
+inside a cell; no figure is taller than 7 in, and each stays on the page of its caption. The line linking the paper in
+the other language is left out. It needs pandoc, ffmpeg, Google Chrome and the Python package `websocket-client`, and
+reports what the file holds.
 
 `python docs/paper/export_docx.py --lang zh-CN` exports the Chinese paper the same way, to
-`docs/paper/out/ER_NORMAL_MAPS.zh-CN.docx`, with its tables captioned 表 I and so on and its own figures. Chinese text
-is set in Noto Sans SC, the name Google Docs offers for Source Han Sans SC, and the figures are drawn in Source Han Sans
-SC. `docx_xml.py` holds the edits made to the Word file after pandoc.
+`docs/paper/out/ER_NORMAL_MAPS.zh-CN.docx`, with its tables captioned 表 I and so on, the bracketed part of 表 I and
+表 II's first column on its own line, and its own figures. Chinese text is set in Noto Sans SC, the name Google Docs
+offers for Source Han Sans SC, and the figures are drawn in Source Han Sans SC. Add `--serif` for a serif edition,
+`ER_NORMAL_MAPS.zh-CN.serif.docx`: body text in Noto Serif SC and Noto Serif, headings, table headers and captions in
+Noto Sans SC and Noto Sans. The edits made to the Word file after pandoc are in `docx_tables.py` (tables),
+`docx_styles.py` (fonts and styles) and `docx_xml.py` (the rest).
 
 To get a Google Doc, upload the `.docx` to Google Drive and choose **Open with > Google Docs**; Google Docs turns the
 Word equations into its own. If the two GIFs do not animate there, insert `paper_axis_swap_animated.gif` (Fig. 3(a))

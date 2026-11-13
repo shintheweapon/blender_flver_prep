@@ -1,8 +1,9 @@
 """
-The Word package's XML, after pandoc: the tables' borders, centring and
-unsplittable rows, the page number in the footer, the East Asian font and
-language, the rewrite of parts inside the ``.docx`` file, and the check of what
-the file holds. ``export_docx.py`` prepares the paper and its
+The Word package's XML, after pandoc: the page number in the footer and the
+page's size and margins, upright numbers in maths, figures kept with their
+captions, the rewrite of parts inside the ``.docx`` file, and the check of
+what the file holds. The tables are in ``docx_tables.py``, the fonts and
+styles in ``docx_styles.py``. ``export_docx.py`` prepares the paper and its
 figures and calls these.
 """
 
@@ -10,118 +11,9 @@ import io
 import re
 import zipfile
 
+from docx_tables import CAPTION_STYLE, CENTRE, column_bounds, cell_lines, table_cells
+
 B = "\\"
-
-BORDER_EDGES = ("top", "left", "bottom", "right", "insideH", "insideV")
-TABLE_BORDERS = ("<w:tblBorders>" + "".join(f'<w:{edge} w:val="single" w:sz="4" w:space="0" w:color="auto"/>'
-                                            for edge in BORDER_EDGES) + "</w:tblBorders>")
-TABLE_PROPERTIES = re.compile(r"<w:tblPr>(.*?)</w:tblPr>", re.S)
-
-
-# Word's schema fixes the order of a table's properties
-TABLE_PROPERTY_ORDER = ("tblStyle", "tblpPr", "tblOverlap", "bidiVisual", "tblStyleRowBandSize",
-                        "tblStyleColBandSize", "tblW", "jc", "tblCellSpacing", "tblInd", "tblBorders", "shd",
-                        "tblLayout", "tblCellMar", "tblLook", "tblCaption", "tblDescription")
-CELL_BORDERS = ("<w:tcPr><w:tcBorders>" + "".join(f'<w:{edge} w:val="single" w:sz="4" w:space="0" w:color="auto"/>'
-                                                  for edge in BORDER_EDGES[:4]) + "</w:tcBorders></w:tcPr>")
-CENTRE = '<w:jc w:val="center"/>'
-CAPTION_STYLE = '<w:pStyle w:val="TableCaption" />'
-
-
-def child_elements(xml):
-    """
-    The top-level elements of a run of WordprocessingML, in order.
-
-    Parameters
-    ----------
-    xml : str
-        The inside of a property block, such as a ``tblPr``.
-
-    Returns
-    -------
-    list of tuple
-        ``(local name, element text)``.
-    """
-    found, depth, start, name = [], 0, None, None
-    for match in re.finditer(r"<(/?)w:(\w+)\b[^>]*?(/?)>", xml):
-        closing, tag, empty = match.groups()
-        if not closing and depth == 0:
-            start, name = match.start(), tag
-        if not closing and not empty:
-            depth += 1
-        elif closing:
-            depth -= 1
-        if depth == 0 and start is not None:
-            found.append((name, xml[start:match.end()]))
-            start = None
-    return found
-
-
-def table_properties(match):
-    """
-    A table's ``tblPr`` rebuilt in schema order: centred, as wide as its columns
-    when it was set to the full width, with a grid, and without a first-row look.
-    """
-    parts = dict(child_elements(match.group(1)))
-    if 'w:type="pct"' in parts.get("tblW", ""):
-        parts["tblW"] = '<w:tblW w:type="auto" w:w="0"/>'
-    parts["jc"] = CENTRE
-    parts["tblBorders"] = TABLE_BORDERS
-    if "tblLook" in parts:
-        parts["tblLook"] = parts["tblLook"].replace('w:firstRow="1"', 'w:firstRow="0"')
-    return "<w:tblPr>" + "".join(parts[name] for name in TABLE_PROPERTY_ORDER if parts.get(name)) + "</w:tblPr>"
-
-
-def table_rows(table_xml):
-    """
-    A table's rows made to stay together: borders on every cell, rows that don't
-    split, every row but the last kept with the next, and a bold header row.
-    """
-    rows = list(re.finditer(r"<w:tr>(.*?)</w:tr>", table_xml, re.S))
-    pieces, last = [], 0
-    for index, row in enumerate(rows):
-        body = re.sub(r"<w:tc>(?!<w:tcPr>)", "<w:tc>" + CELL_BORDERS, row.group(1))
-        body = re.sub(r"^(?!<w:trPr>)", "<w:trPr><w:cantSplit/></w:trPr>", body)
-        if index < len(rows) - 1:
-            body = re.sub(r'(<w:pStyle w:val="[^"]*" />)(?!<w:keepNext/>)', r"\1<w:keepNext/>", body)
-        if index == 0:
-            body = re.sub(r"<w:r>(?!<w:rPr>)", "<w:r><w:rPr><w:b/></w:rPr>", body)
-            body = re.sub(r"<w:r><w:rPr>(?!<w:b/>)", "<w:r><w:rPr><w:b/>", body)
-        pieces.append(table_xml[last:row.start()] + "<w:tr>" + body + "</w:tr>")
-        last = row.end()
-    return "".join(pieces) + table_xml[last:]
-
-
-def format_tables(document_xml):
-    """
-    Lay out every table for Word and Google Docs.
-
-    pandoc's tables name a style its Word output doesn't define, so they have no
-    lines, fill the page width and may split across pages. Each table here gets:
-
-    - its properties in schema order: centred, as wide as its columns, a grid of
-      single 0.5 pt lines, and no first-row look;
-    - the same lines on every cell, which a first-row look can't override;
-    - rows that don't split, and every row but the last kept with the next, so
-      a table moves to the next page whole;
-    - a bold header row;
-
-    and each table caption is centred. Running it again changes nothing.
-
-    Parameters
-    ----------
-    document_xml : str
-        ``word/document.xml``.
-
-    Returns
-    -------
-    str
-    """
-    def table(match):
-        return table_rows(TABLE_PROPERTIES.sub(table_properties, match.group(0), count=1))
-
-    document_xml = re.sub(r"<w:tbl>.*?</w:tbl>", table, document_xml, flags=re.S)
-    return re.sub(re.escape(CAPTION_STYLE) + r"(?!" + re.escape(CENTRE) + ")", CAPTION_STYLE + CENTRE, document_xml)
 
 
 def rewrite_package(path, changes, added=None):
@@ -267,45 +159,6 @@ def add_override(types_xml, part, content_type):
     return types_xml.replace("</Types>", entry + "</Types>")
 
 
-def set_east_asian_font(styles_xml, font, lang):
-    """
-    Give East Asian text a font and language in ``word/styles.xml``.
-
-    Every ``w:eastAsiaTheme`` attribute, which takes the font from the theme,
-    gives way to ``w:eastAsia`` with ``font``; the default language
-    (``w:docDefaults``) becomes ``lang`` for its main and its East Asian text.
-    Latin fonts are left as they are.
-
-    Parameters
-    ----------
-    styles_xml : str
-    font : str
-    lang : str
-        A language tag, as ``zh-CN``.
-
-    Returns
-    -------
-    str
-    """
-    def fonts(match):
-        tag = re.sub(r'\s*w:eastAsiaTheme="[^"]*"', "", match.group(0))
-        if "w:eastAsia=" in tag:
-            return re.sub(r'w:eastAsia="[^"]*"', f'w:eastAsia="{font}"', tag)
-        return tag.replace("<w:rFonts", f'<w:rFonts w:eastAsia="{font}"', 1)
-
-    styles_xml = re.sub(r"<w:rFonts\b[^>]*>", fonts, styles_xml)
-
-    def defaults(match):
-        block = match.group(0)
-        new = f'<w:lang w:bidi="ar-SA" w:eastAsia="{lang}" w:val="{lang}" />'
-        found = re.search(r"<w:lang\b[^>]*/>", block)
-        if found:
-            return block.replace(found.group(0), new, 1)
-        return block.replace("</w:rPr>", new + "</w:rPr>", 1)
-
-    return re.sub(r"<w:docDefaults>.*?</w:docDefaults>", defaults, styles_xml, count=1, flags=re.S)
-
-
 NUMBER = re.compile(r"[0-9]+(?:[.,][0-9]+)*")
 MATH_RUN = re.compile(r"<m:r>(?:(?!</m:r>).)*</m:r>", re.S)
 
@@ -339,31 +192,67 @@ def upright_numbers(document_xml):
     return MATH_RUN.sub(run, document_xml)
 
 
-def set_caption_style(styles_xml, small_caps):
-    """
-    Set table captions upright, as IEEE style does, and in small capitals when asked.
+PAGE_SIZE = '<w:pgSz w:w="12240" w:h="15840"/>'  # US Letter, as IEEE uses
 
-    pandoc's ``TableCaption`` style is based on ``Caption``, which is italic; the
-    style gains run properties that switch the italic off (``<w:i w:val="0"/>``)
-    and, with ``small_caps``, turn small capitals on. They go after the style's
-    paragraph properties, in schema order.
+
+def set_page(document_xml, margin):
+    """
+    Give the document's last section a page size (``PAGE_SIZE``) and margins.
 
     Parameters
     ----------
-    styles_xml : str
-    small_caps : bool
-        True for English captions; small capitals do nothing to Chinese.
+    document_xml : str
+    margin : int
+        Twips on every side; the header and footer sit at half an inch.
+
+    Returns
+    -------
+    str
+        Unchanged when the section already has a page size.
+    """
+    if "<w:pgSz" in document_xml:
+        return document_xml
+    page = (PAGE_SIZE + f'<w:pgMar w:top="{margin}" w:right="{margin}" w:bottom="{margin}" w:left="{margin}" '
+            'w:header="720" w:footer="720" w:gutter="0"/>')
+    body_end = document_xml.rindex("</w:body>")
+    body, rest = document_xml[:body_end], document_xml[body_end:]
+    found = list(re.finditer(r"<w:sectPr\b[^>]*>", body))
+    if not found:
+        return body + f"<w:sectPr>{page}</w:sectPr>" + rest
+    tag = found[-1]
+    if tag.group(0).endswith("/>"):
+        return body[:tag.start()] + tag.group(0)[:-2].rstrip() + ">" + page + "</w:sectPr>" + body[tag.end():] + rest
+    close = body.index("</w:sectPr>", tag.end())
+    return body[:close] + page + body[close:] + rest
+
+
+PARAGRAPH = re.compile(r"<w:p>(?:(?!</w:p>).)*</w:p>", re.S)
+
+
+def keep_figures_with_captions(document_xml):
+    """
+    Keep each picture on the same page as the paragraph after it, its caption
+    (or, for Fig. 3(a), Fig. 3(b) and then the caption): every paragraph holding
+    a ``<w:drawing>`` gets ``<w:keepNext/>``.
+
+    Parameters
+    ----------
+    document_xml : str
 
     Returns
     -------
     str
     """
-    def style(match):
-        xml = re.sub(r"<w:rPr>.*?</w:rPr>", "", match.group(0), flags=re.S)
-        props = '<w:rPr><w:i w:val="0" />' + ("<w:smallCaps />" if small_caps else "") + "</w:rPr>"
-        return xml.replace("</w:style>", props + "</w:style>")
+    def paragraph(match):
+        xml = match.group(0)
+        if "<w:drawing>" not in xml or "<w:keepNext" in xml:
+            return xml
+        if xml.startswith("<w:p><w:pPr>"):
+            style = re.match(r"<w:p><w:pPr>(<w:pStyle\b[^>]*/>)?", xml)
+            return xml[:style.end()] + "<w:keepNext/>" + xml[style.end():]
+        return "<w:p><w:pPr><w:keepNext/></w:pPr>" + xml[len("<w:p>"):]
 
-    return re.sub(r'<w:style\b[^>]*w:styleId="TableCaption".*?</w:style>', style, styles_xml, count=1, flags=re.S)
+    return PARAGRAPH.sub(paragraph, document_xml)
 
 
 def finish(path, document, styles=None):
@@ -390,6 +279,24 @@ def finish(path, document, styles=None):
     rewrite_package(path, changes, {FOOTER_PART: footer_xml().encode("utf-8")})
 
 
+def squeezed(table_xml):
+    """
+    Whether a table has a column narrower than its widest unbreakable piece
+    (``docx_tables.column_bounds``), so a word in it would break.
+
+    Parameters
+    ----------
+    table_xml : str
+
+    Returns
+    -------
+    bool
+    """
+    grid = [int(w) for w in re.findall(r'<w:gridCol w:w="(\d+)"', table_xml)]
+    minimums, _ = column_bounds([[cell_lines(cell) for cell in row] for row in table_cells(table_xml)])
+    return not grid or any(width < minimum for width, minimum in zip(grid, minimums))
+
+
 def check_docx(path):
     """
     What the Word file holds, to compare with the paper.
@@ -407,7 +314,9 @@ def check_docx(path):
         ``tex_left`` (TeX commands left in the text); ``author`` (the file's
         author field); ``east_asian_font`` and ``language`` (the styles'
         defaults); ``page_numbers`` (whether the footer with the page number is
-        referenced); ``italic_number_runs`` (numbers in maths left italic),
+        referenced); ``page_margin``, ``fixed_tables``, ``squeezed_tables``
+        (tables with a column narrower than a word in it),
+        ``figures_kept_with_captions`` and ``latin_font``; ``italic_number_runs`` (numbers in maths left italic),
         ``italic_cjk_runs`` (italic runs of Chinese text) and ``italic_captions``
         (whether table captions are still italic).
     """
@@ -427,10 +336,11 @@ def check_docx(path):
         "centred_tables": len(re.findall(r"<w:tblPr>(?:(?!</w:tblPr>).)*" + re.escape(CENTRE), document, flags=re.S)),
         "centred_captions": document.count(CAPTION_STYLE + CENTRE),
         "cells": len(re.findall(r"<w:tc>", document)),
-        "bordered_cells": document.count("<w:tc>" + CELL_BORDERS),
+        "bordered_cells": len(re.findall(r"<w:tc><w:tcPr>(?:<w:tcW\b[^>]*/>)?<w:tcBorders>", document)),
         "rows": len(re.findall(r"<w:tr>", document)),
         "unsplittable_rows": document.count("<w:tr><w:trPr><w:cantSplit/></w:trPr>"),
-        "bold_header_runs": sum(re.search(r"<w:tr>.*?</w:tr>", t, re.S).group(0).count("<w:rPr><w:b/>")
+        "bold_header_runs": sum(len(re.findall(r"<w:rPr>(?:<w:rFonts\b[^>]*/>)?<w:b/>",
+                                               re.search(r"<w:tr>.*?</w:tr>", t, re.S).group(0)))
                                 for t in re.findall(r"<w:tbl>.*?</w:tbl>", document, re.S)),
         "images": len(media),
         "gifs": sum(n.lower().endswith(".gif") for n in media),
@@ -444,6 +354,13 @@ def check_docx(path):
                                   and "<m:sty " not in run and "<m:nor" not in run),
         "italic_cjk_runs": len(re.findall(r"<w:r>(?:(?!</w:r>).)*<w:i ?/>(?:(?!</w:r>).)*<w:t[^>]*>[^<]*"
                                           r"[\u4e00-\u9fff]", document, flags=re.S)),
+        "page_margin": int((re.findall(r'<w:pgMar w:top="(\d+)"', document) + ["0"])[0]),
+        "fixed_tables": document.count('<w:tblLayout w:type="fixed"/>'),
+        "squeezed_tables": sum(1 for table in re.findall(r"<w:tbl>.*?</w:tbl>", document, re.S)
+                               if squeezed(table)),
+        "figures_kept_with_captions": sum(1 for p in PARAGRAPH.findall(document)
+                                          if "<w:drawing>" in p and "<w:keepNext" in p),
+        "latin_font": (re.findall(r'<w:rFonts\b[^>]*\bw:ascii="([^"]*)"', defaults) + ["theme"])[0],
         "italic_captions": not re.search(r'w:styleId="TableCaption"(?:(?!</w:style>).)*<w:i w:val="0"',
                                          styles, flags=re.S),
     }
