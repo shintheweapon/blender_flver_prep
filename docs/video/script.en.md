@@ -356,8 +356,8 @@ The paper states its limits. Reconstructing z, normalising, and the height relat
 for Elden Ring. What blue and alpha hold was not tested.
 
 **S15-02**
-The handedness of FLVER space was inferred from one model, for the reasons given earlier. Cloth meshes keep W at minus one, and the cause and the
-effect in game were not tested.
+The handedness of FLVER space was inferred from one model, for the reasons given earlier. Cloth meshes keep W at minus
+one, and the cause and the effect in game were not tested.
 
 **S15-03**
 The layout test's correlation is moderate, and four of its 40 disagreeing maps were viewed. The game version was not
