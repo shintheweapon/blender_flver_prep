@@ -144,6 +144,15 @@ class TestChineseStyle(unittest.TestCase):
             with self.subTest(name=name):
                 self.assertIn(name, self.body)
 
+    def test_handedness_scope_gives_its_reasons(self):
+        # III-C says why the test was not repeated on more models; the Limitations point to it
+        section = self.body[self.body.index("### C. FLVER 空间的手性"):self.body.index("## IV.")]
+        for reason in ("模组社区长期认为", "两种手性", "这两点本文均未测试"):
+            with self.subTest(reason=reason):
+                self.assertIn(reason, section)
+        limitations = self.body[self.body.index("## IX."):self.body.index("## X.")]
+        self.assertIn("未在更多模型上检查，原因见第 III-C 节", limitations)
+
     def test_channels_are_named_as_channels(self):
         # 红色 alone reads as a colour: each channel takes 通道, shared by two named together
         self.assertEqual(re.findall(BARE_CHANNEL, self.body), [])

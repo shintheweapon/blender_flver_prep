@@ -107,6 +107,9 @@
   channels (红色通道, 绿色通道 and so on), since a bare 红色 reads as the colour. Reflections are named 镜像变换, or 关于直线 U = V 对称,
   rather than 反射, which reads as the reflection of light. The Chinese paper and figures use the terms of Chinese
   graphics writing: DirectX 格式, 翻转绿色通道 and 细节层次.
+- Both papers say why the handedness of FLVER space was not checked on more models: it has long been held in the
+  FromSoftware modding community that the games' model space is left-handed, and a game is unlikely to use two
+  handednesses at once. Neither reason was tested; the Limitations point to Section III-C.
 
 ## 1.0.0
 
