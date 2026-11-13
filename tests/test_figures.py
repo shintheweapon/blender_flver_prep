@@ -2,6 +2,7 @@
 # follow the rules the page states
 
 import os
+import re
 import sys
 import unittest
 
@@ -320,6 +321,21 @@ class TestChannelChanges(unittest.TestCase):
 
     def test_figure_is_marked_derived(self):
         self.assertIn("not tested in game", make_figures.build_all()["paper_channel_changes.svg"])
+
+    def test_lower_labels_clear_the_dome_arrows(self):
+        # a 12 px label's box starts about 13 above its baseline; the arrows and their heads end above that
+        figures = make_figures.build_all()
+        for name in ("paper_channel_changes.svg", "paper_channel_changes.zh.svg"):
+            svg = figures[name]
+            labels = [float(y) for y, body in re.findall(r'<text[^>]*\by="([\d.]+)"[^>]*>([^<]*)</text>', svg)
+                      if "(20)" in body or "(21)" in body]
+            ends = [max(float(a), float(b))
+                    for a, b in re.findall(r'<line[^>]*\by1="([\d.]+)"[^>]*\by2="([\d.]+)"', svg)]
+            with self.subTest(name=name):
+                self.assertEqual(len(labels), 2)
+                for label in labels:
+                    above = [end for end in ends if end < label]
+                    self.assertGreaterEqual(label - 13 - max(above), 6)
 
 
 class TestReadDirections(unittest.TestCase):

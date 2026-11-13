@@ -110,6 +110,7 @@
 - Both papers say why the handedness of FLVER space was not checked on more models: it has long been held in the
   FromSoftware modding community that the games' model space is left-handed, and a game is unlikely to use two
   handednesses at once. Neither reason was tested; the Limitations point to Section III-C.
+- Fig. 10's lower labels no longer run into the domes' arrows, in English and Chinese.
 
 ## 1.0.0
 

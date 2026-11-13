@@ -194,19 +194,21 @@ def figure_channel_changes():
     str
     """
     body = []
+    # the lower domes' outward arrows reach lower + 70, so their labels sit clear below that
+    lower = 270
     for column, (key, title, authored_note, changed_note) in enumerate(CHANNEL_CHANGES):
         cx = 190 + 300 * column
         body.append(text(cx, 30, title, "t h", "middle"))
         points = channel_change_points(key)
         body += dome(cx, 110, [(d, a) for d, a, _ in points])
         body.append(text(cx, 184, f"Map as authored: {authored_note}", anchor="middle"))
-        body += dome(cx, 270, [(d, c) for d, _, c in points])
-        body.append(text(cx, 344, f"{changed_note}: outward, as authored", anchor="middle"))
-    body += legend(60, 380, RED, "Outward (raised)", head=True)
-    body += legend(240, 380, BLUE, "Inward (dented)", head=True)
-    body += legend(420, 380, None, "Sideways", head=True)
-    body.append(text(340, 408, "Derived from the measured frames; not tested in game.", anchor="middle"))
-    return svg(680, 424, "Matching the map to tangents along +U",
+        body += dome(cx, lower, [(d, c) for d, _, c in points])
+        body.append(text(cx, lower + 92, f"{changed_note}: outward, as authored", anchor="middle"))
+    body += legend(60, lower + 128, RED, "Outward (raised)", head=True)
+    body += legend(240, lower + 128, BLUE, "Inward (dented)", head=True)
+    body += legend(420, lower + 128, None, "Sideways", head=True)
+    body.append(text(340, lower + 156, "Derived from the measured frames; not tested in game.", anchor="middle"))
+    return svg(680, lower + 172, "Matching the map to tangents along +U",
                "Two columns, without a mirror and with Z mirrored, each with two domes seen from above. Top: "
                "the map as authored, read through tangents along +U: without a mirror every normal is rotated "
                "by 90 degrees anticlockwise and points sideways; with Z mirrored every normal is reflected about "
