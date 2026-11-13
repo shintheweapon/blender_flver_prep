@@ -126,12 +126,13 @@ class TestChineseStyle(unittest.TestCase):
     def test_glossary_terms_are_used(self):
         for term in ("切线空间法线", "副切线", "副切线符号", "法线贴图", "可积性检验", "偏导数", "左手坐标系",
                      "镜像岛", "非镜像岛", "切线坐标系", "无镜像", "Z 轴镜像", "左手定则", "镜像变换",
-                     "关于直线 U = V 对称"):
+                     "关于直线 U = V 对称", "DirectX 格式", "格式检验"):
             with self.subTest(term=term):
                 self.assertIn(term, self.body)
 
     def test_rejected_variants_are_not_used(self):
-        for variant in ("双切线", "次切线", "法线图", "左手系", "切空间", "可积分性", "反射"):
+        for variant in ("双切线", "次切线", "法线图", "左手系", "切空间", "可积分性", "反射", "DirectX 布局",
+                        "OpenGL 布局", "布局检验", "通道反转", "细节层级"):
             with self.subTest(variant=variant):
                 self.assertNotIn(variant, self.body)
 

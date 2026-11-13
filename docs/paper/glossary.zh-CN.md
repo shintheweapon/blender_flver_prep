@@ -21,7 +21,8 @@ setting name Tangent Space. Symbols stay as in the English paper: N, T, B, W, U,
 | tangent frame, frame | 切线坐标系 | the vectors T, B, N at a vertex |
 | TBN frame | TBN 坐标系 | |
 | tangent plane | 切平面 | |
-| layout (DirectX, OpenGL) | 布局 | DirectX 布局, OpenGL 布局 |
+| layout (DirectX, OpenGL) | 格式 | DirectX 格式, OpenGL 格式; the layout test 格式检验; 格式 also names file formats (FBX 格式, 模型格式), told apart by the noun before it; UV 布局 is the arrangement of UV islands |
+| inverted (a channel) | 翻转 | 翻转绿色通道, 绿色通道翻转; 反转 stays for vectors and signs |
 | channel | 通道 | always named with 通道: 红色通道, 绿色通道, 蓝色通道, Alpha 通道; two together share it, as in 红色和绿色通道; a bare 红色 or 绿色 names a drawn colour |
 | component | 分量 | x 分量, y 分量 |
 | UV island | UV 岛 | |
@@ -69,4 +70,4 @@ setting name Tangent Space. Symbols stay as in the English paper: N, T, B, W, U,
 | not tested | 未测试 | |
 | unconfirmed | 未确认 | |
 | likely | 可能 | a cause not reproduced |
-| level of detail, LOD0 | 细节层级, LOD0 | |
+| level of detail, LOD0 | 细节层次, LOD0 | |

@@ -23,7 +23,7 @@ ZH_FONT_STACK = 'Helvetica,Arial,"Microsoft YaHei","PingFang SC","Noto Sans CJK 
 
 ZH = {
     # Fig. 1, the layout of a normal map
-    "The layout of a normal map": "法线贴图的布局",
+    "The layout of a normal map": "法线贴图的格式",
     ("A texture with U running right and V running down from row 0 at the top. Red stores the tangent-space normal's x "
      "component (towards +U), green its y component (towards +V). Blue is held to store gloss and alpha other data; "
      "this was not tested. On a raised bump, red is high on its +U side and green on its +V side."):
@@ -34,7 +34,7 @@ ZH = {
     "bump": "凸起",
     "Red: x component, towards +U": "红色通道：x 分量，朝 +U",
     "Green: y component, towards +V": "绿色通道：y 分量，朝 +V",
-    "V runs down the image (DirectX layout)": "V 沿图像向下（DirectX 布局）",
+    "V runs down the image (DirectX layout)": "V 沿图像向下（DirectX 格式）",
     "Blue: gloss. Alpha: other data": "蓝色通道：光泽度。Alpha 通道：其他数据",
     "As held by modders; not tested here": "模组社区的看法；本文未测试",
     "On a raised bump, red is high on its +U side": "在凸起处，红色通道的值在其 +U 一侧偏高，",
@@ -107,13 +107,13 @@ ZH = {
     "Into the screen": "指向屏幕内",
     "Each panel: the character seen from in front.": "每个面板：从正面看角色。",
     # Fig. 4, the layout test
-    "The layout test on vanilla normal maps": "原版法线贴图的布局检验",
+    "The layout test on vanilla normal maps": "原版法线贴图的格式检验",
     ("Horizontal bars, one per file-name prefix of the game's part normal maps, each split into the share of its "
      "testable maps on which the DirectX pairing (red with U, green with V) wins with a positive correlation, with a "
      "negative one (green inverted), or the swapped pairing wins. The DirectX pairing with a positive correlation "
      "fills almost every bar. Columns give the testable maps and the untestable maps per prefix."):
         ("横条图，游戏部件法线贴图的每个文件名前缀一条，每条按可检验贴图的比例分段：DirectX 配对（红色通道对 U、绿色通道"
-         "对 V）以正相关胜出、以负相关胜出（绿色通道反转），或交换配对胜出。以正相关胜出的 DirectX 配对几乎占满每一条。"
+         "对 V）以正相关胜出、以负相关胜出（绿色通道翻转），或交换配对胜出。以正相关胜出的 DirectX 配对几乎占满每一条。"
          "各列给出每个前缀的可检验贴图数和不可检验贴图数。"),
     "Share of testable maps": "可检验贴图的比例",
     "Testable maps": "可检验贴图",
@@ -124,7 +124,7 @@ ZH = {
     "LG (legs)": "LG（腿部）",
     "AM (arms)": "AM（手臂）",
     "DirectX pairing, positive": "DirectX 配对，正相关",
-    "DirectX pairing, negative (green inverted)": "DirectX 配对，负相关（绿色通道反转）",
+    "DirectX pairing, negative (green inverted)": "DirectX 配对，负相关（绿色通道翻转）",
     "Swapped pairing": "交换配对",
     # Fig. 6, the directions read
     "The directions the game reads green and red": "游戏读取绿色和红色通道的方向",

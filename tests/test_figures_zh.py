@@ -86,6 +86,13 @@ class TestChineseFigures(unittest.TestCase):
             with self.subTest(value=value[:30]):
                 self.assertNotIn("反射", value)
 
+    def test_graphics_terms_are_the_chinese_ones(self):
+        # DirectX 格式 rather than 布局, and a channel is 翻转, as in Chinese graphics writing
+        for value in zh_text.ZH.values():
+            with self.subTest(value=value[:30]):
+                self.assertNotIn("布局", value)
+                self.assertNotIn("通道反转", value)
+
     def test_chinese_fonts_are_added(self):
         for name in zh_text.PAPER_FIGURES:
             with self.subTest(name=name):
