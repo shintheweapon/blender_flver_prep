@@ -12,6 +12,8 @@ ENGLISH = os.path.join(PAPER_DIR, "ER_NORMAL_MAPS.md")
 CHINESE = os.path.join(PAPER_DIR, "ER_NORMAL_MAPS.zh-CN.md")
 REFERENCES = {"en": "## References", "zh": "## 参考文献"}
 B = "\\"
+# a channel word without 通道, alone or as the first of two channels sharing it
+BARE_CHANNEL = r"(?:红色|绿色|蓝色)(?!通道|(?:和|与)(?:红色|绿色|蓝色)通道|(?:和|与) Alpha 通道)|Alpha(?! 通道)"
 
 
 def read(path):
@@ -139,6 +141,10 @@ class TestChineseStyle(unittest.TestCase):
         for name in ("黑暗之魂 3（Dark Souls 3）", "只狼（Sekiro）", "装甲核心 6（Armored Core 6）", "艾尔登法环 黑夜君临（Nightreign）"):
             with self.subTest(name=name):
                 self.assertIn(name, self.body)
+
+    def test_channels_are_named_as_channels(self):
+        # 红色 alone reads as a colour: each channel takes 通道, shared by two named together
+        self.assertEqual(re.findall(BARE_CHANNEL, self.body), [])
 
     def test_untested_claims_stay_marked(self):
         for phrase in ("未测试", "未确认", "可能误判", "未作记录", "未在游戏内测试"):

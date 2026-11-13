@@ -74,9 +74,9 @@
 <text class="s" x="570" y="284" text-anchor="middle">Z 轴镜像</text>
 <text class="s" x="570" y="306" text-anchor="middle">关于 U = V 反射</text>
 <line x1="40" y1="338" x2="64" y2="338" stroke="#639922" stroke-width="2"/>
-<text class="s" x="70" y="342" text-anchor="start">T：游戏沿此方向读取绿色</text>
+<text class="s" x="70" y="342" text-anchor="start">T：游戏沿此方向读取绿色通道</text>
 <line x1="300" y1="338" x2="324" y2="338" stroke="#E24B4A" stroke-width="2"/>
-<text class="s" x="330" y="342" text-anchor="start">W(N × T)：游戏沿此方向读取红色</text>
+<text class="s" x="330" y="342" text-anchor="start">W(N × T)：游戏沿此方向读取红色通道</text>
 <line x1="40" y1="364" x2="64" y2="364" class="o" stroke-width="2" marker-end="url(#ao)"/>
 <text class="s" x="70" y="368" text-anchor="start">解码出的法线 (x, y)</text>
 <line x1="300" y1="364" x2="324" y2="364" stroke="#E24B4A" stroke-width="2" marker-end="url(#ar)"/>

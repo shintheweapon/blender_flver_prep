@@ -27,18 +27,18 @@ ZH = {
     ("A texture with U running right and V running down from row 0 at the top. Red stores the tangent-space normal's x "
      "component (towards +U), green its y component (towards +V). Blue is held to store gloss and alpha other data; "
      "this was not tested. On a raised bump, red is high on its +U side and green on its +V side."):
-        ("一张纹理，U 向右，V 从顶部的第 0 行向下。红色存储切线空间法线的 x 分量（朝 +U），绿色存储其 y 分量"
-         "（朝 +V）。一般认为蓝色存储光泽度、Alpha 存储其他数据；这一点未经测试。在凸起处，红色在其 +U 一侧偏高，"
-         "绿色在其 +V 一侧偏高。"),
+        ("一张纹理，U 向右，V 从顶部的第 0 行向下。红色通道存储切线空间法线的 x 分量（朝 +U），绿色通道存储其 y 分量"
+         "（朝 +V）。一般认为蓝色通道存储光泽度、Alpha 通道存储其他数据；这一点未经测试。在凸起处，红色通道的值在其 +U 一侧偏高，"
+         "绿色通道的值在其 +V 一侧偏高。"),
     "(0, 0), row 0": "(0, 0)，第 0 行",
     "bump": "凸起",
-    "Red: x component, towards +U": "红色：x 分量，朝 +U",
-    "Green: y component, towards +V": "绿色：y 分量，朝 +V",
+    "Red: x component, towards +U": "红色通道：x 分量，朝 +U",
+    "Green: y component, towards +V": "绿色通道：y 分量，朝 +V",
     "V runs down the image (DirectX layout)": "V 沿图像向下（DirectX 布局）",
-    "Blue: gloss. Alpha: other data": "蓝色：光泽度。Alpha：其他数据",
+    "Blue: gloss. Alpha: other data": "蓝色通道：光泽度。Alpha 通道：其他数据",
     "As held by modders; not tested here": "模组社区的看法；本文未测试",
-    "On a raised bump, red is high on its +U side": "在凸起处，红色在其 +U 一侧偏高，",
-    "and green is high on its +V side": "绿色在其 +V 一侧偏高",
+    "On a raised bump, red is high on its +U side": "在凸起处，红色通道的值在其 +U 一侧偏高，",
+    "and green is high on its +V side": "绿色通道的值在其 +V 一侧偏高",
     # Fig. 2, the tangent frame
     "The tangent frame on the game's own models": "游戏原生模型的切线坐标系",
     ("Two UV islands lying flat, as seen in game, with N pointing up and T along +V towards the viewer. In FLVER's "
@@ -112,8 +112,8 @@ ZH = {
      "testable maps on which the DirectX pairing (red with U, green with V) wins with a positive correlation, with a "
      "negative one (green inverted), or the swapped pairing wins. The DirectX pairing with a positive correlation "
      "fills almost every bar. Columns give the testable maps and the untestable maps per prefix."):
-        ("横条图，游戏部件法线贴图的每个文件名前缀一条，每条按可检验贴图的比例分段：DirectX 配对（红色对 U、绿色"
-         "对 V）以正相关胜出、以负相关胜出（绿色反转），或交换配对胜出。以正相关胜出的 DirectX 配对几乎占满每一条。"
+        ("横条图，游戏部件法线贴图的每个文件名前缀一条，每条按可检验贴图的比例分段：DirectX 配对（红色通道对 U、绿色通道"
+         "对 V）以正相关胜出、以负相关胜出（绿色通道反转），或交换配对胜出。以正相关胜出的 DirectX 配对几乎占满每一条。"
          "各列给出每个前缀的可检验贴图数和不可检验贴图数。"),
     "Share of testable maps": "可检验贴图的比例",
     "Testable maps": "可检验贴图",
@@ -124,17 +124,17 @@ ZH = {
     "LG (legs)": "LG（腿部）",
     "AM (arms)": "AM（手臂）",
     "DirectX pairing, positive": "DirectX 配对，正相关",
-    "DirectX pairing, negative (green inverted)": "DirectX 配对，负相关（绿色反转）",
+    "DirectX pairing, negative (green inverted)": "DirectX 配对，负相关（绿色通道反转）",
     "Swapped pairing": "交换配对",
     # Fig. 6, the directions read
-    "The directions the game reads green and red": "游戏读取绿色和红色的方向",
+    "The directions the game reads green and red": "游戏读取绿色和红色通道的方向",
     ("Three sheets lying flat with N up, +U to the right and +V towards the viewer. Vanilla tangents: green is read "
      "along +V and red along +U. Tangents along +U, imported without a mirror: green along +U and red along -V, a 90° "
      "anticlockwise rotation. Tangents along +U, imported with Z mirrored: green along +U and red along +V, red and "
      "green swapped."):
-        ("三张平放的面片，N 朝上，+U 向右，+V 朝向观察者。原版切线：绿色沿 +V 读取，红色沿 +U 读取。沿 +U 的切线，"
-         "无镜像导入：绿色沿 +U，红色沿 -V，即逆时针旋转 90°。沿 +U 的切线，Z 轴镜像导入：绿色沿 +U，红色沿 +V，"
-         "红绿互换。"),
+        ("三张平放的面片，N 朝上，+U 向右，+V 朝向观察者。原版切线：绿色通道沿 +V 读取，红色通道沿 +U 读取。沿 +U 的切线，"
+         "无镜像导入：绿色通道沿 +U，红色通道沿 -V，即逆时针旋转 90°。沿 +U 的切线，Z 轴镜像导入：绿色通道沿 +U，红色通道沿 +V，"
+         "红色和绿色通道互换。"),
     "Vanilla tangents": "原版切线",
     "as the game's own": "即游戏原生",
     "models store them": "模型存储的切线",
@@ -142,8 +142,8 @@ ZH = {
     "imported": "导入时",
     "without a mirror": "无镜像",
     "with Z mirrored": "Z 轴镜像",
-    "T: the game reads green along it": "T：游戏沿此方向读取绿色",
-    "W(N × T): the game reads red along it": "W(N × T)：游戏沿此方向读取红色",
+    "T: the game reads green along it": "T：游戏沿此方向读取绿色通道",
+    "W(N × T): the game reads red along it": "W(N × T)：游戏沿此方向读取红色通道",
     # Fig. 7, the dome
     "The tangent-space normals the game decodes around a raised dome": "游戏在凸起圆顶周围解码出的切线空间法线",
     ("Animated. Three panels, each with the frame (green T, red W(N x T)) and the tangent-space normals the game "

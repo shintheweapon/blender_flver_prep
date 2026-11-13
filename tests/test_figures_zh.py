@@ -72,6 +72,14 @@ class TestChineseFigures(unittest.TestCase):
                 self.assertEqual(skeleton(chinese).replace(zh_text.ZH_FONT_STACK, zh_text.FONT_STACK),
                                  skeleton(english))
 
+    def test_channels_are_named_as_channels(self):
+        # as in the paper; 绿色 T and 红色 W name the colours of the drawn arrows
+        bare = (r"(?:红色|绿色|蓝色)(?!通道|(?:和|与)(?:红色|绿色|蓝色)通道|(?:和|与) Alpha 通道| [TW])"
+                r"|Alpha(?! 通道)")
+        for value in zh_text.ZH.values():
+            with self.subTest(value=value[:30]):
+                self.assertEqual(re.findall(bare, value), [])
+
     def test_chinese_fonts_are_added(self):
         for name in zh_text.PAPER_FIGURES:
             with self.subTest(name=name):

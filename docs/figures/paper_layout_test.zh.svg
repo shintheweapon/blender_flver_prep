@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="680" height="380" viewBox="0 0 680 380" role="img">
 <title>原版法线贴图的布局检验</title>
-<desc>横条图，游戏部件法线贴图的每个文件名前缀一条，每条按可检验贴图的比例分段：DirectX 配对（红色对 U、绿色对 V）以正相关胜出、以负相关胜出（绿色反转），或交换配对胜出。以正相关胜出的 DirectX 配对几乎占满每一条。各列给出每个前缀的可检验贴图数和不可检验贴图数。</desc>
+<desc>横条图，游戏部件法线贴图的每个文件名前缀一条，每条按可检验贴图的比例分段：DirectX 配对（红色通道对 U、绿色通道对 V）以正相关胜出、以负相关胜出（绿色通道反转），或交换配对胜出。以正相关胜出的 DirectX 配对几乎占满每一条。各列给出每个前缀的可检验贴图数和不可检验贴图数。</desc>
 <style>
 .t{fill:#1f2328;font:14px -apple-system,"Segoe UI",Helvetica,Arial,"Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Source Han Sans SC",sans-serif}
 .h{font-weight:600}
@@ -80,7 +80,7 @@
 <rect x="20" y="350" width="14" height="14" fill="#639922"/>
 <text class="s" x="40" y="362" text-anchor="start">DirectX 配对，正相关</text>
 <rect x="200" y="350" width="14" height="14" fill="#378ADD"/>
-<text class="s" x="220" y="362" text-anchor="start">DirectX 配对，负相关（绿色反转）</text>
+<text class="s" x="220" y="362" text-anchor="start">DirectX 配对，负相关（绿色通道反转）</text>
 <rect x="490" y="350" width="14" height="14" fill="#E24B4A"/>
 <text class="s" x="510" y="362" text-anchor="start">交换配对</text>
 </svg>

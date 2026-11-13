@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="680" height="318" viewBox="0 0 680 318" role="img">
-<title>游戏读取绿色和红色的方向</title>
-<desc>三张平放的面片，N 朝上，+U 向右，+V 朝向观察者。原版切线：绿色沿 +V 读取，红色沿 +U 读取。沿 +U 的切线，无镜像导入：绿色沿 +U，红色沿 -V，即逆时针旋转 90°。沿 +U 的切线，Z 轴镜像导入：绿色沿 +U，红色沿 +V，红绿互换。</desc>
+<title>游戏读取绿色和红色通道的方向</title>
+<desc>三张平放的面片，N 朝上，+U 向右，+V 朝向观察者。原版切线：绿色通道沿 +V 读取，红色通道沿 +U 读取。沿 +U 的切线，无镜像导入：绿色通道沿 +U，红色通道沿 -V，即逆时针旋转 90°。沿 +U 的切线，Z 轴镜像导入：绿色通道沿 +U，红色通道沿 +V，红色和绿色通道互换。</desc>
 <style>
 .t{fill:#1f2328;font:14px -apple-system,"Segoe UI",Helvetica,Arial,"Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Source Han Sans SC",sans-serif}
 .h{font-weight:600}
@@ -62,7 +62,7 @@
 <text class="s" x="579" y="240" text-anchor="middle">导入时</text>
 <text class="s" x="579" y="256" text-anchor="middle">Z 轴镜像</text>
 <line x1="60" y1="290" x2="84" y2="290" stroke="#639922" stroke-width="2"/>
-<text class="s" x="90" y="294" text-anchor="start">T：游戏沿此方向读取绿色</text>
+<text class="s" x="90" y="294" text-anchor="start">T：游戏沿此方向读取绿色通道</text>
 <line x1="330" y1="290" x2="354" y2="290" stroke="#E24B4A" stroke-width="2"/>
-<text class="s" x="360" y="294" text-anchor="start">W(N × T)：游戏沿此方向读取红色</text>
+<text class="s" x="360" y="294" text-anchor="start">W(N × T)：游戏沿此方向读取红色通道</text>
 </svg>

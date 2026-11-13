@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="680" height="320" viewBox="0 0 680 320" role="img">
 <title>法线贴图的布局</title>
-<desc>一张纹理，U 向右，V 从顶部的第 0 行向下。红色存储切线空间法线的 x 分量（朝 +U），绿色存储其 y 分量（朝 +V）。一般认为蓝色存储光泽度、Alpha 存储其他数据；这一点未经测试。在凸起处，红色在其 +U 一侧偏高，绿色在其 +V 一侧偏高。</desc>
+<desc>一张纹理，U 向右，V 从顶部的第 0 行向下。红色通道存储切线空间法线的 x 分量（朝 +U），绿色通道存储其 y 分量（朝 +V）。一般认为蓝色通道存储光泽度、Alpha 通道存储其他数据；这一点未经测试。在凸起处，红色通道的值在其 +U 一侧偏高，绿色通道的值在其 +V 一侧偏高。</desc>
 <style>
 .t{fill:#1f2328;font:14px -apple-system,"Segoe UI",Helvetica,Arial,"Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Source Han Sans SC",sans-serif}
 .h{font-weight:600}
@@ -29,11 +29,11 @@
 <text class="s" x="190" y="179" text-anchor="middle">凸起</text>
 <line x1="226" y1="175" x2="270" y2="175" stroke="#E24B4A" stroke-width="2" marker-end="url(#ar)"/>
 <line x1="190" y1="211" x2="190" y2="258" stroke="#639922" stroke-width="2" marker-end="url(#ag)"/>
-<text class="t h" x="340" y="96" text-anchor="start">红色：x 分量，朝 +U</text>
-<text class="t h" x="340" y="128" text-anchor="start">绿色：y 分量，朝 +V</text>
+<text class="t h" x="340" y="96" text-anchor="start">红色通道：x 分量，朝 +U</text>
+<text class="t h" x="340" y="128" text-anchor="start">绿色通道：y 分量，朝 +V</text>
 <text class="s" x="340" y="148" text-anchor="start">V 沿图像向下（DirectX 布局）</text>
-<text class="t h" x="340" y="180" text-anchor="start">蓝色：光泽度。Alpha：其他数据</text>
+<text class="t h" x="340" y="180" text-anchor="start">蓝色通道：光泽度。Alpha 通道：其他数据</text>
 <text class="s" x="340" y="200" text-anchor="start">模组社区的看法；本文未测试</text>
-<text class="s" x="340" y="240" text-anchor="start">在凸起处，红色在其 +U 一侧偏高，</text>
-<text class="s" x="340" y="258" text-anchor="start">绿色在其 +V 一侧偏高</text>
+<text class="s" x="340" y="240" text-anchor="start">在凸起处，红色通道的值在其 +U 一侧偏高，</text>
+<text class="s" x="340" y="258" text-anchor="start">绿色通道的值在其 +V 一侧偏高</text>
 </svg>

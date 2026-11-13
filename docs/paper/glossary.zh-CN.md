@@ -22,7 +22,7 @@ setting name Tangent Space. Symbols stay as in the English paper: N, T, B, W, U,
 | TBN frame | TBN 坐标系 | |
 | tangent plane | 切平面 | |
 | layout (DirectX, OpenGL) | 布局 | DirectX 布局, OpenGL 布局 |
-| channel | 通道 | red 红色通道, green 绿色通道 |
+| channel | 通道 | always named with 通道: 红色通道, 绿色通道, 蓝色通道, Alpha 通道; two together share it, as in 红色和绿色通道; a bare 红色 or 绿色 names a drawn colour |
 | component | 分量 | x 分量, y 分量 |
 | UV island | UV 岛 | |
 | mirrored island | 镜像岛 | |
