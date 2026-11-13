@@ -16,6 +16,7 @@ Chrome and the ``websocket-client`` package. The edits to the Word file's XML
 """
 
 import argparse
+import json
 import os
 import re
 import subprocess
@@ -31,6 +32,7 @@ if VIDEO_DIR not in sys.path:
     sys.path.insert(0, VIDEO_DIR)
 
 import languages  # noqa: E402  (the paper of each language)
+import math_images  # noqa: E402  (maths as pictures; imports no browser code until it draws)
 import scenes  # noqa: E402  (scenes.moves tells the animated figures apart; it imports no browser code)
 from docx_tables import (BORDER_EDGES, CAPTION_STYLE, CELL_BORDERS, CENTRE, TABLE_BORDERS,  # noqa: E402,F401
                          TABLE_PROPERTIES, TABLE_PROPERTY_ORDER, break_before_brackets, child_elements,
@@ -193,9 +195,9 @@ def figure_size(target, svg=None):
         return image.size
 
 
-def pandoc_command(out_path):
-    """The pandoc command that reads the prepared Markdown from stdin and writes ``out_path``."""
-    return ["pandoc", "-f", PANDOC_FORMAT, "-t", "docx", "-o", out_path]
+def pandoc_command(out_path, source_format=PANDOC_FORMAT):
+    """The pandoc command that reads the prepared Markdown (or its JSON tree) from stdin and writes ``out_path``."""
+    return ["pandoc", "-f", source_format, "-t", "docx", "-o", out_path]
 
 
 def svg_size(svg):
@@ -325,7 +327,48 @@ def style_edits(lang):
     return edit
 
 
-def main(out_dir=OUT_DIR, lang="en"):
+def maths_as_pictures(markdown, out_dir, edit):
+    """
+    The paper with every maths expression as a picture (``math_images``).
+
+    pandoc parses the prepared Markdown into its JSON tree; each distinct
+    expression is drawn by KaTeX into ``<out_dir>/math``, the maths nodes become
+    pictures, and the document edit also sets the pictures in their lines.
+
+    Parameters
+    ----------
+    markdown : bytes
+        The prepared Markdown (``prepare_markdown``).
+    out_dir : str
+    edit : callable
+        The document edit (``document_edits``).
+
+    Returns
+    -------
+    tuple
+        ``(tree, edit)``: the JSON tree for pandoc, as bytes, and the document
+        edit with ``math_images.place_math`` after it.
+
+    Raises
+    ------
+    subprocess.CalledProcessError
+        When pandoc fails.
+    RuntimeError
+        When KaTeX cannot draw an expression.
+    """
+    run = subprocess.run(["pandoc", "-f", PANDOC_FORMAT, "-t", "json"], input=markdown, cwd=out_dir,
+                         capture_output=True, check=True)
+    tree = json.loads(run.stdout)
+    sizes = math_images.render(math_images.distinct_items(tree), out_dir, scenes.KATEX_HEAD, TEXT_WIDTH / 1440)
+    tree, numbers = math_images.replace_math(tree, sizes)
+    scaled = sum(1 for size in sizes.values() if size[3])
+    if scaled:
+        print(f"{scaled} display equations scaled down to fit the text width")
+    return (json.dumps(tree).encode("utf-8"),
+            lambda xml: math_images.place_math(edit(xml), sizes, numbers, TEXT_WIDTH))
+
+
+def main(out_dir=OUT_DIR, lang="en", maths_pictures=False):
     """
     Export a language's paper and report what the Word file holds.
 
@@ -334,28 +377,38 @@ def main(out_dir=OUT_DIR, lang="en"):
     out_dir : str
     lang : str
         ``en`` or ``zh-CN`` (``docs/video/languages.py``).
+    maths_pictures : bool
+        Every maths expression as a picture instead of a Word equation
+        (``maths_as_pictures``), written as ``<paper>.math-images.docx``.
 
     Returns
     -------
     str
-        The Word file written, ``<paper>.docx``.
+        The Word file written, ``<paper>.docx`` or ``<paper>.math-images.docx``.
 
     Raises
     ------
     subprocess.CalledProcessError
         When pandoc or ffmpeg fails.
+    RuntimeError
+        When KaTeX cannot draw an expression.
     """
     paper = languages.language(lang).paper
     with open(os.path.join(PAPER_DIR, paper), encoding="utf-8") as file:
         text = file.read()
     widths = render_figures(text, out_dir)
-    out_path = os.path.join(out_dir, os.path.splitext(paper)[0] + ".docx")
-    run = subprocess.run(pandoc_command(out_path), input=prepare_markdown(text, widths).encode("utf-8"),
-                         cwd=out_dir, capture_output=True, check=True)
+    suffix = ".math-images.docx" if maths_pictures else ".docx"
+    out_path = os.path.join(out_dir, os.path.splitext(paper)[0] + suffix)
+    source, edit, source_format = prepare_markdown(text, widths).encode("utf-8"), document_edits(lang), PANDOC_FORMAT
+    if maths_pictures:
+        source, edit = maths_as_pictures(source, out_dir, edit)
+        source_format = "json"
+    run = subprocess.run(pandoc_command(out_path, source_format), input=source, cwd=out_dir, capture_output=True,
+                         check=True)
     warnings = [line for line in run.stderr.decode("utf-8", "replace").splitlines() if line.startswith("[WARNING]")]
     for line in warnings:
         print(line)
-    finish(out_path, document_edits(lang), style_edits(lang))
+    finish(out_path, edit, style_edits(lang))
     report = check_docx(out_path)
     print(", ".join(f"{key} {value!r}" for key, value in report.items()), f"; written to {os.path.relpath(out_path)}")
     return out_path
@@ -365,5 +418,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--out", default=OUT_DIR, help="folder to write to (default: docs/paper/out)")
     parser.add_argument("--lang", default="en", choices=sorted(languages.LANGUAGES), help="the paper's language")
+    parser.add_argument("--math-images", action="store_true",
+                        help="every maths expression as a picture, for viewers without Word equations")
     options = parser.parse_args()
-    main(options.out, options.lang)
+    main(options.out, options.lang, options.math_images)

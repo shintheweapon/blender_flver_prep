@@ -128,6 +128,10 @@
   the pages are US Letter with 0.75 in margins; figures and tables are centred, no figure is taller than 7 in, and
   each stays on the page of its caption. In the Chinese file, the bracketed part of 表 I and 表 II's first column
   has its own line. The Word edits are split by subject into `docx_tables.py`, `docx_styles.py` and `docx_xml.py`.
+- `export_docx.py --lang zh-CN --math-images` writes `ER_NORMAL_MAPS.zh-CN.math-images.docx`, with every maths
+  expression as a picture drawn by KaTeX, for viewers that do not show Word equations: inline maths lowered onto the
+  baseline, display equations centred with their number at the right margin. The steps are in
+  `docs/paper/math_images.py`.
 
 ## 1.0.0
 

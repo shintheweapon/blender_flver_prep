@@ -141,6 +141,25 @@ class Chrome:
         self.evaluate(f"window.setTime({t:.4f})")
         return base64.b64decode(self.call("Page.captureScreenshot", format="png")["data"])
 
+    def capture_region(self, x, y, width, height, scale=1.0):
+        """
+        One part of the page as PNG bytes, also below the window's height.
+
+        Parameters
+        ----------
+        x, y, width, height : float
+            The part, in CSS pixels from the page's top left.
+        scale : float
+            Device pixels per CSS pixel in the PNG.
+
+        Returns
+        -------
+        bytes
+        """
+        clip = {"x": x, "y": y, "width": width, "height": height, "scale": scale}
+        shot = self.call("Page.captureScreenshot", format="png", clip=clip, captureBeyondViewport=True)
+        return base64.b64decode(shot["data"])
+
     def close(self):
         """Close the page and the browser, and remove its profile."""
         try:

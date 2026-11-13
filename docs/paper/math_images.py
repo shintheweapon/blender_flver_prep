@@ -12,6 +12,8 @@ the right margin. Only ``render`` needs Chrome; the other steps are pure.
 
 import hashlib
 import html
+import math
+import os
 import re
 
 import docx_xml
@@ -23,8 +25,10 @@ NUMBER = re.compile(r"\s*" + re.escape(B + "qquad") + r"\s*\((\d+)\)\s*$")
 MATH_EM = 1.1
 CAPTURE_SCALE = 4
 PIXELS_PER_INCH = 96.0
-# Room a display equation leaves for its number at the right margin
+# Room a display equation leaves for its number at the right margin, and the height of the number's middle above
+# the baseline in 12 pt text: a display picture is lowered so that its middle is there
 NUMBER_ROOM_INCHES = 0.6
+NUMBER_MIDDLE_PT = 4.0
 
 
 def split_number(tex):
@@ -127,8 +131,9 @@ def math_page(items, katex_head):
     """
     A white page holding every expression for KaTeX to draw, each in its own box.
 
-    Each box (``.w``) holds the maths and, after it, a zero-size marker
-    (``.b``) whose top is the text's baseline. Chinese inside ``\\text{}``
+    Each box (``.w``) holds the maths and, after inline maths, a zero-size
+    marker (``.b``) whose top is the text's baseline; a display box has no
+    marker, which would start a line of its own below the equation. Chinese inside ``\\text{}``
     falls back to Source Han Sans SC, then Noto Sans SC. The page defines the
     hooks ``chrome.Chrome`` and ``render`` call: ``window.ready``,
     ``window.boxes()`` and ``window.errors()``.
@@ -146,7 +151,8 @@ def math_page(items, katex_head):
     """
     boxes = "".join(
         f'<div class="m"><span class="w"><span data-tex="{html.escape(tex, quote=True)}" '
-        f'data-display="{1 if kind == "display" else 0}"></span><span class="b"></span></span></div>\n'
+        f'data-display="{1 if kind == "display" else 0}"></span>'
+        + ("" if kind == "display" else '<span class="b"></span>') + "</span></div>\n"
         for _, kind, tex in items)
     return ("<!doctype html><html><head><meta charset='utf-8'>" + katex_head
             + "<style>html,body{margin:0;background:#ffffff;color:#000000}body{font-size:16px;padding:8px}"
@@ -160,8 +166,9 @@ def math_page(items, katex_head):
             "await document.fonts.ready;"
             "await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));return true})();"
             "window.boxes=()=>[...document.querySelectorAll('.w')].map(w=>{const r=w.getBoundingClientRect(),"
-            "b=w.querySelector('.b').getBoundingClientRect();"
-            "return [r.left+scrollX,r.top+scrollY,r.width,r.height,b.top+scrollY];});"
+            "b=w.querySelector('.b');"
+            "return [r.left+scrollX,r.top+scrollY,r.width,r.height,"
+            "(b?b.getBoundingClientRect().top:r.bottom)+scrollY];});"
             "window.errors=()=>document.querySelectorAll('.katex-error').length;"
             "window.setTime=async t=>t;</script></body></html>")
 
@@ -185,15 +192,17 @@ def picture_size(kind, width, height, bottom_to_baseline, text_inches):
     -------
     tuple
         ``(width_in, height_in, depth_pt, scaled)``: inches, inches, points
-        below the baseline (0 for display equations), and whether it was
+        the picture is lowered below the baseline (for a display equation, so
+        that its middle sits at ``NUMBER_MIDDLE_PT``), and whether it was
         scaled down.
     """
     width_in, height_in = width / PIXELS_PER_INCH, height / PIXELS_PER_INCH
     room = text_inches - NUMBER_ROOM_INCHES
     if kind == "display":
-        if width_in > room:
-            return room, height_in * room / width_in, 0.0, True
-        return width_in, height_in, 0.0, False
+        scaled = width_in > room
+        if scaled:
+            width_in, height_in = room, height_in * room / width_in
+        return width_in, height_in, max(0.0, height_in * 72.0 / 2 - NUMBER_MIDDLE_PT), scaled
     return width_in, height_in, max(0.0, bottom_to_baseline) * 72.0 / PIXELS_PER_INCH, False
 
 
@@ -261,8 +270,8 @@ def replace_math(tree, sizes):
     return walk(tree), numbers
 
 
-INLINE_RUN = re.compile(r"<w:r>(?:(?!</w:r>).)*?<w:drawing>(?:(?!</w:r>).)*?descr=\"(?:math/)?(math_i_[0-9a-f]{12}"
-                        r"\.png)\"(?:(?!</w:r>).)*</w:r>", re.S)
+MATH_RUN = re.compile(r"<w:r>(?:(?!</w:r>).)*?<w:drawing>(?:(?!</w:r>).)*?descr=\"(?:math/)?(math_[id]_[0-9a-f]{12}"
+                      r"\.png)\"(?:(?!</w:r>).)*</w:r>", re.S)
 DISPLAY_NAME = re.compile(r"descr=\"(?:math/)?(math_d_[0-9a-f]{12}\.png)\"")
 # Paragraph properties a w:tabs comes before, in schema order
 AFTER_TABS = ("<w:suppressAutoHyphens", "<w:kinsoku", "<w:wordWrap", "<w:overflowPunct", "<w:topLinePunct",
@@ -276,8 +285,9 @@ def place_math(document_xml, sizes, numbers, text_width):
     """
     Set the maths pictures in their lines, after pandoc.
 
-    - A run holding an inline picture gets ``<w:position>``, lowering it by its
-      depth (half-points), so the maths sits on the text's baseline.
+    - A run holding a maths picture gets ``<w:position>``, lowering it by its
+      depth (half-points): inline maths sits on the text's baseline, a display
+      equation's middle beside its number.
     - A paragraph holding a display picture gets a centre tab at half the text
       width and a right tab at the text width, a tab before the picture, and a
       tab and its number, as ``(n)``, after it; the numbers are taken in order.
@@ -298,18 +308,19 @@ def place_math(document_xml, sizes, numbers, text_width):
     -------
     str
     """
-    def inline(match):
+    def lowered(match):
         xml = match.group(0)
-        if "<w:position" in xml:
+        half_points = int(round(sizes[match.group(1)][2] * 2))
+        if "<w:position" in xml or not half_points:
             return xml
-        position = f'<w:position w:val="{-int(round(sizes[match.group(1)][2] * 2))}"/>'
+        position = f'<w:position w:val="{-half_points}"/>'
         if xml.startswith("<w:r><w:rPr>"):
             size = xml.find("<w:sz ")
             at = size if 0 <= size < xml.index("</w:rPr>") else xml.index("</w:rPr>")
             return xml[:at] + position + xml[at:]
         return "<w:r><w:rPr>" + position + "</w:rPr>" + xml[len("<w:r>"):]
 
-    document_xml = INLINE_RUN.sub(inline, document_xml)
+    document_xml = MATH_RUN.sub(lowered, document_xml)
     remaining = iter(numbers)
     tabs = (f'<w:tabs><w:tab w:val="center" w:pos="{text_width // 2}"/>'
             f'<w:tab w:val="right" w:pos="{text_width}"/></w:tabs>')
@@ -334,3 +345,49 @@ def place_math(document_xml, sizes, numbers, text_width):
 
     return docx_xml.PARAGRAPH.sub(display, document_xml)
 
+
+def render(items, out_dir, katex_head, text_inches):
+    """
+    Draw every expression with KaTeX in headless Chrome, each into its own PNG.
+
+    Parameters
+    ----------
+    items : list of tuple
+        ``(name, kind, tex)`` (``distinct_items``).
+    out_dir : str
+        The pictures go into ``<out_dir>/math``.
+    katex_head : str
+    text_inches : float
+
+    Returns
+    -------
+    dict
+        Picture name to ``(width_in, height_in, depth_pt, scaled)`` (``picture_size``).
+
+    Raises
+    ------
+    RuntimeError
+        When KaTeX cannot draw an expression.
+    """
+    import tempfile
+
+    import chrome  # needs websocket-client; imported here so the pure steps stay testable without it
+
+    folder = os.path.join(out_dir, "math")
+    os.makedirs(folder, exist_ok=True)
+    sizes = {}
+    with tempfile.TemporaryDirectory(prefix="docx_math_") as scratch:
+        page = os.path.join(scratch, "maths.html")
+        with open(page, "w", encoding="utf-8") as file:
+            file.write(math_page(items, katex_head))
+        with chrome.Chrome(1400, 900, color_scheme="light") as browser:
+            browser.load(page)
+            if browser.evaluate("window.errors()"):
+                raise RuntimeError(f"KaTeX could not draw {browser.evaluate('window.errors()')} expressions")
+            for (name, kind, _), (x, y, width, height, baseline) in zip(items, browser.evaluate("window.boxes()")):
+                left, top = math.floor(x), math.floor(y)
+                right, bottom = math.ceil(x + width), math.ceil(y + height)
+                with open(os.path.join(folder, name), "wb") as file:
+                    file.write(browser.capture_region(left, top, right - left, bottom - top, CAPTURE_SCALE))
+                sizes[name] = picture_size(kind, right - left, bottom - top, bottom - baseline, text_inches)
+    return sizes

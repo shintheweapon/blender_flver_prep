@@ -363,8 +363,10 @@ def check_docx(path):
         defaults); ``page_numbers`` (whether the footer with the page number is
         referenced); ``page_margin``, ``fixed_tables``, ``squeezed_tables``
         (tables with a column narrower than a word in it),
-        ``figures_kept_with_captions``, ``centred_figures`` and ``latin_font``; ``italic_number_runs`` (numbers in maths left italic),
-        ``italic_cjk_runs`` (italic runs of Chinese text) and ``italic_captions``
+        ``figures_kept_with_captions``, ``centred_figures`` and ``latin_font``;
+        ``math_pictures`` and ``numbered_equations`` (maths drawn as pictures,
+        and display equations with their number at the right margin);
+        ``italic_number_runs`` (numbers in maths left italic), ``italic_cjk_runs`` (italic runs of Chinese text) and ``italic_captions``
         (whether table captions are still italic).
     """
     with zipfile.ZipFile(path) as package:
@@ -373,7 +375,9 @@ def check_docx(path):
         core = package.read("docProps/core.xml").decode("utf-8")
         styles = package.read("word/styles.xml").decode("utf-8")
         footer = package.read(FOOTER_PART).decode("utf-8") if FOOTER_PART in package.namelist() else ""
-    text_only = re.sub(r"<m:oMath.*?</m:oMath>", "", document, flags=re.S)
+    # the visible text: maths and picture descriptions (a maths picture's TeX) left out
+    text_only = "".join(re.findall(r"<w:t(?:\s[^>]*)?>([^<]*)</w:t>",
+                                   re.sub(r"<m:oMath.*?</m:oMath>", "", document, flags=re.S)))
     defaults = (re.findall(r"<w:docDefaults>.*?</w:docDefaults>", styles, flags=re.S) + [""])[0]
     author = re.search(r"<dc:creator>(.*?)</dc:creator>", core)
     return {
@@ -408,6 +412,9 @@ def check_docx(path):
         "figures_kept_with_captions": sum(1 for p in PARAGRAPH.findall(document)
                                           if holds_figure(p) and "<w:keepNext" in p),
         "centred_figures": sum(1 for p in PARAGRAPH.findall(document) if holds_figure(p) and CENTRE in p),
+        "math_pictures": sum(1 for d in DRAWING.findall(document) if MATH_PICTURE.search(d)),
+        "numbered_equations": len(re.findall(r'<w:tab w:val="right"[^>]*/></w:tabs>(?:(?!</w:p>).)*'
+                                             r'<w:r><w:tab/><w:t>\(\d+\)</w:t></w:r></w:p>', document, flags=re.S)),
         "latin_font": (re.findall(r'<w:rFonts\b[^>]*\bw:ascii="([^"]*)"', defaults) + ["theme"])[0],
         "italic_captions": not re.search(r'w:styleId="TableCaption"(?:(?!</w:style>).)*<w:i w:val="0"',
                                          styles, flags=re.S),

@@ -68,8 +68,15 @@ reports what the file holds.
 `python docs/paper/export_docx.py --lang zh-CN` exports the Chinese paper the same way, to
 `docs/paper/out/ER_NORMAL_MAPS.zh-CN.docx`, with its tables captioned 表 I and so on, the bracketed part of 表 I and
 表 II's first column on its own line, and its own figures. Chinese text is set in Noto Sans SC, the name Google Docs
-offers for Source Han Sans SC, and the figures are drawn in Source Han Sans SC. The edits made to the Word file after pandoc are in `docx_tables.py` (tables),
-`docx_styles.py` (fonts and styles) and `docx_xml.py` (the rest).
+offers for Source Han Sans SC, and the figures are drawn in Source Han Sans SC. The edits made to the Word file after
+pandoc are in `docx_tables.py` (tables), `docx_styles.py` (fonts and styles) and `docx_xml.py` (the rest).
+
+`python docs/paper/export_docx.py --lang zh-CN --math-images` writes
+`docs/paper/out/ER_NORMAL_MAPS.zh-CN.math-images.docx`, for viewers that do not show Word equations: every maths
+expression is a picture, drawn by KaTeX in headless Chrome at four times screen resolution (into
+`docs/paper/out/math/`), with its TeX as the picture's alt text. Inline maths is lowered onto the text's baseline (Word's character position;
+LibreOffice leaves the pictures raised), and each display equation is centred with its number at the right margin as
+text. The maths in this file cannot be edited. The steps are in `math_images.py`.
 
 To get a Google Doc, upload the `.docx` to Google Drive and choose **Open with > Google Docs**; Google Docs turns the
 Word equations into its own. If the two GIFs do not animate there, insert `paper_axis_swap_animated.gif` (Fig. 3(a))

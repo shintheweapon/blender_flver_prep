@@ -408,6 +408,8 @@ class TestMathImages(unittest.TestCase):
         self.assertTrue(scaled)
         self.assertAlmostEqual(width, 7.0 - math_images.NUMBER_ROOM_INCHES)
         self.assertAlmostEqual(height, width / 10)
+        self.assertAlmostEqual(depth, height * 72 / 2 - math_images.NUMBER_MIDDLE_PT)
+        self.assertEqual(math_images.picture_size("display", 96, 48, 0, 7.0)[2], 18 - math_images.NUMBER_MIDDLE_PT)
 
     def test_place_math(self):
         inline = "math_i_" + "a" * 12 + ".png"
@@ -445,6 +447,7 @@ class TestMathImages(unittest.TestCase):
         self.assertIn('data-tex="x" data-display="0"', page)
         self.assertIn("<head-tags>", page)
         self.assertIn("Source Han Sans SC", page)
+        self.assertEqual(page.count('<span class="b"></span>'), 1)  # only inline maths gets a baseline marker
 
 
 if __name__ == "__main__":
