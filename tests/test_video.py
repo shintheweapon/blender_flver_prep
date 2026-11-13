@@ -561,5 +561,62 @@ class TestSubtitleTiming(unittest.TestCase):
         self.assertEqual(timeline.parse_silences(log), [(0.0, 0.31), (4.52, 5.1)])
 
 
+class TestSentenceGroups(unittest.TestCase):
+    """English subtitles change at sentence ends; a long sentence is cut into even parts, at a near comma."""
+
+    LAYOUT = subtitles.Layout(sentences=True)
+    # 30 words at 42 columns: four lines, so two parts; the 14th word ends in a comma near the even point
+    LONG = " ".join("word," if index == 13 else "word" for index in range(30)) + "."
+
+    @staticmethod
+    def words(found):
+        return " ".join(line for group in found for line in group).split()
+
+    def test_short_sentences_share_a_group(self):
+        self.assertEqual(subtitles.sentence_groups("Red is x. Green is y.", self.LAYOUT), [["Red is x. Green is y."]])
+
+    def test_a_group_ends_at_a_sentence_end(self):
+        first = "The tangent runs along plus V on the island."
+        second = "The bitangent runs along plus U, as the game reads it."
+        found = subtitles.sentence_groups(f"{first} {second}", self.LAYOUT)
+        self.assertEqual([" ".join(group) for group in found], [first, second])
+
+    def test_a_long_sentence_is_cut_at_a_near_comma_into_even_parts(self):
+        found = subtitles.even_parts(self.LONG, self.LAYOUT)
+        self.assertEqual(len(found), 2)
+        self.assertTrue(found[0][-1].endswith("word,"))
+        self.assertTrue(all(len(group) <= self.LAYOUT.max_lines for group in found))
+        widths = [subtitles.columns(" ".join(group)) for group in found]
+        self.assertLessEqual(max(widths) - min(widths),
+                             subtitles.COMMA_BEFORE + subtitles.COMMA_AFTER + len("word,"))
+
+    def test_a_comma_that_would_leave_a_tail_is_passed_over(self):
+        # after a comma at the 13th word the other 17 words need three lines, more than one group holds
+        sentence = " ".join("word," if index == 12 else "word" for index in range(30)) + "."
+        found = subtitles.even_parts(sentence, self.LAYOUT)
+        self.assertEqual(len(found), 2)
+        self.assertFalse(found[0][-1].endswith("word,"))
+
+    def test_without_a_comma_the_cut_is_even(self):
+        found = subtitles.even_parts(self.LONG.replace(",", ""), self.LAYOUT)
+        widths = [subtitles.columns(" ".join(group)) for group in found]
+        self.assertLessEqual(max(widths) - min(widths), 2 * len("word "))
+
+    def test_every_word_is_kept_in_order(self):
+        text = f"Short one. {self.LONG} Another short one; and the end: done."
+        found = subtitles.groups(text, self.LAYOUT)
+        self.assertEqual(self.words(found), text.split())
+        self.assertTrue(all(len(group) <= self.LAYOUT.max_lines for group in found))
+
+    def test_without_sentences_groups_fill_in_turn(self):
+        text = f"Short one. {self.LONG}"
+        lines = subtitles.wrap(text)
+        self.assertEqual(subtitles.groups(text, subtitles.Layout()), [lines[i:i + 2] for i in range(0, len(lines), 2)])
+
+    def test_english_groups_by_sentence_and_chinese_does_not(self):
+        self.assertTrue(languages.language("en").subtitle_sentences)
+        self.assertFalse(languages.language("zh-CN").subtitle_sentences)
+
+
 if __name__ == "__main__":
     unittest.main()

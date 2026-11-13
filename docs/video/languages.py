@@ -8,7 +8,7 @@ the pipeline asks this table rather than holding English values.
 
 from collections import namedtuple
 
-Language = namedtuple("Language", "paper rate page_font subtitle_fonts words")
+Language = namedtuple("Language", "paper rate page_font subtitle_fonts words subtitle_sentences")
 Language.__doc__ = """
 One language of the video.
 
@@ -26,15 +26,19 @@ subtitle_fonts : tuple of str
 words : str or None
     The word splitter for subtitle lines: ``"jieba"`` for Chinese, None where
     lines break at spaces.
+subtitle_sentences : bool
+    Each subtitle changes at a sentence end (``subtitles.sentence_groups``),
+    where the narration pauses; True for English. Chinese subtitles fill each
+    pair of lines in turn and change at the pauses found near them.
 """
 
 LATIN_FONT = '"Segoe UI", -apple-system, Helvetica, Arial'
 
 LANGUAGES = {
-    "en": Language("ER_NORMAL_MAPS.md", 145, f"{LATIN_FONT}, sans-serif", ("Segoe UI",), None),
+    "en": Language("ER_NORMAL_MAPS.md", 145, f"{LATIN_FONT}, sans-serif", ("Segoe UI",), None, True),
     "zh-CN": Language("ER_NORMAL_MAPS.zh-CN.md", 260,
                       f'{LATIN_FONT}, "Source Han Sans SC", "Noto Sans SC", sans-serif',
-                      ("Source Han Sans SC", "Noto Sans SC"), "jieba"),
+                      ("Source Han Sans SC", "Noto Sans SC"), "jieba", False),
 }
 
 # The CJK families a Chinese page lists, in order, for figures to lead with

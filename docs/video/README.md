@@ -61,9 +61,12 @@ terms (`docs/paper/glossary.zh-CN.md`), preferably after punctuation. What diffe
   are dark, and Chrome is set to dark mode, so the figures use their own dark colours whatever the system's setting.
   Figures joined by ` + ` in the script are stacked top to bottom in one frame, as Fig. 3(a) over Fig. 3(b).
 - Subtitles are burned in white on an opaque box, so the boxes of a two-line subtitle meet without a darker band.
-  Each segment's time is shared between its subtitles by their length, and each change of subtitle then moves to
-  the nearest pause in the segment's audio, found with ffmpeg's `silencedetect`, within 1.5 seconds. A partial
-  render (`--until`) times the subtitles on the whole video and then cuts them, so they keep in step.
+  English subtitles change at sentence ends, where the narration pauses: whole sentences share a subtitle while
+  they fit in two lines, and a longer sentence is cut into even parts, at a comma near the cut where one is.
+  Chinese subtitles fill two lines at a time. Each segment's time is shared between its subtitles by their length,
+  and each change of subtitle then moves to the nearest pause in the segment's audio, found with ffmpeg's
+  `silencedetect`, within 1.5 seconds. A partial render (`--until`) times the subtitles on the whole video and then
+  cuts them, so they keep in step.
 - `chrome.py` drives headless Chrome to capture each page; animated figures are captured frame by frame, the rest
   once. `subtitles.py` writes the SRT, and `make_video.py` joins it all with ffmpeg.
 
