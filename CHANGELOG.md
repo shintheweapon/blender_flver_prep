@@ -117,6 +117,21 @@
   language. Chinese subtitles break between words (jieba, with the glossary's terms), preferably after punctuation.
   In both videos each change of subtitle moves to the nearest pause in the speech, and a partial render keeps the
   subtitles of its last segment in step.
+- The Chinese paper exports to Word too (`export_docx.py --lang zh-CN`, `ER_NORMAL_MAPS.zh-CN.docx`), with its tables
+  captioned 表 I and so on, its Chinese figures, and Chinese text in Noto Sans SC. Both Word files now number every
+  page at the bottom and leave out the line linking the other language. The edits made after pandoc are in
+  `docs/paper/docx_xml.py`.
+- In both Word files, numbers in maths and the equation numbers are upright, and table captions are upright in
+  small capitals, as IEEE sets them. The Chinese paper sets 文字表述： and its AI line in plain text, since italic
+  Chinese is a slant of upright type.
+- The Word tables have columns sized to their content, so no word breaks inside a cell, with 0.05 in cell margins;
+  the pages are US Letter with 0.75 in margins; figures and tables are centred, no figure is taller than 7 in, and
+  each stays on the page of its caption. In the Chinese file, the bracketed part of 表 I and 表 II's first column
+  has its own line. The Word edits are split by subject into `docx_tables.py`, `docx_styles.py` and `docx_xml.py`.
+- `export_docx.py --lang zh-CN --math-images` writes `ER_NORMAL_MAPS.zh-CN.math-images.docx`, with every maths
+  expression as a picture drawn by KaTeX, for viewers that do not show Word equations: inline maths lowered onto the
+  baseline, display equations centred with their number at the right margin. The steps are in
+  `docs/paper/math_images.py`.
 
 ## 1.0.0
 

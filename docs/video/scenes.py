@@ -106,8 +106,36 @@ def figure_text(svg, lang="en"):
     if not lang.startswith("zh"):
         return svg
     zh_text = _zh_text()
-    video_stack = zh_text.FONT_STACK.replace("sans-serif", ",".join(languages.CJK_FONTS) + ",sans-serif")
-    return zh_text.translate(svg).replace(zh_text.ZH_FONT_STACK, video_stack)
+    return zh_text.translate(svg).replace(zh_text.ZH_FONT_STACK, chinese_figure_stack())
+
+
+def chinese_figure_stack():
+    """
+    The font stack of a Chinese figure outside GitHub (video and Word file):
+    the figures' Latin faces, then Source Han Sans SC and Noto Sans SC.
+
+    Returns
+    -------
+    str
+        To stand in for ``zh_text.ZH_FONT_STACK`` in a ``.zh.svg``.
+    """
+    return _zh_text().FONT_STACK.replace("sans-serif", ",".join(languages.CJK_FONTS) + ",sans-serif")
+
+
+def with_video_fonts(zh_svg):
+    """
+    A committed ``.zh.svg`` with its font stack led by the video's Chinese fonts
+    (``chinese_figure_stack``), for figures captured outside GitHub.
+
+    Parameters
+    ----------
+    zh_svg : str
+
+    Returns
+    -------
+    str
+    """
+    return zh_svg.replace(_zh_text().ZH_FONT_STACK, chinese_figure_stack())
 
 
 def _zh_text():
