@@ -256,6 +256,33 @@ def sentence_groups(text, layout=Layout()):
     return found
 
 
+def balanced(lines, layout=Layout()):
+    """
+    A group's lines re-broken to about equal length.
+
+    The group's text is wrapped at the narrowest width that still gives the same
+    number of lines, so no line is left with a word or two; ``wrap``'s rules
+    still apply. A group of one line is returned as it is.
+
+    Parameters
+    ----------
+    lines : list of str
+    layout : Layout
+
+    Returns
+    -------
+    list of str
+    """
+    if len(lines) < 2:
+        return lines
+    text = " ".join(lines)
+    for width in range(1, layout.width + 1):
+        found = wrap(text, width, layout.split)
+        if len(found) == len(lines):
+            return found
+    return lines
+
+
 def groups(text, layout=Layout()):
     """
     A segment's lines in the groups shown at once.
@@ -264,15 +291,16 @@ def groups(text, layout=Layout()):
     ----------
     text : str
     layout : Layout
-        With ``sentences``, groups follow the sentences (``sentence_groups``);
-        otherwise the lines are cut into groups of ``max_lines`` in turn.
+        With ``sentences``, groups follow the sentences (``sentence_groups``)
+        and each group's lines are balanced (``balanced``); otherwise the lines
+        are cut into groups of ``max_lines`` in turn.
 
     Returns
     -------
     list of list of str
     """
     if layout.sentences:
-        return sentence_groups(text, layout)
+        return [balanced(group, layout) for group in sentence_groups(text, layout)]
     lines = wrap(text, layout.width, layout.split)
     return [lines[i:i + layout.max_lines] for i in range(0, len(lines), layout.max_lines)]
 

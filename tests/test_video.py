@@ -613,6 +613,15 @@ class TestSentenceGroups(unittest.TestCase):
         lines = subtitles.wrap(text)
         self.assertEqual(subtitles.groups(text, subtitles.Layout()), [lines[i:i + 2] for i in range(0, len(lines), 2)])
 
+    def test_two_lines_are_balanced(self):
+        lines = ["Custom meshes brought into Elden Ring can", "show their"]
+        found = subtitles.balanced(lines, self.LAYOUT)
+        self.assertEqual(len(found), 2)
+        self.assertEqual(" ".join(found).split(), " ".join(lines).split())
+        self.assertLess(abs(len(found[0]) - len(found[1])), len("brought"))
+        self.assertTrue(all(subtitles.columns(line) <= self.LAYOUT.width for line in found))
+        self.assertEqual(subtitles.balanced(["One line."], self.LAYOUT), ["One line."])
+
     def test_english_groups_by_sentence_and_chinese_does_not(self):
         self.assertTrue(languages.language("en").subtitle_sentences)
         self.assertFalse(languages.language("zh-CN").subtitle_sentences)
