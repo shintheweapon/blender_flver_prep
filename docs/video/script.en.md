@@ -90,6 +90,8 @@ right-handed with Z up.
 The game's model format, FLVER, does not say. One vanilla model answers it. The face part FC_F_0000 stands along plus
 Y, faces minus Z and has its left side at plus X. Seen from in front, that is x to the right, y up and z into the
 screen: a left-handed system. The winding of its triangles agrees, given normals that point outward.
+It was not checked on more models: the modding community has long held that FromSoftware's games use a
+left-handed space, and a game is unlikely to use two conventions at once. Neither reason was tested.
 
 **S04-05**
 So a Blender scene is carried into FLVER space by swapping Y and Z: a rotation of minus 90 degrees about X, which brings
@@ -354,8 +356,8 @@ The paper states its limits. Reconstructing z, normalising, and the height relat
 for Elden Ring. What blue and alpha hold was not tested.
 
 **S15-02**
-The handedness of FLVER space was inferred from one model. Cloth meshes keep W at minus one, and the cause and the
-effect in game were not tested.
+The handedness of FLVER space was inferred from one model, for the reasons given earlier. Cloth meshes keep W at minus
+one, and the cause and the effect in game were not tested.
 
 **S15-03**
 The layout test's correlation is moderate, and four of its 40 disagreeing maps were viewed. The game version was not
