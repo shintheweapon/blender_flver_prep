@@ -8,7 +8,7 @@ the pipeline asks this table rather than holding English values.
 
 from collections import namedtuple
 
-Language = namedtuple("Language", "paper rate page_font subtitle_fonts")
+Language = namedtuple("Language", "paper rate page_font subtitle_fonts words")
 Language.__doc__ = """
 One language of the video.
 
@@ -23,15 +23,18 @@ page_font : str
     The CSS font stack of the pages.
 subtitle_fonts : tuple of str
     The families the subtitles may use, the first one installed winning.
+words : str or None
+    The word splitter for subtitle lines: ``"jieba"`` for Chinese, None where
+    lines break at spaces.
 """
 
 LATIN_FONT = '"Segoe UI", -apple-system, Helvetica, Arial'
 
 LANGUAGES = {
-    "en": Language("ER_NORMAL_MAPS.md", 145, f"{LATIN_FONT}, sans-serif", ("Segoe UI",)),
+    "en": Language("ER_NORMAL_MAPS.md", 145, f"{LATIN_FONT}, sans-serif", ("Segoe UI",), None),
     "zh-CN": Language("ER_NORMAL_MAPS.zh-CN.md", 260,
                       f'{LATIN_FONT}, "Source Han Sans SC", "Noto Sans SC", sans-serif',
-                      ("Source Han Sans SC", "Noto Sans SC")),
+                      ("Source Han Sans SC", "Noto Sans SC"), "jieba"),
 }
 
 # The CJK families a Chinese page lists, in order, for figures to lead with

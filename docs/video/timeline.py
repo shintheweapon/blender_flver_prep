@@ -11,6 +11,7 @@ the references scene.
 
 import json
 import os
+import re
 import subprocess
 
 import languages
@@ -115,6 +116,59 @@ def probe_duration(path):
     run = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "json", path],
                          capture_output=True, text=True, check=True)
     return float(json.loads(run.stdout)["format"]["duration"])
+
+
+# A pause in speech: at least this long, and this far below full scale
+PAUSE_NOISE = "-35dB"
+PAUSE_LENGTH = 0.2
+
+
+def parse_silences(output):
+    """
+    The silences ffmpeg's ``silencedetect`` filter reports.
+
+    Parameters
+    ----------
+    output : str
+        ffmpeg's log, with its ``silence_start: <s>`` and ``silence_end: <s>`` lines.
+
+    Returns
+    -------
+    list of tuple
+        ``(start, end)`` in seconds, in order; a silence still open at the end
+        of the file is left out.
+    """
+    starts = [float(s) for s in re.findall(r"silence_start: (-?[\d.]+)", output)]
+    ends = [float(e) for e in re.findall(r"silence_end: (-?[\d.]+)", output)]
+    return list(zip(starts, ends))
+
+
+def speech_pauses(files):
+    """
+    The pauses in each segment's audio, read with ffmpeg's ``silencedetect``.
+
+    Parameters
+    ----------
+    files : dict
+        Segment ID to audio file.
+
+    Returns
+    -------
+    dict
+        Segment ID to its pauses, ``(start, end)`` in seconds from the file's start.
+
+    Raises
+    ------
+    subprocess.CalledProcessError
+        When ffmpeg cannot read a file.
+    """
+    pauses = {}
+    for ident, path in files.items():
+        run = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-i", path, "-af",
+                              f"silencedetect=noise={PAUSE_NOISE}:d={PAUSE_LENGTH}", "-f", "null", "-"],
+                             capture_output=True, text=True, check=True)
+        pauses[ident] = parse_silences(run.stderr)
+    return pauses
 
 
 def durations_from_audio(scenes, folder):

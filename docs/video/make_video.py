@@ -26,6 +26,8 @@ import timeline
 FULL = (1920, 1080, 30)
 DRAFT = (960, 540, 15)
 SUBTITLE_TOP = 924
+# The word splitters a language may name (``languages.Language.words``)
+WORD_SPLITTERS = {None: None, "jieba": subtitles.jieba_words}
 
 
 def subtitle_style(font):
@@ -246,16 +248,19 @@ def main(lang="en", draft=False, until=None):
         print(f"{len(missing)} of {len(estimated)} segments have no audio; their length is estimated"
               + (f" ({', '.join(missing[:5])}{', ...' if len(missing) > 5 else ''})" if files else ""))
         durations = {ident: durations.get(ident, estimated[ident]) for ident in estimated}
-    cues, spans, total = timeline.build(all_scenes, durations)
-    spans, cues, total = until_spans(spans, cues, until)
+    full_cues, spans, total = timeline.build(all_scenes, durations)
+    spans, cues, total = until_spans(spans, full_cues, until)
 
     out = os.path.join(script.OUT_DIR)
     cache, pages = os.path.join(out, "cache"), os.path.join(out, "pages")
     os.makedirs(cache, exist_ok=True)
     os.makedirs(pages, exist_ok=True)
     name = f"normal_maps.{lang}{'.draft' if draft else ''}{f'.until{until:g}' if until else ''}"
+    # subtitles are timed on the whole cues and only then cut, so a cut segment keeps its own timing
+    layout = subtitles.Layout(split=WORD_SPLITTERS[languages.language(lang).words])
+    shown = subtitles.clip(subtitles.entries(full_cues, layout, timeline.speech_pauses(files)), until)
     with open(os.path.join(out, f"{name}.srt"), "w", encoding="utf-8", newline="\n") as file:
-        file.write(subtitles.srt(cues))
+        file.write(subtitles.srt(shown))
 
     paper = scenes.paper_text(lang)
     font = subtitle_font(lang)

@@ -12,6 +12,7 @@ setting name Tangent Space. Symbols stay as in the English paper: N, T, B, W, U,
 
 | English | 中文 | Note |
 |---|---|---|
+| Elden Ring | 艾尔登法环 | game name; the other games are named above |
 | normal map | 法线贴图 | |
 | tangent-space normal | 切线空间法线 | the normal a map stores, relative to the surface |
 | shading normal | 着色法线 | |

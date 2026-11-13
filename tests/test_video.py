@@ -194,7 +194,7 @@ class TestSubtitles(unittest.TestCase):
         self.assertTrue(all(end <= hold.start + 1e-9 for _, end, _ in self.entries))
 
     def test_srt_blocks_are_numbered_and_timed(self):
-        text = subtitles.srt(self.cues[:3])
+        text = subtitles.srt(subtitles.entries(self.cues[:3]))
         blocks = text.strip().split("\n\n")
         for number, block in enumerate(blocks, 1):
             lines = block.splitlines()
@@ -461,6 +461,104 @@ class TestChineseScript(unittest.TestCase):
         minutes = sum(s.words() for s in self.segments) / languages.language("zh-CN").rate
         self.assertGreaterEqual(minutes, 12)
         self.assertLessEqual(minutes, 20)
+
+
+class TestWordBreaks(unittest.TestCase):
+    """Chinese lines break between the words a splitter gives, never inside one (no jieba is imported)."""
+
+    TEXT = "导入艾尔登法环的自制网格，法线贴图可能按错误的方向着色：凸起的细节看起来是凹陷的，或者像是从侧面照亮。"
+    WORDS = ["导入", "艾尔登法环", "的", "自制", "网格", "，", "法线", "贴图", "可能", "按", "错误", "的", "方向",
+             "着色", "：", "凸起", "的", "细节", "看起来", "是", "凹陷", "的", "，", "或者", "像是", "从", "侧面",
+             "照亮", "。"]
+
+    def split(self, run):
+        # a fake splitter: the words above, in order, for any run of this text
+        out, rest = [], run
+        for word in self.WORDS:
+            if rest.startswith(word):
+                out.append(word)
+                rest = rest[len(word):]
+        return out + list(rest)
+
+    def test_no_line_breaks_inside_a_word(self):
+        lines = subtitles.wrap(self.TEXT, split=self.split)
+        joined = "".join(lines)
+        self.assertEqual(joined, self.TEXT)
+        cuts, position = set(), 0
+        for line in lines[:-1]:
+            position += len(line)
+            cuts.add(position)
+        edges, position = set(), 0
+        for word in self.WORDS:
+            position += len(word)
+            edges.add(position)
+        self.assertLessEqual(cuts, edges)
+        for line in lines:
+            with self.subTest(line=line):
+                self.assertLessEqual(subtitles.columns(line), subtitles.LINE_WIDTH)
+                self.assertNotIn(line[0], subtitles.BREAK_AFTER)
+
+    def test_a_word_wider_than_a_line_falls_back_to_characters(self):
+        self.assertEqual(subtitles.units("一二三四", width=4, split=lambda run: [run]), ["一", "二", "三", "四"])
+        self.assertEqual(subtitles.units("一二", width=4, split=lambda run: [run]), ["一二"])
+
+    def test_english_is_unchanged_by_a_splitter(self):
+        for segment in script.segments(script.load("en")):
+            with self.subTest(segment=segment.ident):
+                self.assertEqual(subtitles.wrap(segment.text, split=self.split), subtitles.wrap(segment.text))
+
+    def test_glossary_terms_are_read_for_the_splitter(self):
+        terms = subtitles.glossary_terms()
+        for term in ("艾尔登法环", "切线空间法线", "副切线符号", "可积性检验", "通道变换"):
+            with self.subTest(term=term):
+                self.assertIn(term, terms)
+        self.assertNotIn("中文", terms)
+
+    def test_chinese_names_jieba_and_english_no_splitter(self):
+        self.assertEqual(languages.language("zh-CN").words, "jieba")
+        self.assertIsNone(languages.language("en").words)
+        self.assertIs(make_video.WORD_SPLITTERS["jieba"], subtitles.jieba_words)
+
+
+class TestSubtitleTiming(unittest.TestCase):
+    """Group boundaries move to pauses in the speech, and a partial render keeps each segment's own timing."""
+
+    LONG = "word " * 30  # four lines at 42 columns: two groups, one boundary
+
+    def cue(self, start=10.0, end=20.0, ident="S01-01"):
+        return timeline.Cue(ident, "S01", self.LONG.strip(), start, end)
+
+    def test_a_boundary_moves_to_a_pause_within_reach(self):
+        [(_, first_end, _), (second_start, _, _)] = subtitles.entries([self.cue()], pauses={"S01-01": [(5.6, 6.0)]})
+        self.assertAlmostEqual(first_end, 15.8)
+        self.assertAlmostEqual(second_start, 15.8)
+
+    def test_a_boundary_without_a_pause_in_reach_keeps_its_time(self):
+        plain = subtitles.entries([self.cue()])
+        far = subtitles.entries([self.cue()], pauses={"S01-01": [(1.0, 1.4)]})
+        self.assertEqual(far, plain)
+
+    def test_pauses_at_a_segments_ends_are_ignored(self):
+        self.assertEqual(subtitles.snap([1.0], [(0.0, 0.2), (9.9, 10.0)], 0.0, 10.0), [1.0])
+
+    def test_boundaries_stay_in_order(self):
+        moved = subtitles.snap([3.0, 3.5, 6.0], [(2.4, 2.6), (6.4, 6.6)], 0.0, 10.0)
+        self.assertEqual(moved, sorted(moved))
+        self.assertAlmostEqual(moved[0], 2.5)
+
+    def test_clip_keeps_each_entrys_own_timing(self):
+        found = subtitles.entries([self.cue()])
+        clipped = subtitles.clip(found, 16.0)
+        self.assertEqual(clipped[0], found[0])
+        self.assertEqual(clipped[-1][1], min(found[len(clipped) - 1][1], 16.0))
+        self.assertTrue(all(start < 16.0 for start, _, _ in clipped))
+        self.assertEqual(subtitles.clip(found, None), found)
+
+    def test_ffmpeg_silences_are_parsed(self):
+        log = ("[silencedetect @ 0x1] silence_start: 0\n[silencedetect @ 0x1] silence_end: 0.31 | silence_duration: "
+               "0.31\n[silencedetect @ 0x1] silence_start: 4.52\n[silencedetect @ 0x1] silence_end: 5.1 | "
+               "silence_duration: 0.58\n[silencedetect @ 0x1] silence_start: 9.8\n")
+        self.assertEqual(timeline.parse_silences(log), [(0.0, 0.31), (4.52, 5.1)])
 
 
 if __name__ == "__main__":
