@@ -26,6 +26,16 @@ test is
 `tests/test_figures.py` and `tests/test_paper.py` check
 them and the paper's worked example.
 
+## Chinese version
+
+[`ER_NORMAL_MAPS.zh-CN.md`](ER_NORMAL_MAPS.zh-CN.md) is the paper in Simplified Chinese, with the same sections,
+equations, tables, citations and references (kept in their published form, with the access dates in Chinese). Its
+figures are the paper's figures with Chinese text, `../figures/*.zh.svg`, written by `make_figures.py` from the
+catalogue in [`../figures/zh_text.py`](../figures/zh_text.py); the English figures are unchanged. The Chinese terms
+are fixed in [`glossary.zh-CN.md`](glossary.zh-CN.md). `tests/test_paper_zh.py` checks the Chinese paper against the
+English one (equations, table numbers, figures, citations, references and counts), and `tests/test_figures_zh.py` checks
+the Chinese figures. A change to the English paper is made in the Chinese one too.
+
 ## Reproducing the measurements
 
 The paper cites this repository for the scripts and results of Sections IV-A and IV-B. The committed results

@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="280" viewBox="0 0 680 280" role="img">
+<title>从 Blender 到 FLVER 空间的坐标轴交换</title>
+<desc>三个面板从正面展示角色的坐标轴，其左侧位于屏幕右边。在 Blender 中，X 向右，Z 向上，Y 指向屏幕内：右手坐标系，前方沿 -Y。绕 X 轴旋转 -90 度后，Y 向上，Z 指向屏幕外：仍为右手坐标系，前方沿 +Z。Z 取反后，Z 指向屏幕内：左手坐标系，与 FLVER 相同，前方沿 -Z，左侧仍沿 +X。</desc>
+<style>
+.t{fill:#1f2328;font:14px -apple-system,"Segoe UI",Helvetica,Arial,"Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Source Han Sans SC",sans-serif}
+.h{font-weight:600}
+.s{fill:#59636e;font:12px -apple-system,"Segoe UI",Helvetica,Arial,"Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Source Han Sans SC",sans-serif}
+.o{stroke:#59636e}
+.of{fill:#59636e}
+.p{fill:#f6f8fa;stroke:#8c959f}
+.g{stroke:#8c959f}
+@media (prefers-color-scheme: dark){
+.t{fill:#e6edf3}
+.s{fill:#9198a1}
+.o{stroke:#9198a1}
+.of{fill:#9198a1}
+.p{fill:#151b23;stroke:#656c76}
+.g{stroke:#656c76}
+}
+</style>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#E24B4A"/></marker><marker id="ag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#639922"/></marker><marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#378ADD"/></marker><marker id="ao" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="of" d="M1 1L9 5L1 9z"/></marker></defs>
+<line x1="99" y1="130" x2="170" y2="130" class="o" stroke-width="2" marker-end="url(#ao)"/>
+<text class="t" x="176" y="134" text-anchor="start">+X</text>
+<line x1="90" y1="121" x2="90" y2="50" class="o" stroke-width="2" marker-end="url(#ao)"/>
+<text class="t" x="90" y="42" text-anchor="middle">+Z</text>
+<circle cx="90" cy="130" r="7" fill="none" class="o" stroke-width="1.5"/>
+<line x1="85.1" y1="125.1" x2="94.9" y2="134.9" class="o" stroke-width="1.5"/>
+<line x1="85.1" y1="134.9" x2="94.9" y2="125.1" class="o" stroke-width="1.5"/>
+<text class="t" x="78" y="150" text-anchor="end">+Y</text>
+<text class="t h" x="120" y="186" text-anchor="middle">Blender</text>
+<text class="s" x="120" y="206" text-anchor="middle">右手坐标系</text>
+<text class="s" x="120" y="222" text-anchor="middle">前 −Y，上 +Z，左侧 +X</text>
+<line x1="319" y1="130" x2="390" y2="130" class="o" stroke-width="2" marker-end="url(#ao)"/>
+<text class="t" x="396" y="134" text-anchor="start">+X</text>
+<line x1="310" y1="121" x2="310" y2="50" class="o" stroke-width="2" marker-end="url(#ao)"/>
+<text class="t" x="310" y="42" text-anchor="middle">+Y</text>
+<circle cx="310" cy="130" r="7" fill="none" class="o" stroke-width="1.5"/>
+<circle cx="310" cy="130" r="2.3" class="of"/>
+<text class="t" x="298" y="150" text-anchor="end">+Z</text>
+<text class="t h" x="340" y="186" text-anchor="middle">绕 X 轴旋转 −90°</text>
+<text class="s" x="340" y="206" text-anchor="middle">右手坐标系</text>
+<text class="s" x="340" y="222" text-anchor="middle">前 +Z，上 +Y，左侧 +X</text>
+<line x1="539" y1="130" x2="610" y2="130" class="o" stroke-width="2" marker-end="url(#ao)"/>
+<text class="t" x="616" y="134" text-anchor="start">+X</text>
+<line x1="530" y1="121" x2="530" y2="50" class="o" stroke-width="2" marker-end="url(#ao)"/>
+<text class="t" x="530" y="42" text-anchor="middle">+Y</text>
+<circle cx="530" cy="130" r="7" fill="none" class="o" stroke-width="1.5"/>
+<line x1="525.1" y1="125.1" x2="534.9" y2="134.9" class="o" stroke-width="1.5"/>
+<line x1="525.1" y1="134.9" x2="534.9" y2="125.1" class="o" stroke-width="1.5"/>
+<text class="t" x="518" y="150" text-anchor="end">+Z</text>
+<text class="t h" x="560" y="186" text-anchor="middle">再将 Z 取反：FLVER</text>
+<text class="s" x="560" y="206" text-anchor="middle">左手坐标系</text>
+<text class="s" x="560" y="222" text-anchor="middle">前 −Z，上 +Y，左侧 +X</text>
+<circle cx="60" cy="256" r="7" fill="none" class="o" stroke-width="1.5"/>
+<circle cx="60" cy="256" r="2.3" class="of"/>
+<text class="s" x="74" y="260" text-anchor="start">指向屏幕外</text>
+<circle cx="220" cy="256" r="7" fill="none" class="o" stroke-width="1.5"/>
+<line x1="215.1" y1="251.1" x2="224.9" y2="260.9" class="o" stroke-width="1.5"/>
+<line x1="215.1" y1="260.9" x2="224.9" y2="251.1" class="o" stroke-width="1.5"/>
+<text class="s" x="234" y="260" text-anchor="start">指向屏幕内</text>
+<text class="s" x="380" y="260" text-anchor="start">每个面板：从正面看角色。</text>
+</svg>

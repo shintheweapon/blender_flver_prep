@@ -99,6 +99,18 @@
   `color_scheme` for this. The tables carry their own grid lines, which pandoc's Word output leaves out, on every
   cell too, so the line under the header row shows in Google Docs; they are centred with centred captions, have a
   bold header row, and each stays on one page.
+- The paper in Simplified Chinese, `docs/paper/ER_NORMAL_MAPS.zh-CN.md`, with its figures in Chinese
+  (`docs/figures/*.zh.svg`, from the catalogue `docs/figures/zh_text.py`) and a glossary of the Chinese terms
+  (`docs/paper/glossary.zh-CN.md`). The two papers link to each other, and tests check that the Chinese one carries
+  the English one's equations, tables, figures, citations, references and counts. The Chinese paper names the games
+  in Chinese (艾尔登法环 and the others), with the English name in brackets at first use, and its wording was revised to read as natural Chinese. The Chinese paper and figures name the channels as
+  channels (红色通道, 绿色通道 and so on), since a bare 红色 reads as the colour. Reflections are named 镜像变换, or 关于直线 U = V 对称,
+  rather than 反射, which reads as the reflection of light. The Chinese paper and figures use the terms of Chinese
+  graphics writing: DirectX 格式, 翻转绿色通道 and 细节层次.
+- Both papers say why the handedness of FLVER space was not checked on more models: it has long been held in the
+  FromSoftware modding community that the games' model space is left-handed, and a game is unlikely to use two
+  handednesses at once. Neither reason was tested; the Limitations point to Section III-C.
+- Fig. 10's lower labels no longer run into the domes' arrows, in English and Chinese.
 
 ## 1.0.0
 

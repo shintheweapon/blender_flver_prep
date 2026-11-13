@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="318" viewBox="0 0 680 318" role="img">
+<title>游戏读取绿色和红色通道的方向</title>
+<desc>三张平放的面片，N 朝上，+U 向右，+V 朝向观察者。原版切线：绿色通道沿 +V 读取，红色通道沿 +U 读取。沿 +U 的切线，无镜像导入：绿色通道沿 +U，红色通道沿 -V，即逆时针旋转 90°。沿 +U 的切线，Z 轴镜像导入：绿色通道沿 +U，红色通道沿 +V，红色和绿色通道互换。</desc>
+<style>
+.t{fill:#1f2328;font:14px -apple-system,"Segoe UI",Helvetica,Arial,"Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Source Han Sans SC",sans-serif}
+.h{font-weight:600}
+.s{fill:#59636e;font:12px -apple-system,"Segoe UI",Helvetica,Arial,"Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Source Han Sans SC",sans-serif}
+.o{stroke:#59636e}
+.of{fill:#59636e}
+.p{fill:#f6f8fa;stroke:#8c959f}
+.g{stroke:#8c959f}
+@media (prefers-color-scheme: dark){
+.t{fill:#e6edf3}
+.s{fill:#9198a1}
+.o{stroke:#9198a1}
+.of{fill:#9198a1}
+.p{fill:#151b23;stroke:#656c76}
+.g{stroke:#656c76}
+}
+</style>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#E24B4A"/></marker><marker id="ag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#639922"/></marker><marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9z" fill="#378ADD"/></marker><marker id="ao" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="of" d="M1 1L9 5L1 9z"/></marker></defs>
+<polygon class="p" points="100,100 220,100 178,160 58,160" stroke-width="0.5"/>
+<line x1="108" y1="88" x2="212" y2="88" class="o" stroke-width="1" marker-end="url(#ao)"/>
+<text class="s" x="224" y="92" text-anchor="start">+U</text>
+<line x1="86" y1="104" x2="44" y2="156" class="o" stroke-width="1" marker-end="url(#ao)"/>
+<text class="s" x="40" y="176" text-anchor="middle">+V</text>
+<text class="s" x="214" y="76" text-anchor="end">第 0 行</text>
+<line x1="139" y1="130" x2="139" y2="66" class="o" stroke-width="2" marker-end="url(#ao)"/>
+<text class="s" x="131" y="76" text-anchor="end">N</text>
+<line x1="139" y1="130" x2="115.9" y2="163" stroke="#639922" stroke-width="2" marker-end="url(#ag)"/>
+<line x1="139" y1="130" x2="189" y2="130" stroke="#E24B4A" stroke-width="2" marker-end="url(#ar)"/>
+<circle cx="139" cy="130" r="3" class="of"/>
+<text class="t h" x="139" y="220" text-anchor="middle">原版切线</text>
+<text class="s" x="139" y="240" text-anchor="middle">即游戏原生</text>
+<text class="s" x="139" y="256" text-anchor="middle">模型存储的切线</text>
+<polygon class="p" points="320,100 440,100 398,160 278,160" stroke-width="0.5"/>
+<line x1="328" y1="88" x2="432" y2="88" class="o" stroke-width="1" marker-end="url(#ao)"/>
+<text class="s" x="444" y="92" text-anchor="start">+U</text>
+<line x1="306" y1="104" x2="264" y2="156" class="o" stroke-width="1" marker-end="url(#ao)"/>
+<text class="s" x="260" y="176" text-anchor="middle">+V</text>
+<text class="s" x="434" y="76" text-anchor="end">第 0 行</text>
+<line x1="359" y1="130" x2="359" y2="66" class="o" stroke-width="2" marker-end="url(#ao)"/>
+<text class="s" x="351" y="76" text-anchor="end">N</text>
+<line x1="359" y1="130" x2="409" y2="130" stroke="#639922" stroke-width="2" marker-end="url(#ag)"/>
+<line x1="359" y1="130" x2="382.1" y2="97" stroke="#E24B4A" stroke-width="2" marker-end="url(#ar)"/>
+<circle cx="359" cy="130" r="3" class="of"/>
+<text class="t h" x="359" y="220" text-anchor="middle">沿 +U 的切线</text>
+<text class="s" x="359" y="240" text-anchor="middle">导入时</text>
+<text class="s" x="359" y="256" text-anchor="middle">无镜像</text>
+<polygon class="p" points="540,100 660,100 618,160 498,160" stroke-width="0.5"/>
+<line x1="548" y1="88" x2="652" y2="88" class="o" stroke-width="1" marker-end="url(#ao)"/>
+<text class="s" x="664" y="92" text-anchor="start">+U</text>
+<line x1="526" y1="104" x2="484" y2="156" class="o" stroke-width="1" marker-end="url(#ao)"/>
+<text class="s" x="480" y="176" text-anchor="middle">+V</text>
+<text class="s" x="654" y="76" text-anchor="end">第 0 行</text>
+<line x1="579" y1="130" x2="579" y2="66" class="o" stroke-width="2" marker-end="url(#ao)"/>
+<text class="s" x="571" y="76" text-anchor="end">N</text>
+<line x1="579" y1="130" x2="629" y2="130" stroke="#639922" stroke-width="2" marker-end="url(#ag)"/>
+<line x1="579" y1="130" x2="555.9" y2="163" stroke="#E24B4A" stroke-width="2" marker-end="url(#ar)"/>
+<circle cx="579" cy="130" r="3" class="of"/>
+<text class="t h" x="579" y="220" text-anchor="middle">沿 +U 的切线</text>
+<text class="s" x="579" y="240" text-anchor="middle">导入时</text>
+<text class="s" x="579" y="256" text-anchor="middle">Z 轴镜像</text>
+<line x1="60" y1="290" x2="84" y2="290" stroke="#639922" stroke-width="2"/>
+<text class="s" x="90" y="294" text-anchor="start">T：游戏沿此方向读取绿色通道</text>
+<line x1="330" y1="290" x2="354" y2="290" stroke="#E24B4A" stroke-width="2"/>
+<text class="s" x="360" y="294" text-anchor="start">W(N × T)：游戏沿此方向读取红色通道</text>
+</svg>
